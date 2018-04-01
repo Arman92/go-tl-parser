@@ -18,36 +18,19 @@ import (
 	"unsafe"
 )
 
-// Update is used to unmarshal recieved json strings into
-type Update = map[string]interface{}
-
-// AuthorizationState is used to indicate Authorization State
-type AuthorizationState uint8
-
-// AuthorizationStates
-const (
-	AuthorizationStateClosed = iota
-	AuthorizationStateClosing
-	AuthorizationStateLoggingOut
-	AuthorizationStateReady
-	AuthorizationStateWaitCode
-	AuthorizationStateWaitEncryptionKey
-	AuthorizationStateWaitPassword
-	AuthorizationStateWaitPhoneNumber
-	AuthorizationStateWaitTdlibParameters
-	AuthorizationStateInvalidParams // Lib related, not a telegramm entity
-)
+// UpdateMsg is used to unmarshal recieved json strings into
+type UpdateMsg = map[string]interface{}
 
 // Client is the Telegram TdLib client
 type Client struct {
 	Client     unsafe.Pointer
-	Updates    chan Update
+	Updates    chan UpdateMsg
 	waiters    sync.Map
 	rawWaiters sync.Map
 }
 
-// TdlibConfig holds tdlibParameters
-type TdlibConfig struct {
+// Config holds tdlibParameters
+type Config struct {
 	APIID              string // Application identifier for Telegram API access, which can be obtained at https://my.telegram.org   --- must be non-empty..
 	APIHash            string // Application identifier hash for Telegram API access, which can be obtained at https://my.telegram.org  --- must be non-empty..
 	SystemLanguageCode string // IETF language tag of the user's operating system language; must be non-empty.
@@ -69,18 +52,18 @@ type TdlibConfig struct {
 // NewClient Creates a new instance of TDLib.
 // Has two public fields:
 // Client itself and Updates channel
-func NewClient(config TdlibConfig) *Client {
+func NewClient(config Config) *Client {
 	// Seed rand with time
 	rand.Seed(time.Now().UnixNano())
 
 	client := Client{Client: C.td_json_client_create()}
-	client.Updates = make(chan Update, 100)
+	client.Updates = make(chan UpdateMsg, 100)
 
 	go func() {
 		for {
 			// get update
 			updateBytes := client.Receive(10)
-			var update Update
+			var update UpdateMsg
 			json.Unmarshal(updateBytes, &update)
 
 			// does new update has @extra field?
@@ -89,10 +72,10 @@ func NewClient(config TdlibConfig) *Client {
 				// trying to load update with this salt
 				if waiter, found := client.waiters.Load(extra); found {
 					// found? send it to waiter channel
-					waiter.(chan Update) <- update
+					waiter.(chan UpdateMsg) <- update
 
 					// trying to prevent memory leak
-					close(waiter.(chan Update))
+					close(waiter.(chan UpdateMsg))
 				}
 
 				// trying to load update with this salt
@@ -113,9 +96,9 @@ func NewClient(config TdlibConfig) *Client {
 		}
 	}()
 
-	client.Send(Update{
+	client.Send(UpdateMsg{
 		"@type": "setTdlibParameters",
-		"parameters": Update{
+		"parameters": UpdateMsg{
 			"@type":                    "tdlibParameters",
 			"use_test_dc":              config.UseTestDataCenter,
 			"database_directory":       config.DatabaseDirectory,
@@ -138,22 +121,22 @@ func NewClient(config TdlibConfig) *Client {
 	return &client
 }
 
-// Destroy Destroys the TDLib client instance.
+// DestroyInstance Destroys the TDLib client instance.
 // After this is called the client instance shouldn't be used anymore.
-func (c *Client) Destroy() {
+func (c *Client) DestroyInstance() {
 	C.td_json_client_destroy(c.Client)
 }
 
 // Send Sends request to the TDLib client.
-// You can provide string or Update.
+// You can provide string or UpdateMsg.
 func (c *Client) Send(jsonQuery interface{}) {
 	var query *C.char
 
 	switch jsonQuery.(type) {
 	case string:
 		query = C.CString(jsonQuery.(string))
-	case Update:
-		jsonBytes, _ := json.Marshal(jsonQuery.(Update))
+	case UpdateMsg:
+		jsonBytes, _ := json.Marshal(jsonQuery.(UpdateMsg))
 		query = C.CString(string(jsonBytes))
 	}
 
@@ -162,32 +145,32 @@ func (c *Client) Send(jsonQuery interface{}) {
 }
 
 // Receive Receives incoming updates and request responses from the TDLib client.
-// You can provide string or Update.
+// You can provide string or UpdateMsg.
 func (c *Client) Receive(timeout float64) []byte {
 	result := C.td_json_client_receive(c.Client, C.double(timeout))
 
-	// var update Update
+	// var update UpdateMsg
 	// json.Unmarshal([]byte(C.GoString(result)), &update)
 	return []byte(C.GoString(result))
 }
 
 // Execute Synchronously executes TDLib request.
 // Only a few requests can be executed synchronously.
-func (c *Client) Execute(jsonQuery interface{}) Update {
+func (c *Client) Execute(jsonQuery interface{}) UpdateMsg {
 	var query *C.char
 
 	switch jsonQuery.(type) {
 	case string:
 		query = C.CString(jsonQuery.(string))
-	case Update:
-		jsonBytes, _ := json.Marshal(jsonQuery.(Update))
+	case UpdateMsg:
+		jsonBytes, _ := json.Marshal(jsonQuery.(UpdateMsg))
 		query = C.CString(string(jsonBytes))
 	}
 
 	defer C.free(unsafe.Pointer(query))
 	result := C.td_json_client_execute(c.Client, query)
 
-	var update Update
+	var update UpdateMsg
 	json.Unmarshal([]byte(C.GoString(result)), &update)
 	return update
 }
@@ -209,16 +192,16 @@ func SetLogVerbosityLevel(level int) {
 }
 
 // SendAndCatch Sends request to the TDLib client and catches the result in updates channel.
-// You can provide string or Update.
-func (c *Client) SendAndCatch(jsonQuery interface{}) (Update, error) {
-	var update Update
+// You can provide string or UpdateMsg.
+func (c *Client) SendAndCatch(jsonQuery interface{}) (UpdateMsg, error) {
+	var update UpdateMsg
 
 	switch jsonQuery.(type) {
 	case string:
 		// unmarshal JSON into map, we don't have @extra field, if user don't set it
 		json.Unmarshal([]byte(jsonQuery.(string)), &update)
-	case Update:
-		update = jsonQuery.(Update)
+	case UpdateMsg:
+		update = jsonQuery.(UpdateMsg)
 	}
 
 	// letters for generating random string
@@ -235,7 +218,7 @@ func (c *Client) SendAndCatch(jsonQuery interface{}) (Update, error) {
 	update["@extra"] = randomString
 
 	// create waiter chan and save it in Waiters
-	waiter := make(chan Update, 1)
+	waiter := make(chan UpdateMsg, 1)
 	c.waiters.Store(randomString, waiter)
 
 	// send it through already implemented method
@@ -248,21 +231,21 @@ func (c *Client) SendAndCatch(jsonQuery interface{}) (Update, error) {
 		// or timeout
 	case <-time.After(10 * time.Second):
 		c.waiters.Delete(randomString)
-		return Update{}, errors.New("timeout")
+		return UpdateMsg{}, errors.New("timeout")
 	}
 }
 
 // SendAndCatchBytes Sends request to the TDLib client and catches the result (bytes) in updates channel.
-// You can provide string or Update.
+// You can provide string or UpdateMsg.
 func (c *Client) SendAndCatchBytes(jsonQuery interface{}) ([]byte, error) {
-	var update Update
+	var update UpdateMsg
 
 	switch jsonQuery.(type) {
 	case string:
 		// unmarshal JSON into map, we don't have @extra field, if user don't set it
 		json.Unmarshal([]byte(jsonQuery.(string)), &update)
-	case Update:
-		update = jsonQuery.(Update)
+	case UpdateMsg:
+		update = jsonQuery.(UpdateMsg)
 	}
 
 	// letters for generating random string
@@ -296,40 +279,10 @@ func (c *Client) SendAndCatchBytes(jsonQuery interface{}) ([]byte, error) {
 	}
 }
 
-// GetAuthorizationState returns authorization state
-func (c *Client) GetAuthorizationState() (AuthorizationState, error) {
-	res, err := c.SendAndCatch(Update{
-		"@type": "getAuthorizationState",
-	})
-
-	switch res["@type"].(string) {
-	case "authorizationStateClosed":
-		return AuthorizationStateClosed, err
-	case "authorizationStateClosing":
-		return AuthorizationStateClosing, err
-	case "authorizationStateLoggingOut":
-		return AuthorizationStateLoggingOut, err
-	case "authorizationStateReady":
-		return AuthorizationStateReady, err
-	case "authorizationStateWaitCode":
-		return AuthorizationStateWaitCode, err
-	case "authorizationStateWaitEncryptionKey":
-		return AuthorizationStateWaitEncryptionKey, err
-	case "authorizationStateWaitPassword":
-		return AuthorizationStateWaitPassword, err
-	case "authorizationStateWaitPhoneNumber":
-		return AuthorizationStateWaitPhoneNumber, err
-	case "authorizationStateWaitTdlibParameters":
-		return AuthorizationStateWaitTdlibParameters, err
-	default:
-		return AuthorizationStateInvalidParams, err
-	}
-}
-
 // Authorize is used to authorize the users
 func (c *Client) Authorize() (AuthorizationState, error) {
 	if state, _ := c.GetAuthorizationState(); state == AuthorizationStateWaitEncryptionKey {
-		_, err := c.SendAndCatch(Update{
+		_, err := c.SendAndCatch(UpdateMsg{
 			"@type": "checkDatabaseEncryptionKey",
 		})
 
@@ -343,7 +296,7 @@ func (c *Client) Authorize() (AuthorizationState, error) {
 
 // SendPhoneNumber sends phone number to tdlib
 func (c *Client) SendPhoneNumber(phoneNumber string) (AuthorizationState, error) {
-	_, err := c.SendAndCatch(Update{
+	_, err := c.SendAndCatch(UpdateMsg{
 		"@type":        "setAuthenticationPhoneNumber",
 		"phone_number": phoneNumber,
 	})
@@ -357,7 +310,7 @@ func (c *Client) SendPhoneNumber(phoneNumber string) (AuthorizationState, error)
 
 // SendAuthCode sends auth code to tdlib
 func (c *Client) SendAuthCode(code string) (AuthorizationState, error) {
-	_, err := c.SendAndCatch(Update{
+	_, err := c.SendAndCatch(UpdateMsg{
 		"@type": "checkAuthenticationCode",
 		"code":  code,
 	})
@@ -371,7 +324,7 @@ func (c *Client) SendAuthCode(code string) (AuthorizationState, error) {
 
 // SendAuthPassword sends two-step verification password (user defined)to tdlib
 func (c *Client) SendAuthPassword(password string) (AuthorizationState, error) {
-	_, err := c.SendAndCatch(Update{
+	_, err := c.SendAndCatch(UpdateMsg{
 		"@type":    "checkAuthenticationPassword",
 		"password": password,
 	})
@@ -382,48 +335,3 @@ func (c *Client) SendAuthPassword(password string) (AuthorizationState, error) {
 
 	return c.GetAuthorizationState()
 }
-
-// func (c *Client) GetAllChats() []Chat {
-// 	result, err := client.SendAndCatchBytes(Update{
-// 		"@type":          "getChats",
-// 		"offset_order":   9223372036854775807,
-// 		"offset_chat_id": 0,
-// 		"limit":          200,
-// 	})
-
-// 	if err != nil {
-// 		panic("Fuck")
-// 	}
-
-// 	chatIDs := types.Chats{}
-// 	json.Unmarshal(result, &chatIDs)
-
-// 	var chats []types.Chat
-// 	chats = make([]types.Chat, 0, 1)
-
-// 	for _, chatID := range chatIDs.ChatIDs {
-// 		result, err = client.SendAndCatchBytes(Update{
-// 			"@type":   "getChat",
-// 			"chat_id": chatID,
-// 		})
-
-// 		var update Update
-// 		json.Unmarshal(result, &update)
-// 		fmt.Println(update)
-
-// 		var chat types.Chat
-// 		json.Unmarshal(result, &chat)
-// 		chats = append(chats, chat)
-// 	}
-
-// 	result, err = client.SendAndCatchBytes(Update{
-// 		"@type":   "getChatMember",
-// 		"chat_id": -1001178287687,
-// 		"user_id": 41507975,
-// 	})
-
-// 	var update Update
-// 	json.Unmarshal(result, &update)
-// 	fmt.Println(update)
-
-// }

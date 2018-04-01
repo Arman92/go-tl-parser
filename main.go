@@ -299,8 +299,11 @@ func main() {
 			}
 
 			illStr := `fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])`
+			if strings.Contains(paramsStr, returnTypeCamel) {
+				returnTypeCamel = returnTypeCamel + "Dummy"
+			}
 			gnrtdMethods += fmt.Sprintf(` {
-				result, err := client.SendAndCatch(Update{
+				result, err := client.SendAndCatch(UpdateMsg{
 					"@type":       "%s",
 					%s
 				})
@@ -324,6 +327,7 @@ func main() {
 		}
 	}
 
+	os.Remove(generateDir + "/" + structsFileName)
 	structsFile, err := os.OpenFile(generateDir+"/"+structsFileName, os.O_CREATE|os.O_RDWR, os.ModePerm)
 	defer structsFile.Close()
 	if err != nil {
@@ -332,6 +336,7 @@ func main() {
 	wgo := bufio.NewWriter(structsFile)
 	wgo.Write([]byte(gnrtdStructs))
 
+	os.Remove(generateDir + "/" + methodsFileName)
 	methodsFile, err := os.OpenFile(generateDir+"/"+methodsFileName, os.O_CREATE|os.O_RDWR, os.ModePerm)
 	defer methodsFile.Close()
 

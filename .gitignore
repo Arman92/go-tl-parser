@@ -1,9 +1,4 @@
 
-# Any file without an extension
-*
-!*/
-!*.*
-
 /.vscode
 /.git_old
 
@@ -22,3 +17,6 @@
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
+
+build
+debug
