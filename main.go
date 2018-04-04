@@ -317,6 +317,9 @@ func main() {
 		structUnmarshals += fmt.Sprintf(`
 				func unmarshal%s(rawMsg *json.RawMessage) (%s, error){
 
+					if rawMsg == nil {
+						return nil, nil
+					}
 					var objMap map[string]interface{}
 					err := json.Unmarshal(*rawMsg, &objMap)
 					if err != nil {

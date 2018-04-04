@@ -10,18 +10,158 @@ type tdCommon struct {
 	Extra string `json:"@extra"`
 }
 
-// TdlibMessage is the interface for all messages send and received to/from tdlib
-type TdlibMessage interface {
+// TdMessage is the interface for all messages send and received to/from tdlib
+type TdMessage interface {
 	MessageType() string
 }
 
-// MessageSendingStateEnum Alias for abstract MessageSendingState 'Sub-Classes', used as constant-enum here
-type MessageSendingStateEnum string
+// InputFileEnum Alias for abstract InputFile 'Sub-Classes', used as constant-enum here
+type InputFileEnum string
 
-// MessageSendingState enums
+// InputFile enums
 const (
-	MessageSendingStatePendingType MessageSendingStateEnum = "messageSendingStatePending"
-	MessageSendingStateFailedType  MessageSendingStateEnum = "messageSendingStateFailed"
+	InputFileIDType        InputFileEnum = "inputFileID"
+	InputFileRemoteType    InputFileEnum = "inputFileRemote"
+	InputFileLocalType     InputFileEnum = "inputFileLocal"
+	InputFileGeneratedType InputFileEnum = "inputFileGenerated"
+)
+
+// RichTextEnum Alias for abstract RichText 'Sub-Classes', used as constant-enum here
+type RichTextEnum string
+
+// RichText enums
+const (
+	RichTextPlainType         RichTextEnum = "richTextPlain"
+	RichTextBoldType          RichTextEnum = "richTextBold"
+	RichTextItalicType        RichTextEnum = "richTextItalic"
+	RichTextUnderlineType     RichTextEnum = "richTextUnderline"
+	RichTextStrikethroughType RichTextEnum = "richTextStrikethrough"
+	RichTextFixedType         RichTextEnum = "richTextFixed"
+	RichTextURLType           RichTextEnum = "richTextURL"
+	RichTextEmailAddressType  RichTextEnum = "richTextEmailAddress"
+	RichTextsType             RichTextEnum = "richTexts"
+)
+
+// TextParseModeEnum Alias for abstract TextParseMode 'Sub-Classes', used as constant-enum here
+type TextParseModeEnum string
+
+// TextParseMode enums
+const (
+	TextParseModeMarkdownType TextParseModeEnum = "textParseModeMarkdown"
+	TextParseModeHTMLType     TextParseModeEnum = "textParseModeHTML"
+)
+
+// ChatTypeEnum Alias for abstract ChatType 'Sub-Classes', used as constant-enum here
+type ChatTypeEnum string
+
+// ChatType enums
+const (
+	ChatTypePrivateType    ChatTypeEnum = "chatTypePrivate"
+	ChatTypeBasicGroupType ChatTypeEnum = "chatTypeBasicGroup"
+	ChatTypeSupergroupType ChatTypeEnum = "chatTypeSupergroup"
+	ChatTypeSecretType     ChatTypeEnum = "chatTypeSecret"
+)
+
+// PageBlockEnum Alias for abstract PageBlock 'Sub-Classes', used as constant-enum here
+type PageBlockEnum string
+
+// PageBlock enums
+const (
+	PageBlockTitleType        PageBlockEnum = "pageBlockTitle"
+	PageBlockSubtitleType     PageBlockEnum = "pageBlockSubtitle"
+	PageBlockAuthorDateType   PageBlockEnum = "pageBlockAuthorDate"
+	PageBlockHeaderType       PageBlockEnum = "pageBlockHeader"
+	PageBlockSubheaderType    PageBlockEnum = "pageBlockSubheader"
+	PageBlockParagraphType    PageBlockEnum = "pageBlockParagraph"
+	PageBlockPreformattedType PageBlockEnum = "pageBlockPreformatted"
+	PageBlockFooterType       PageBlockEnum = "pageBlockFooter"
+	PageBlockDividerType      PageBlockEnum = "pageBlockDivider"
+	PageBlockAnchorType       PageBlockEnum = "pageBlockAnchor"
+	PageBlockListType         PageBlockEnum = "pageBlockList"
+	PageBlockBlockQuoteType   PageBlockEnum = "pageBlockBlockQuote"
+	PageBlockPullQuoteType    PageBlockEnum = "pageBlockPullQuote"
+	PageBlockAnimationType    PageBlockEnum = "pageBlockAnimation"
+	PageBlockAudioType        PageBlockEnum = "pageBlockAudio"
+	PageBlockPhotoType        PageBlockEnum = "pageBlockPhoto"
+	PageBlockVideoType        PageBlockEnum = "pageBlockVideo"
+	PageBlockCoverType        PageBlockEnum = "pageBlockCover"
+	PageBlockEmbeddedType     PageBlockEnum = "pageBlockEmbedded"
+	PageBlockEmbeddedPostType PageBlockEnum = "pageBlockEmbeddedPost"
+	PageBlockCollageType      PageBlockEnum = "pageBlockCollage"
+	PageBlockSlideshowType    PageBlockEnum = "pageBlockSlideshow"
+	PageBlockChatLinkType     PageBlockEnum = "pageBlockChatLink"
+)
+
+// UserStatusEnum Alias for abstract UserStatus 'Sub-Classes', used as constant-enum here
+type UserStatusEnum string
+
+// UserStatus enums
+const (
+	UserStatusEmptyType     UserStatusEnum = "userStatusEmpty"
+	UserStatusOnlineType    UserStatusEnum = "userStatusOnline"
+	UserStatusOfflineType   UserStatusEnum = "userStatusOffline"
+	UserStatusRecentlyType  UserStatusEnum = "userStatusRecently"
+	UserStatusLastWeekType  UserStatusEnum = "userStatusLastWeek"
+	UserStatusLastMonthType UserStatusEnum = "userStatusLastMonth"
+)
+
+// CheckChatUsernameResultEnum Alias for abstract CheckChatUsernameResult 'Sub-Classes', used as constant-enum here
+type CheckChatUsernameResultEnum string
+
+// CheckChatUsernameResult enums
+const (
+	CheckChatUsernameResultOkType                      CheckChatUsernameResultEnum = "checkChatUsernameResultOk"
+	CheckChatUsernameResultUsernameInvalidType         CheckChatUsernameResultEnum = "checkChatUsernameResultUsernameInvalid"
+	CheckChatUsernameResultUsernameOccupiedType        CheckChatUsernameResultEnum = "checkChatUsernameResultUsernameOccupied"
+	CheckChatUsernameResultPublicChatsTooMuchType      CheckChatUsernameResultEnum = "checkChatUsernameResultPublicChatsTooMuch"
+	CheckChatUsernameResultPublicGroupsUnavailableType CheckChatUsernameResultEnum = "checkChatUsernameResultPublicGroupsUnavailable"
+)
+
+// ConnectionStateEnum Alias for abstract ConnectionState 'Sub-Classes', used as constant-enum here
+type ConnectionStateEnum string
+
+// ConnectionState enums
+const (
+	ConnectionStateWaitingForNetworkType ConnectionStateEnum = "connectionStateWaitingForNetwork"
+	ConnectionStateConnectingToProxyType ConnectionStateEnum = "connectionStateConnectingToProxy"
+	ConnectionStateConnectingType        ConnectionStateEnum = "connectionStateConnecting"
+	ConnectionStateUpdatingType          ConnectionStateEnum = "connectionStateUpdating"
+	ConnectionStateReadyType             ConnectionStateEnum = "connectionStateReady"
+)
+
+// TopChatCategoryEnum Alias for abstract TopChatCategory 'Sub-Classes', used as constant-enum here
+type TopChatCategoryEnum string
+
+// TopChatCategory enums
+const (
+	TopChatCategoryUsersType      TopChatCategoryEnum = "topChatCategoryUsers"
+	TopChatCategoryBotsType       TopChatCategoryEnum = "topChatCategoryBots"
+	TopChatCategoryGroupsType     TopChatCategoryEnum = "topChatCategoryGroups"
+	TopChatCategoryChannelsType   TopChatCategoryEnum = "topChatCategoryChannels"
+	TopChatCategoryInlineBotsType TopChatCategoryEnum = "topChatCategoryInlineBots"
+	TopChatCategoryCallsType      TopChatCategoryEnum = "topChatCategoryCalls"
+)
+
+// ChatMemberStatusEnum Alias for abstract ChatMemberStatus 'Sub-Classes', used as constant-enum here
+type ChatMemberStatusEnum string
+
+// ChatMemberStatus enums
+const (
+	ChatMemberStatusCreatorType       ChatMemberStatusEnum = "chatMemberStatusCreator"
+	ChatMemberStatusAdministratorType ChatMemberStatusEnum = "chatMemberStatusAdministrator"
+	ChatMemberStatusMemberType        ChatMemberStatusEnum = "chatMemberStatusMember"
+	ChatMemberStatusRestrictedType    ChatMemberStatusEnum = "chatMemberStatusRestricted"
+	ChatMemberStatusLeftType          ChatMemberStatusEnum = "chatMemberStatusLeft"
+	ChatMemberStatusBannedType        ChatMemberStatusEnum = "chatMemberStatusBanned"
+)
+
+// MessageForwardInfoEnum Alias for abstract MessageForwardInfo 'Sub-Classes', used as constant-enum here
+type MessageForwardInfoEnum string
+
+// MessageForwardInfo enums
+const (
+	MessageForwardedFromUserType MessageForwardInfoEnum = "messageForwardedFromUser"
+	MessageForwardedPostType     MessageForwardInfoEnum = "messageForwardedPost"
 )
 
 // ReplyMarkupEnum Alias for abstract ReplyMarkup 'Sub-Classes', used as constant-enum here
@@ -35,87 +175,62 @@ const (
 	ReplyMarkupInlineKeyboardType ReplyMarkupEnum = "replyMarkupInlineKeyboard"
 )
 
-// MessageContentEnum Alias for abstract MessageContent 'Sub-Classes', used as constant-enum here
-type MessageContentEnum string
+// CallStateEnum Alias for abstract CallState 'Sub-Classes', used as constant-enum here
+type CallStateEnum string
 
-// MessageContent enums
+// CallState enums
 const (
-	MessageTextType                 MessageContentEnum = "messageText"
-	MessageAnimationType            MessageContentEnum = "messageAnimation"
-	MessageAudioType                MessageContentEnum = "messageAudio"
-	MessageDocumentType             MessageContentEnum = "messageDocument"
-	MessagePhotoType                MessageContentEnum = "messagePhoto"
-	MessageExpiredPhotoType         MessageContentEnum = "messageExpiredPhoto"
-	MessageStickerType              MessageContentEnum = "messageSticker"
-	MessageVideoType                MessageContentEnum = "messageVideo"
-	MessageExpiredVideoType         MessageContentEnum = "messageExpiredVideo"
-	MessageVideoNoteType            MessageContentEnum = "messageVideoNote"
-	MessageVoiceNoteType            MessageContentEnum = "messageVoiceNote"
-	MessageLocationType             MessageContentEnum = "messageLocation"
-	MessageVenueType                MessageContentEnum = "messageVenue"
-	MessageContactType              MessageContentEnum = "messageContact"
-	MessageGameType                 MessageContentEnum = "messageGame"
-	MessageInvoiceType              MessageContentEnum = "messageInvoice"
-	MessageCallType                 MessageContentEnum = "messageCall"
-	MessageBasicGroupChatCreateType MessageContentEnum = "messageBasicGroupChatCreate"
-	MessageSupergroupChatCreateType MessageContentEnum = "messageSupergroupChatCreate"
-	MessageChatChangeTitleType      MessageContentEnum = "messageChatChangeTitle"
-	MessageChatChangePhotoType      MessageContentEnum = "messageChatChangePhoto"
-	MessageChatDeletePhotoType      MessageContentEnum = "messageChatDeletePhoto"
-	MessageChatAddMembersType       MessageContentEnum = "messageChatAddMembers"
-	MessageChatJoinByLinkType       MessageContentEnum = "messageChatJoinByLink"
-	MessageChatDeleteMemberType     MessageContentEnum = "messageChatDeleteMember"
-	MessageChatUpgradeToType        MessageContentEnum = "messageChatUpgradeTo"
-	MessageChatUpgradeFromType      MessageContentEnum = "messageChatUpgradeFrom"
-	MessagePinMessageType           MessageContentEnum = "messagePinMessage"
-	MessageScreenshotTakenType      MessageContentEnum = "messageScreenshotTaken"
-	MessageChatSetTTLType           MessageContentEnum = "messageChatSetTTL"
-	MessageCustomServiceActionType  MessageContentEnum = "messageCustomServiceAction"
-	MessageGameScoreType            MessageContentEnum = "messageGameScore"
-	MessagePaymentSuccessfulType    MessageContentEnum = "messagePaymentSuccessful"
-	MessagePaymentSuccessfulBotType MessageContentEnum = "messagePaymentSuccessfulBot"
-	MessageContactRegisteredType    MessageContentEnum = "messageContactRegistered"
-	MessageWebsiteConnectedType     MessageContentEnum = "messageWebsiteConnected"
-	MessageUnsupportedType          MessageContentEnum = "messageUnsupported"
+	CallStatePendingType        CallStateEnum = "callStatePending"
+	CallStateExchangingKeysType CallStateEnum = "callStateExchangingKeys"
+	CallStateReadyType          CallStateEnum = "callStateReady"
+	CallStateHangingUpType      CallStateEnum = "callStateHangingUp"
+	CallStateDiscardedType      CallStateEnum = "callStateDiscarded"
+	CallStateErrorType          CallStateEnum = "callStateError"
 )
 
-// UserPrivacySettingRuleEnum Alias for abstract UserPrivacySettingRule 'Sub-Classes', used as constant-enum here
-type UserPrivacySettingRuleEnum string
+// ChatEventActionEnum Alias for abstract ChatEventAction 'Sub-Classes', used as constant-enum here
+type ChatEventActionEnum string
 
-// UserPrivacySettingRule enums
+// ChatEventAction enums
 const (
-	UserPrivacySettingRuleAllowAllType         UserPrivacySettingRuleEnum = "userPrivacySettingRuleAllowAll"
-	UserPrivacySettingRuleAllowContactsType    UserPrivacySettingRuleEnum = "userPrivacySettingRuleAllowContacts"
-	UserPrivacySettingRuleAllowUsersType       UserPrivacySettingRuleEnum = "userPrivacySettingRuleAllowUsers"
-	UserPrivacySettingRuleRestrictAllType      UserPrivacySettingRuleEnum = "userPrivacySettingRuleRestrictAll"
-	UserPrivacySettingRuleRestrictContactsType UserPrivacySettingRuleEnum = "userPrivacySettingRuleRestrictContacts"
-	UserPrivacySettingRuleRestrictUsersType    UserPrivacySettingRuleEnum = "userPrivacySettingRuleRestrictUsers"
+	ChatEventMessageEditedType                ChatEventActionEnum = "chatEventMessageEdited"
+	ChatEventMessageDeletedType               ChatEventActionEnum = "chatEventMessageDeleted"
+	ChatEventMessagePinnedType                ChatEventActionEnum = "chatEventMessagePinned"
+	ChatEventMessageUnpinnedType              ChatEventActionEnum = "chatEventMessageUnpinned"
+	ChatEventMemberJoinedType                 ChatEventActionEnum = "chatEventMemberJoined"
+	ChatEventMemberLeftType                   ChatEventActionEnum = "chatEventMemberLeft"
+	ChatEventMemberInvitedType                ChatEventActionEnum = "chatEventMemberInvited"
+	ChatEventMemberPromotedType               ChatEventActionEnum = "chatEventMemberPromoted"
+	ChatEventMemberRestrictedType             ChatEventActionEnum = "chatEventMemberRestricted"
+	ChatEventTitleChangedType                 ChatEventActionEnum = "chatEventTitleChanged"
+	ChatEventDescriptionChangedType           ChatEventActionEnum = "chatEventDescriptionChanged"
+	ChatEventUsernameChangedType              ChatEventActionEnum = "chatEventUsernameChanged"
+	ChatEventPhotoChangedType                 ChatEventActionEnum = "chatEventPhotoChanged"
+	ChatEventInvitesToggledType               ChatEventActionEnum = "chatEventInvitesToggled"
+	ChatEventSignMessagesToggledType          ChatEventActionEnum = "chatEventSignMessagesToggled"
+	ChatEventStickerSetChangedType            ChatEventActionEnum = "chatEventStickerSetChanged"
+	ChatEventIsAllHistoryAvailableToggledType ChatEventActionEnum = "chatEventIsAllHistoryAvailableToggled"
 )
 
-// UserPrivacySettingEnum Alias for abstract UserPrivacySetting 'Sub-Classes', used as constant-enum here
-type UserPrivacySettingEnum string
+// MaskPointEnum Alias for abstract MaskPoint 'Sub-Classes', used as constant-enum here
+type MaskPointEnum string
 
-// UserPrivacySetting enums
+// MaskPoint enums
 const (
-	UserPrivacySettingShowStatusType       UserPrivacySettingEnum = "userPrivacySettingShowStatus"
-	UserPrivacySettingAllowChatInvitesType UserPrivacySettingEnum = "userPrivacySettingAllowChatInvites"
-	UserPrivacySettingAllowCallsType       UserPrivacySettingEnum = "userPrivacySettingAllowCalls"
+	MaskPointForeheadType MaskPointEnum = "maskPointForehead"
+	MaskPointEyesType     MaskPointEnum = "maskPointEyes"
+	MaskPointMouthType    MaskPointEnum = "maskPointMouth"
+	MaskPointChinType     MaskPointEnum = "maskPointChin"
 )
 
-// AuthorizationStateEnum Alias for abstract AuthorizationState 'Sub-Classes', used as constant-enum here
-type AuthorizationStateEnum string
+// SecretChatStateEnum Alias for abstract SecretChatState 'Sub-Classes', used as constant-enum here
+type SecretChatStateEnum string
 
-// AuthorizationState enums
+// SecretChatState enums
 const (
-	AuthorizationStateWaitTdlibParametersType AuthorizationStateEnum = "authorizationStateWaitTdlibParameters"
-	AuthorizationStateWaitEncryptionKeyType   AuthorizationStateEnum = "authorizationStateWaitEncryptionKey"
-	AuthorizationStateWaitPhoneNumberType     AuthorizationStateEnum = "authorizationStateWaitPhoneNumber"
-	AuthorizationStateWaitCodeType            AuthorizationStateEnum = "authorizationStateWaitCode"
-	AuthorizationStateWaitPasswordType        AuthorizationStateEnum = "authorizationStateWaitPassword"
-	AuthorizationStateReadyType               AuthorizationStateEnum = "authorizationStateReady"
-	AuthorizationStateLoggingOutType          AuthorizationStateEnum = "authorizationStateLoggingOut"
-	AuthorizationStateClosingType             AuthorizationStateEnum = "authorizationStateClosing"
-	AuthorizationStateClosedType              AuthorizationStateEnum = "authorizationStateClosed"
+	SecretChatStatePendingType SecretChatStateEnum = "secretChatStatePending"
+	SecretChatStateReadyType   SecretChatStateEnum = "secretChatStateReady"
+	SecretChatStateClosedType  SecretChatStateEnum = "secretChatStateClosed"
 )
 
 // InputCredentialsEnum Alias for abstract InputCredentials 'Sub-Classes', used as constant-enum here
@@ -150,6 +265,47 @@ const (
 	TextEntityTypePhoneNumberType  TextEntityTypeEnum = "textEntityTypePhoneNumber"
 )
 
+// UserPrivacySettingEnum Alias for abstract UserPrivacySetting 'Sub-Classes', used as constant-enum here
+type UserPrivacySettingEnum string
+
+// UserPrivacySetting enums
+const (
+	UserPrivacySettingShowStatusType       UserPrivacySettingEnum = "userPrivacySettingShowStatus"
+	UserPrivacySettingAllowChatInvitesType UserPrivacySettingEnum = "userPrivacySettingAllowChatInvites"
+	UserPrivacySettingAllowCallsType       UserPrivacySettingEnum = "userPrivacySettingAllowCalls"
+)
+
+// NetworkStatisticsEntryEnum Alias for abstract NetworkStatisticsEntry 'Sub-Classes', used as constant-enum here
+type NetworkStatisticsEntryEnum string
+
+// NetworkStatisticsEntry enums
+const (
+	NetworkStatisticsEntryFileType NetworkStatisticsEntryEnum = "networkStatisticsEntryFile"
+	NetworkStatisticsEntryCallType NetworkStatisticsEntryEnum = "networkStatisticsEntryCall"
+)
+
+// TMeURLTypeEnum Alias for abstract TMeURLType 'Sub-Classes', used as constant-enum here
+type TMeURLTypeEnum string
+
+// TMeURLType enums
+const (
+	TMeURLTypeUserType       TMeURLTypeEnum = "tMeURLTypeUser"
+	TMeURLTypeSupergroupType TMeURLTypeEnum = "tMeURLTypeSupergroup"
+	TMeURLTypeChatInviteType TMeURLTypeEnum = "tMeURLTypeChatInvite"
+	TMeURLTypeStickerSetType TMeURLTypeEnum = "tMeURLTypeStickerSet"
+)
+
+// NotificationSettingsScopeEnum Alias for abstract NotificationSettingsScope 'Sub-Classes', used as constant-enum here
+type NotificationSettingsScopeEnum string
+
+// NotificationSettingsScope enums
+const (
+	NotificationSettingsScopeChatType            NotificationSettingsScopeEnum = "notificationSettingsScopeChat"
+	NotificationSettingsScopePrivateChatsType    NotificationSettingsScopeEnum = "notificationSettingsScopePrivateChats"
+	NotificationSettingsScopeBasicGroupChatsType NotificationSettingsScopeEnum = "notificationSettingsScopeBasicGroupChats"
+	NotificationSettingsScopeAllChatsType        NotificationSettingsScopeEnum = "notificationSettingsScopeAllChats"
+)
+
 // InputMessageContentEnum Alias for abstract InputMessageContent 'Sub-Classes', used as constant-enum here
 type InputMessageContentEnum string
 
@@ -172,6 +328,46 @@ const (
 	InputMessageForwardedType InputMessageContentEnum = "inputMessageForwarded"
 )
 
+// ChatActionEnum Alias for abstract ChatAction 'Sub-Classes', used as constant-enum here
+type ChatActionEnum string
+
+// ChatAction enums
+const (
+	ChatActionTypingType             ChatActionEnum = "chatActionTyping"
+	ChatActionRecordingVideoType     ChatActionEnum = "chatActionRecordingVideo"
+	ChatActionUploadingVideoType     ChatActionEnum = "chatActionUploadingVideo"
+	ChatActionRecordingVoiceNoteType ChatActionEnum = "chatActionRecordingVoiceNote"
+	ChatActionUploadingVoiceNoteType ChatActionEnum = "chatActionUploadingVoiceNote"
+	ChatActionUploadingPhotoType     ChatActionEnum = "chatActionUploadingPhoto"
+	ChatActionUploadingDocumentType  ChatActionEnum = "chatActionUploadingDocument"
+	ChatActionChoosingLocationType   ChatActionEnum = "chatActionChoosingLocation"
+	ChatActionChoosingContactType    ChatActionEnum = "chatActionChoosingContact"
+	ChatActionStartPlayingGameType   ChatActionEnum = "chatActionStartPlayingGame"
+	ChatActionRecordingVideoNoteType ChatActionEnum = "chatActionRecordingVideoNote"
+	ChatActionUploadingVideoNoteType ChatActionEnum = "chatActionUploadingVideoNote"
+	ChatActionCancelType             ChatActionEnum = "chatActionCancel"
+)
+
+// InputInlineQueryResultEnum Alias for abstract InputInlineQueryResult 'Sub-Classes', used as constant-enum here
+type InputInlineQueryResultEnum string
+
+// InputInlineQueryResult enums
+const (
+	InputInlineQueryResultAnimatedGifType   InputInlineQueryResultEnum = "inputInlineQueryResultAnimatedGif"
+	InputInlineQueryResultAnimatedMpeg4Type InputInlineQueryResultEnum = "inputInlineQueryResultAnimatedMpeg4"
+	InputInlineQueryResultArticleType       InputInlineQueryResultEnum = "inputInlineQueryResultArticle"
+	InputInlineQueryResultAudioType         InputInlineQueryResultEnum = "inputInlineQueryResultAudio"
+	InputInlineQueryResultContactType       InputInlineQueryResultEnum = "inputInlineQueryResultContact"
+	InputInlineQueryResultDocumentType      InputInlineQueryResultEnum = "inputInlineQueryResultDocument"
+	InputInlineQueryResultGameType          InputInlineQueryResultEnum = "inputInlineQueryResultGame"
+	InputInlineQueryResultLocationType      InputInlineQueryResultEnum = "inputInlineQueryResultLocation"
+	InputInlineQueryResultPhotoType         InputInlineQueryResultEnum = "inputInlineQueryResultPhoto"
+	InputInlineQueryResultStickerType       InputInlineQueryResultEnum = "inputInlineQueryResultSticker"
+	InputInlineQueryResultVenueType         InputInlineQueryResultEnum = "inputInlineQueryResultVenue"
+	InputInlineQueryResultVideoType         InputInlineQueryResultEnum = "inputInlineQueryResultVideo"
+	InputInlineQueryResultVoiceNoteType     InputInlineQueryResultEnum = "inputInlineQueryResultVoiceNote"
+)
+
 // OptionValueEnum Alias for abstract OptionValue 'Sub-Classes', used as constant-enum here
 type OptionValueEnum string
 
@@ -183,6 +379,19 @@ const (
 	OptionValueStringType  OptionValueEnum = "optionValueString"
 )
 
+// UserPrivacySettingRuleEnum Alias for abstract UserPrivacySettingRule 'Sub-Classes', used as constant-enum here
+type UserPrivacySettingRuleEnum string
+
+// UserPrivacySettingRule enums
+const (
+	UserPrivacySettingRuleAllowAllType         UserPrivacySettingRuleEnum = "userPrivacySettingRuleAllowAll"
+	UserPrivacySettingRuleAllowContactsType    UserPrivacySettingRuleEnum = "userPrivacySettingRuleAllowContacts"
+	UserPrivacySettingRuleAllowUsersType       UserPrivacySettingRuleEnum = "userPrivacySettingRuleAllowUsers"
+	UserPrivacySettingRuleRestrictAllType      UserPrivacySettingRuleEnum = "userPrivacySettingRuleRestrictAll"
+	UserPrivacySettingRuleRestrictContactsType UserPrivacySettingRuleEnum = "userPrivacySettingRuleRestrictContacts"
+	UserPrivacySettingRuleRestrictUsersType    UserPrivacySettingRuleEnum = "userPrivacySettingRuleRestrictUsers"
+)
+
 // ProxyEnum Alias for abstract Proxy 'Sub-Classes', used as constant-enum here
 type ProxyEnum string
 
@@ -190,6 +399,95 @@ type ProxyEnum string
 const (
 	ProxyEmptyType  ProxyEnum = "proxyEmpty"
 	ProxySocks5Type ProxyEnum = "proxySocks5"
+)
+
+// AuthorizationStateEnum Alias for abstract AuthorizationState 'Sub-Classes', used as constant-enum here
+type AuthorizationStateEnum string
+
+// AuthorizationState enums
+const (
+	AuthorizationStateWaitTdlibParametersType AuthorizationStateEnum = "authorizationStateWaitTdlibParameters"
+	AuthorizationStateWaitEncryptionKeyType   AuthorizationStateEnum = "authorizationStateWaitEncryptionKey"
+	AuthorizationStateWaitPhoneNumberType     AuthorizationStateEnum = "authorizationStateWaitPhoneNumber"
+	AuthorizationStateWaitCodeType            AuthorizationStateEnum = "authorizationStateWaitCode"
+	AuthorizationStateWaitPasswordType        AuthorizationStateEnum = "authorizationStateWaitPassword"
+	AuthorizationStateReadyType               AuthorizationStateEnum = "authorizationStateReady"
+	AuthorizationStateLoggingOutType          AuthorizationStateEnum = "authorizationStateLoggingOut"
+	AuthorizationStateClosingType             AuthorizationStateEnum = "authorizationStateClosing"
+	AuthorizationStateClosedType              AuthorizationStateEnum = "authorizationStateClosed"
+)
+
+// MessageSendingStateEnum Alias for abstract MessageSendingState 'Sub-Classes', used as constant-enum here
+type MessageSendingStateEnum string
+
+// MessageSendingState enums
+const (
+	MessageSendingStatePendingType MessageSendingStateEnum = "messageSendingStatePending"
+	MessageSendingStateFailedType  MessageSendingStateEnum = "messageSendingStateFailed"
+)
+
+// SearchMessagesFilterEnum Alias for abstract SearchMessagesFilter 'Sub-Classes', used as constant-enum here
+type SearchMessagesFilterEnum string
+
+// SearchMessagesFilter enums
+const (
+	SearchMessagesFilterEmptyType             SearchMessagesFilterEnum = "searchMessagesFilterEmpty"
+	SearchMessagesFilterAnimationType         SearchMessagesFilterEnum = "searchMessagesFilterAnimation"
+	SearchMessagesFilterAudioType             SearchMessagesFilterEnum = "searchMessagesFilterAudio"
+	SearchMessagesFilterDocumentType          SearchMessagesFilterEnum = "searchMessagesFilterDocument"
+	SearchMessagesFilterPhotoType             SearchMessagesFilterEnum = "searchMessagesFilterPhoto"
+	SearchMessagesFilterVideoType             SearchMessagesFilterEnum = "searchMessagesFilterVideo"
+	SearchMessagesFilterVoiceNoteType         SearchMessagesFilterEnum = "searchMessagesFilterVoiceNote"
+	SearchMessagesFilterPhotoAndVideoType     SearchMessagesFilterEnum = "searchMessagesFilterPhotoAndVideo"
+	SearchMessagesFilterURLType               SearchMessagesFilterEnum = "searchMessagesFilterURL"
+	SearchMessagesFilterChatPhotoType         SearchMessagesFilterEnum = "searchMessagesFilterChatPhoto"
+	SearchMessagesFilterCallType              SearchMessagesFilterEnum = "searchMessagesFilterCall"
+	SearchMessagesFilterMissedCallType        SearchMessagesFilterEnum = "searchMessagesFilterMissedCall"
+	SearchMessagesFilterVideoNoteType         SearchMessagesFilterEnum = "searchMessagesFilterVideoNote"
+	SearchMessagesFilterVoiceAndVideoNoteType SearchMessagesFilterEnum = "searchMessagesFilterVoiceAndVideoNote"
+	SearchMessagesFilterMentionType           SearchMessagesFilterEnum = "searchMessagesFilterMention"
+	SearchMessagesFilterUnreadMentionType     SearchMessagesFilterEnum = "searchMessagesFilterUnreadMention"
+)
+
+// CallDiscardReasonEnum Alias for abstract CallDiscardReason 'Sub-Classes', used as constant-enum here
+type CallDiscardReasonEnum string
+
+// CallDiscardReason enums
+const (
+	CallDiscardReasonEmptyType        CallDiscardReasonEnum = "callDiscardReasonEmpty"
+	CallDiscardReasonMissedType       CallDiscardReasonEnum = "callDiscardReasonMissed"
+	CallDiscardReasonDeclinedType     CallDiscardReasonEnum = "callDiscardReasonDeclined"
+	CallDiscardReasonDisconnectedType CallDiscardReasonEnum = "callDiscardReasonDisconnected"
+	CallDiscardReasonHungUpType       CallDiscardReasonEnum = "callDiscardReasonHungUp"
+)
+
+// DeviceTokenEnum Alias for abstract DeviceToken 'Sub-Classes', used as constant-enum here
+type DeviceTokenEnum string
+
+// DeviceToken enums
+const (
+	DeviceTokenGoogleCloudMessagingType DeviceTokenEnum = "deviceTokenGoogleCloudMessaging"
+	DeviceTokenApplePushType            DeviceTokenEnum = "deviceTokenApplePush"
+	DeviceTokenApplePushVoIPType        DeviceTokenEnum = "deviceTokenApplePushVoIP"
+	DeviceTokenWindowsPushType          DeviceTokenEnum = "deviceTokenWindowsPush"
+	DeviceTokenMicrosoftPushType        DeviceTokenEnum = "deviceTokenMicrosoftPush"
+	DeviceTokenMicrosoftPushVoIPType    DeviceTokenEnum = "deviceTokenMicrosoftPushVoIP"
+	DeviceTokenWebPushType              DeviceTokenEnum = "deviceTokenWebPush"
+	DeviceTokenSimplePushType           DeviceTokenEnum = "deviceTokenSimplePush"
+	DeviceTokenUbuntuPushType           DeviceTokenEnum = "deviceTokenUbuntuPush"
+	DeviceTokenBlackBerryPushType       DeviceTokenEnum = "deviceTokenBlackBerryPush"
+	DeviceTokenTizenPushType            DeviceTokenEnum = "deviceTokenTizenPush"
+)
+
+// ChatReportReasonEnum Alias for abstract ChatReportReason 'Sub-Classes', used as constant-enum here
+type ChatReportReasonEnum string
+
+// ChatReportReason enums
+const (
+	ChatReportReasonSpamType        ChatReportReasonEnum = "chatReportReasonSpam"
+	ChatReportReasonViolenceType    ChatReportReasonEnum = "chatReportReasonViolence"
+	ChatReportReasonPornographyType ChatReportReasonEnum = "chatReportReasonPornography"
+	ChatReportReasonCustomType      ChatReportReasonEnum = "chatReportReasonCustom"
 )
 
 // UpdateEnum Alias for abstract Update 'Sub-Classes', used as constant-enum here
@@ -253,15 +551,25 @@ const (
 	UpdateNewCustomQueryType          UpdateEnum = "updateNewCustomQuery"
 )
 
-// ChatTypeEnum Alias for abstract ChatType 'Sub-Classes', used as constant-enum here
-type ChatTypeEnum string
+// LinkStateEnum Alias for abstract LinkState 'Sub-Classes', used as constant-enum here
+type LinkStateEnum string
 
-// ChatType enums
+// LinkState enums
 const (
-	ChatTypePrivateType    ChatTypeEnum = "chatTypePrivate"
-	ChatTypeBasicGroupType ChatTypeEnum = "chatTypeBasicGroup"
-	ChatTypeSupergroupType ChatTypeEnum = "chatTypeSupergroup"
-	ChatTypeSecretType     ChatTypeEnum = "chatTypeSecret"
+	LinkStateNoneType             LinkStateEnum = "linkStateNone"
+	LinkStateKnowsPhoneNumberType LinkStateEnum = "linkStateKnowsPhoneNumber"
+	LinkStateIsContactType        LinkStateEnum = "linkStateIsContact"
+)
+
+// UserTypeEnum Alias for abstract UserType 'Sub-Classes', used as constant-enum here
+type UserTypeEnum string
+
+// UserType enums
+const (
+	UserTypeRegularType UserTypeEnum = "userTypeRegular"
+	UserTypeDeletedType UserTypeEnum = "userTypeDeleted"
+	UserTypeBotType     UserTypeEnum = "userTypeBot"
+	UserTypeUnknownType UserTypeEnum = "userTypeUnknown"
 )
 
 // SupergroupMembersFilterEnum Alias for abstract SupergroupMembersFilter 'Sub-Classes', used as constant-enum here
@@ -277,14 +585,14 @@ const (
 	SupergroupMembersFilterBotsType           SupergroupMembersFilterEnum = "supergroupMembersFilterBots"
 )
 
-// SecretChatStateEnum Alias for abstract SecretChatState 'Sub-Classes', used as constant-enum here
-type SecretChatStateEnum string
+// KeyboardButtonTypeEnum Alias for abstract KeyboardButtonType 'Sub-Classes', used as constant-enum here
+type KeyboardButtonTypeEnum string
 
-// SecretChatState enums
+// KeyboardButtonType enums
 const (
-	SecretChatStatePendingType SecretChatStateEnum = "secretChatStatePending"
-	SecretChatStateReadyType   SecretChatStateEnum = "secretChatStateReady"
-	SecretChatStateClosedType  SecretChatStateEnum = "secretChatStateClosed"
+	KeyboardButtonTypeTextType               KeyboardButtonTypeEnum = "keyboardButtonTypeText"
+	KeyboardButtonTypeRequestPhoneNumberType KeyboardButtonTypeEnum = "keyboardButtonTypeRequestPhoneNumber"
+	KeyboardButtonTypeRequestLocationType    KeyboardButtonTypeEnum = "keyboardButtonTypeRequestLocation"
 )
 
 // InlineKeyboardButtonTypeEnum Alias for abstract InlineKeyboardButtonType 'Sub-Classes', used as constant-enum here
@@ -299,198 +607,48 @@ const (
 	InlineKeyboardButtonTypeBuyType          InlineKeyboardButtonTypeEnum = "inlineKeyboardButtonTypeBuy"
 )
 
-// ChatActionEnum Alias for abstract ChatAction 'Sub-Classes', used as constant-enum here
-type ChatActionEnum string
+// MessageContentEnum Alias for abstract MessageContent 'Sub-Classes', used as constant-enum here
+type MessageContentEnum string
 
-// ChatAction enums
+// MessageContent enums
 const (
-	ChatActionTypingType             ChatActionEnum = "chatActionTyping"
-	ChatActionRecordingVideoType     ChatActionEnum = "chatActionRecordingVideo"
-	ChatActionUploadingVideoType     ChatActionEnum = "chatActionUploadingVideo"
-	ChatActionRecordingVoiceNoteType ChatActionEnum = "chatActionRecordingVoiceNote"
-	ChatActionUploadingVoiceNoteType ChatActionEnum = "chatActionUploadingVoiceNote"
-	ChatActionUploadingPhotoType     ChatActionEnum = "chatActionUploadingPhoto"
-	ChatActionUploadingDocumentType  ChatActionEnum = "chatActionUploadingDocument"
-	ChatActionChoosingLocationType   ChatActionEnum = "chatActionChoosingLocation"
-	ChatActionChoosingContactType    ChatActionEnum = "chatActionChoosingContact"
-	ChatActionStartPlayingGameType   ChatActionEnum = "chatActionStartPlayingGame"
-	ChatActionRecordingVideoNoteType ChatActionEnum = "chatActionRecordingVideoNote"
-	ChatActionUploadingVideoNoteType ChatActionEnum = "chatActionUploadingVideoNote"
-	ChatActionCancelType             ChatActionEnum = "chatActionCancel"
-)
-
-// UserStatusEnum Alias for abstract UserStatus 'Sub-Classes', used as constant-enum here
-type UserStatusEnum string
-
-// UserStatus enums
-const (
-	UserStatusEmptyType     UserStatusEnum = "userStatusEmpty"
-	UserStatusOnlineType    UserStatusEnum = "userStatusOnline"
-	UserStatusOfflineType   UserStatusEnum = "userStatusOffline"
-	UserStatusRecentlyType  UserStatusEnum = "userStatusRecently"
-	UserStatusLastWeekType  UserStatusEnum = "userStatusLastWeek"
-	UserStatusLastMonthType UserStatusEnum = "userStatusLastMonth"
-)
-
-// DeviceTokenEnum Alias for abstract DeviceToken 'Sub-Classes', used as constant-enum here
-type DeviceTokenEnum string
-
-// DeviceToken enums
-const (
-	DeviceTokenGoogleCloudMessagingType DeviceTokenEnum = "deviceTokenGoogleCloudMessaging"
-	DeviceTokenApplePushType            DeviceTokenEnum = "deviceTokenApplePush"
-	DeviceTokenApplePushVoIPType        DeviceTokenEnum = "deviceTokenApplePushVoIP"
-	DeviceTokenWindowsPushType          DeviceTokenEnum = "deviceTokenWindowsPush"
-	DeviceTokenMicrosoftPushType        DeviceTokenEnum = "deviceTokenMicrosoftPush"
-	DeviceTokenMicrosoftPushVoIPType    DeviceTokenEnum = "deviceTokenMicrosoftPushVoIP"
-	DeviceTokenWebPushType              DeviceTokenEnum = "deviceTokenWebPush"
-	DeviceTokenSimplePushType           DeviceTokenEnum = "deviceTokenSimplePush"
-	DeviceTokenUbuntuPushType           DeviceTokenEnum = "deviceTokenUbuntuPush"
-	DeviceTokenBlackBerryPushType       DeviceTokenEnum = "deviceTokenBlackBerryPush"
-	DeviceTokenTizenPushType            DeviceTokenEnum = "deviceTokenTizenPush"
-)
-
-// LinkStateEnum Alias for abstract LinkState 'Sub-Classes', used as constant-enum here
-type LinkStateEnum string
-
-// LinkState enums
-const (
-	LinkStateNoneType             LinkStateEnum = "linkStateNone"
-	LinkStateKnowsPhoneNumberType LinkStateEnum = "linkStateKnowsPhoneNumber"
-	LinkStateIsContactType        LinkStateEnum = "linkStateIsContact"
-)
-
-// MessageForwardInfoEnum Alias for abstract MessageForwardInfo 'Sub-Classes', used as constant-enum here
-type MessageForwardInfoEnum string
-
-// MessageForwardInfo enums
-const (
-	MessageForwardedFromUserType MessageForwardInfoEnum = "messageForwardedFromUser"
-	MessageForwardedPostType     MessageForwardInfoEnum = "messageForwardedPost"
-)
-
-// NotificationSettingsScopeEnum Alias for abstract NotificationSettingsScope 'Sub-Classes', used as constant-enum here
-type NotificationSettingsScopeEnum string
-
-// NotificationSettingsScope enums
-const (
-	NotificationSettingsScopeChatType            NotificationSettingsScopeEnum = "notificationSettingsScopeChat"
-	NotificationSettingsScopePrivateChatsType    NotificationSettingsScopeEnum = "notificationSettingsScopePrivateChats"
-	NotificationSettingsScopeBasicGroupChatsType NotificationSettingsScopeEnum = "notificationSettingsScopeBasicGroupChats"
-	NotificationSettingsScopeAllChatsType        NotificationSettingsScopeEnum = "notificationSettingsScopeAllChats"
-)
-
-// CallDiscardReasonEnum Alias for abstract CallDiscardReason 'Sub-Classes', used as constant-enum here
-type CallDiscardReasonEnum string
-
-// CallDiscardReason enums
-const (
-	CallDiscardReasonEmptyType        CallDiscardReasonEnum = "callDiscardReasonEmpty"
-	CallDiscardReasonMissedType       CallDiscardReasonEnum = "callDiscardReasonMissed"
-	CallDiscardReasonDeclinedType     CallDiscardReasonEnum = "callDiscardReasonDeclined"
-	CallDiscardReasonDisconnectedType CallDiscardReasonEnum = "callDiscardReasonDisconnected"
-	CallDiscardReasonHungUpType       CallDiscardReasonEnum = "callDiscardReasonHungUp"
-)
-
-// InputInlineQueryResultEnum Alias for abstract InputInlineQueryResult 'Sub-Classes', used as constant-enum here
-type InputInlineQueryResultEnum string
-
-// InputInlineQueryResult enums
-const (
-	InputInlineQueryResultAnimatedGifType   InputInlineQueryResultEnum = "inputInlineQueryResultAnimatedGif"
-	InputInlineQueryResultAnimatedMpeg4Type InputInlineQueryResultEnum = "inputInlineQueryResultAnimatedMpeg4"
-	InputInlineQueryResultArticleType       InputInlineQueryResultEnum = "inputInlineQueryResultArticle"
-	InputInlineQueryResultAudioType         InputInlineQueryResultEnum = "inputInlineQueryResultAudio"
-	InputInlineQueryResultContactType       InputInlineQueryResultEnum = "inputInlineQueryResultContact"
-	InputInlineQueryResultDocumentType      InputInlineQueryResultEnum = "inputInlineQueryResultDocument"
-	InputInlineQueryResultGameType          InputInlineQueryResultEnum = "inputInlineQueryResultGame"
-	InputInlineQueryResultLocationType      InputInlineQueryResultEnum = "inputInlineQueryResultLocation"
-	InputInlineQueryResultPhotoType         InputInlineQueryResultEnum = "inputInlineQueryResultPhoto"
-	InputInlineQueryResultStickerType       InputInlineQueryResultEnum = "inputInlineQueryResultSticker"
-	InputInlineQueryResultVenueType         InputInlineQueryResultEnum = "inputInlineQueryResultVenue"
-	InputInlineQueryResultVideoType         InputInlineQueryResultEnum = "inputInlineQueryResultVideo"
-	InputInlineQueryResultVoiceNoteType     InputInlineQueryResultEnum = "inputInlineQueryResultVoiceNote"
-)
-
-// NetworkStatisticsEntryEnum Alias for abstract NetworkStatisticsEntry 'Sub-Classes', used as constant-enum here
-type NetworkStatisticsEntryEnum string
-
-// NetworkStatisticsEntry enums
-const (
-	NetworkStatisticsEntryFileType NetworkStatisticsEntryEnum = "networkStatisticsEntryFile"
-	NetworkStatisticsEntryCallType NetworkStatisticsEntryEnum = "networkStatisticsEntryCall"
-)
-
-// TMeURLTypeEnum Alias for abstract TMeURLType 'Sub-Classes', used as constant-enum here
-type TMeURLTypeEnum string
-
-// TMeURLType enums
-const (
-	TMeURLTypeUserType       TMeURLTypeEnum = "tMeURLTypeUser"
-	TMeURLTypeSupergroupType TMeURLTypeEnum = "tMeURLTypeSupergroup"
-	TMeURLTypeChatInviteType TMeURLTypeEnum = "tMeURLTypeChatInvite"
-	TMeURLTypeStickerSetType TMeURLTypeEnum = "tMeURLTypeStickerSet"
-)
-
-// TextParseModeEnum Alias for abstract TextParseMode 'Sub-Classes', used as constant-enum here
-type TextParseModeEnum string
-
-// TextParseMode enums
-const (
-	TextParseModeMarkdownType TextParseModeEnum = "textParseModeMarkdown"
-	TextParseModeHTMLType     TextParseModeEnum = "textParseModeHTML"
-)
-
-// ChatMemberStatusEnum Alias for abstract ChatMemberStatus 'Sub-Classes', used as constant-enum here
-type ChatMemberStatusEnum string
-
-// ChatMemberStatus enums
-const (
-	ChatMemberStatusCreatorType       ChatMemberStatusEnum = "chatMemberStatusCreator"
-	ChatMemberStatusAdministratorType ChatMemberStatusEnum = "chatMemberStatusAdministrator"
-	ChatMemberStatusMemberType        ChatMemberStatusEnum = "chatMemberStatusMember"
-	ChatMemberStatusRestrictedType    ChatMemberStatusEnum = "chatMemberStatusRestricted"
-	ChatMemberStatusLeftType          ChatMemberStatusEnum = "chatMemberStatusLeft"
-	ChatMemberStatusBannedType        ChatMemberStatusEnum = "chatMemberStatusBanned"
-)
-
-// PageBlockEnum Alias for abstract PageBlock 'Sub-Classes', used as constant-enum here
-type PageBlockEnum string
-
-// PageBlock enums
-const (
-	PageBlockTitleType        PageBlockEnum = "pageBlockTitle"
-	PageBlockSubtitleType     PageBlockEnum = "pageBlockSubtitle"
-	PageBlockAuthorDateType   PageBlockEnum = "pageBlockAuthorDate"
-	PageBlockHeaderType       PageBlockEnum = "pageBlockHeader"
-	PageBlockSubheaderType    PageBlockEnum = "pageBlockSubheader"
-	PageBlockParagraphType    PageBlockEnum = "pageBlockParagraph"
-	PageBlockPreformattedType PageBlockEnum = "pageBlockPreformatted"
-	PageBlockFooterType       PageBlockEnum = "pageBlockFooter"
-	PageBlockDividerType      PageBlockEnum = "pageBlockDivider"
-	PageBlockAnchorType       PageBlockEnum = "pageBlockAnchor"
-	PageBlockListType         PageBlockEnum = "pageBlockList"
-	PageBlockBlockQuoteType   PageBlockEnum = "pageBlockBlockQuote"
-	PageBlockPullQuoteType    PageBlockEnum = "pageBlockPullQuote"
-	PageBlockAnimationType    PageBlockEnum = "pageBlockAnimation"
-	PageBlockAudioType        PageBlockEnum = "pageBlockAudio"
-	PageBlockPhotoType        PageBlockEnum = "pageBlockPhoto"
-	PageBlockVideoType        PageBlockEnum = "pageBlockVideo"
-	PageBlockCoverType        PageBlockEnum = "pageBlockCover"
-	PageBlockEmbeddedType     PageBlockEnum = "pageBlockEmbedded"
-	PageBlockEmbeddedPostType PageBlockEnum = "pageBlockEmbeddedPost"
-	PageBlockCollageType      PageBlockEnum = "pageBlockCollage"
-	PageBlockSlideshowType    PageBlockEnum = "pageBlockSlideshow"
-	PageBlockChatLinkType     PageBlockEnum = "pageBlockChatLink"
-)
-
-// CallbackQueryPayloadEnum Alias for abstract CallbackQueryPayload 'Sub-Classes', used as constant-enum here
-type CallbackQueryPayloadEnum string
-
-// CallbackQueryPayload enums
-const (
-	CallbackQueryPayloadDataType CallbackQueryPayloadEnum = "callbackQueryPayloadData"
-	CallbackQueryPayloadGameType CallbackQueryPayloadEnum = "callbackQueryPayloadGame"
+	MessageTextType                 MessageContentEnum = "messageText"
+	MessageAnimationType            MessageContentEnum = "messageAnimation"
+	MessageAudioType                MessageContentEnum = "messageAudio"
+	MessageDocumentType             MessageContentEnum = "messageDocument"
+	MessagePhotoType                MessageContentEnum = "messagePhoto"
+	MessageExpiredPhotoType         MessageContentEnum = "messageExpiredPhoto"
+	MessageStickerType              MessageContentEnum = "messageSticker"
+	MessageVideoType                MessageContentEnum = "messageVideo"
+	MessageExpiredVideoType         MessageContentEnum = "messageExpiredVideo"
+	MessageVideoNoteType            MessageContentEnum = "messageVideoNote"
+	MessageVoiceNoteType            MessageContentEnum = "messageVoiceNote"
+	MessageLocationType             MessageContentEnum = "messageLocation"
+	MessageVenueType                MessageContentEnum = "messageVenue"
+	MessageContactType              MessageContentEnum = "messageContact"
+	MessageGameType                 MessageContentEnum = "messageGame"
+	MessageInvoiceType              MessageContentEnum = "messageInvoice"
+	MessageCallType                 MessageContentEnum = "messageCall"
+	MessageBasicGroupChatCreateType MessageContentEnum = "messageBasicGroupChatCreate"
+	MessageSupergroupChatCreateType MessageContentEnum = "messageSupergroupChatCreate"
+	MessageChatChangeTitleType      MessageContentEnum = "messageChatChangeTitle"
+	MessageChatChangePhotoType      MessageContentEnum = "messageChatChangePhoto"
+	MessageChatDeletePhotoType      MessageContentEnum = "messageChatDeletePhoto"
+	MessageChatAddMembersType       MessageContentEnum = "messageChatAddMembers"
+	MessageChatJoinByLinkType       MessageContentEnum = "messageChatJoinByLink"
+	MessageChatDeleteMemberType     MessageContentEnum = "messageChatDeleteMember"
+	MessageChatUpgradeToType        MessageContentEnum = "messageChatUpgradeTo"
+	MessageChatUpgradeFromType      MessageContentEnum = "messageChatUpgradeFrom"
+	MessagePinMessageType           MessageContentEnum = "messagePinMessage"
+	MessageScreenshotTakenType      MessageContentEnum = "messageScreenshotTaken"
+	MessageChatSetTTLType           MessageContentEnum = "messageChatSetTTL"
+	MessageCustomServiceActionType  MessageContentEnum = "messageCustomServiceAction"
+	MessageGameScoreType            MessageContentEnum = "messageGameScore"
+	MessagePaymentSuccessfulType    MessageContentEnum = "messagePaymentSuccessful"
+	MessagePaymentSuccessfulBotType MessageContentEnum = "messagePaymentSuccessfulBot"
+	MessageContactRegisteredType    MessageContentEnum = "messageContactRegistered"
+	MessageWebsiteConnectedType     MessageContentEnum = "messageWebsiteConnected"
+	MessageUnsupportedType          MessageContentEnum = "messageUnsupported"
 )
 
 // AuthenticationCodeTypeEnum Alias for abstract AuthenticationCodeType 'Sub-Classes', used as constant-enum here
@@ -502,32 +660,6 @@ const (
 	AuthenticationCodeTypeSmsType             AuthenticationCodeTypeEnum = "authenticationCodeTypeSms"
 	AuthenticationCodeTypeCallType            AuthenticationCodeTypeEnum = "authenticationCodeTypeCall"
 	AuthenticationCodeTypeFlashCallType       AuthenticationCodeTypeEnum = "authenticationCodeTypeFlashCall"
-)
-
-// KeyboardButtonTypeEnum Alias for abstract KeyboardButtonType 'Sub-Classes', used as constant-enum here
-type KeyboardButtonTypeEnum string
-
-// KeyboardButtonType enums
-const (
-	KeyboardButtonTypeTextType               KeyboardButtonTypeEnum = "keyboardButtonTypeText"
-	KeyboardButtonTypeRequestPhoneNumberType KeyboardButtonTypeEnum = "keyboardButtonTypeRequestPhoneNumber"
-	KeyboardButtonTypeRequestLocationType    KeyboardButtonTypeEnum = "keyboardButtonTypeRequestLocation"
-)
-
-// RichTextEnum Alias for abstract RichText 'Sub-Classes', used as constant-enum here
-type RichTextEnum string
-
-// RichText enums
-const (
-	RichTextPlainType         RichTextEnum = "richTextPlain"
-	RichTextBoldType          RichTextEnum = "richTextBold"
-	RichTextItalicType        RichTextEnum = "richTextItalic"
-	RichTextUnderlineType     RichTextEnum = "richTextUnderline"
-	RichTextStrikethroughType RichTextEnum = "richTextStrikethrough"
-	RichTextFixedType         RichTextEnum = "richTextFixed"
-	RichTextURLType           RichTextEnum = "richTextURL"
-	RichTextEmailAddressType  RichTextEnum = "richTextEmailAddress"
-	RichTextsType             RichTextEnum = "richTexts"
 )
 
 // InlineQueryResultEnum Alias for abstract InlineQueryResult 'Sub-Classes', used as constant-enum here
@@ -549,133 +681,13 @@ const (
 	InlineQueryResultVoiceNoteType InlineQueryResultEnum = "inlineQueryResultVoiceNote"
 )
 
-// ChatEventActionEnum Alias for abstract ChatEventAction 'Sub-Classes', used as constant-enum here
-type ChatEventActionEnum string
+// CallbackQueryPayloadEnum Alias for abstract CallbackQueryPayload 'Sub-Classes', used as constant-enum here
+type CallbackQueryPayloadEnum string
 
-// ChatEventAction enums
+// CallbackQueryPayload enums
 const (
-	ChatEventMessageEditedType                ChatEventActionEnum = "chatEventMessageEdited"
-	ChatEventMessageDeletedType               ChatEventActionEnum = "chatEventMessageDeleted"
-	ChatEventMessagePinnedType                ChatEventActionEnum = "chatEventMessagePinned"
-	ChatEventMessageUnpinnedType              ChatEventActionEnum = "chatEventMessageUnpinned"
-	ChatEventMemberJoinedType                 ChatEventActionEnum = "chatEventMemberJoined"
-	ChatEventMemberLeftType                   ChatEventActionEnum = "chatEventMemberLeft"
-	ChatEventMemberInvitedType                ChatEventActionEnum = "chatEventMemberInvited"
-	ChatEventMemberPromotedType               ChatEventActionEnum = "chatEventMemberPromoted"
-	ChatEventMemberRestrictedType             ChatEventActionEnum = "chatEventMemberRestricted"
-	ChatEventTitleChangedType                 ChatEventActionEnum = "chatEventTitleChanged"
-	ChatEventDescriptionChangedType           ChatEventActionEnum = "chatEventDescriptionChanged"
-	ChatEventUsernameChangedType              ChatEventActionEnum = "chatEventUsernameChanged"
-	ChatEventPhotoChangedType                 ChatEventActionEnum = "chatEventPhotoChanged"
-	ChatEventInvitesToggledType               ChatEventActionEnum = "chatEventInvitesToggled"
-	ChatEventSignMessagesToggledType          ChatEventActionEnum = "chatEventSignMessagesToggled"
-	ChatEventStickerSetChangedType            ChatEventActionEnum = "chatEventStickerSetChanged"
-	ChatEventIsAllHistoryAvailableToggledType ChatEventActionEnum = "chatEventIsAllHistoryAvailableToggled"
-)
-
-// ChatReportReasonEnum Alias for abstract ChatReportReason 'Sub-Classes', used as constant-enum here
-type ChatReportReasonEnum string
-
-// ChatReportReason enums
-const (
-	ChatReportReasonSpamType        ChatReportReasonEnum = "chatReportReasonSpam"
-	ChatReportReasonViolenceType    ChatReportReasonEnum = "chatReportReasonViolence"
-	ChatReportReasonPornographyType ChatReportReasonEnum = "chatReportReasonPornography"
-	ChatReportReasonCustomType      ChatReportReasonEnum = "chatReportReasonCustom"
-)
-
-// UserTypeEnum Alias for abstract UserType 'Sub-Classes', used as constant-enum here
-type UserTypeEnum string
-
-// UserType enums
-const (
-	UserTypeRegularType UserTypeEnum = "userTypeRegular"
-	UserTypeDeletedType UserTypeEnum = "userTypeDeleted"
-	UserTypeBotType     UserTypeEnum = "userTypeBot"
-	UserTypeUnknownType UserTypeEnum = "userTypeUnknown"
-)
-
-// SearchMessagesFilterEnum Alias for abstract SearchMessagesFilter 'Sub-Classes', used as constant-enum here
-type SearchMessagesFilterEnum string
-
-// SearchMessagesFilter enums
-const (
-	SearchMessagesFilterEmptyType             SearchMessagesFilterEnum = "searchMessagesFilterEmpty"
-	SearchMessagesFilterAnimationType         SearchMessagesFilterEnum = "searchMessagesFilterAnimation"
-	SearchMessagesFilterAudioType             SearchMessagesFilterEnum = "searchMessagesFilterAudio"
-	SearchMessagesFilterDocumentType          SearchMessagesFilterEnum = "searchMessagesFilterDocument"
-	SearchMessagesFilterPhotoType             SearchMessagesFilterEnum = "searchMessagesFilterPhoto"
-	SearchMessagesFilterVideoType             SearchMessagesFilterEnum = "searchMessagesFilterVideo"
-	SearchMessagesFilterVoiceNoteType         SearchMessagesFilterEnum = "searchMessagesFilterVoiceNote"
-	SearchMessagesFilterPhotoAndVideoType     SearchMessagesFilterEnum = "searchMessagesFilterPhotoAndVideo"
-	SearchMessagesFilterURLType               SearchMessagesFilterEnum = "searchMessagesFilterURL"
-	SearchMessagesFilterChatPhotoType         SearchMessagesFilterEnum = "searchMessagesFilterChatPhoto"
-	SearchMessagesFilterCallType              SearchMessagesFilterEnum = "searchMessagesFilterCall"
-	SearchMessagesFilterMissedCallType        SearchMessagesFilterEnum = "searchMessagesFilterMissedCall"
-	SearchMessagesFilterVideoNoteType         SearchMessagesFilterEnum = "searchMessagesFilterVideoNote"
-	SearchMessagesFilterVoiceAndVideoNoteType SearchMessagesFilterEnum = "searchMessagesFilterVoiceAndVideoNote"
-	SearchMessagesFilterMentionType           SearchMessagesFilterEnum = "searchMessagesFilterMention"
-	SearchMessagesFilterUnreadMentionType     SearchMessagesFilterEnum = "searchMessagesFilterUnreadMention"
-)
-
-// CallStateEnum Alias for abstract CallState 'Sub-Classes', used as constant-enum here
-type CallStateEnum string
-
-// CallState enums
-const (
-	CallStatePendingType        CallStateEnum = "callStatePending"
-	CallStateExchangingKeysType CallStateEnum = "callStateExchangingKeys"
-	CallStateReadyType          CallStateEnum = "callStateReady"
-	CallStateHangingUpType      CallStateEnum = "callStateHangingUp"
-	CallStateDiscardedType      CallStateEnum = "callStateDiscarded"
-	CallStateErrorType          CallStateEnum = "callStateError"
-)
-
-// NetworkTypeEnum Alias for abstract NetworkType 'Sub-Classes', used as constant-enum here
-type NetworkTypeEnum string
-
-// NetworkType enums
-const (
-	NetworkTypeNoneType          NetworkTypeEnum = "networkTypeNone"
-	NetworkTypeMobileType        NetworkTypeEnum = "networkTypeMobile"
-	NetworkTypeMobileRoamingType NetworkTypeEnum = "networkTypeMobileRoaming"
-	NetworkTypeWiFiType          NetworkTypeEnum = "networkTypeWiFi"
-	NetworkTypeOtherType         NetworkTypeEnum = "networkTypeOther"
-)
-
-// ConnectionStateEnum Alias for abstract ConnectionState 'Sub-Classes', used as constant-enum here
-type ConnectionStateEnum string
-
-// ConnectionState enums
-const (
-	ConnectionStateWaitingForNetworkType ConnectionStateEnum = "connectionStateWaitingForNetwork"
-	ConnectionStateConnectingToProxyType ConnectionStateEnum = "connectionStateConnectingToProxy"
-	ConnectionStateConnectingType        ConnectionStateEnum = "connectionStateConnecting"
-	ConnectionStateUpdatingType          ConnectionStateEnum = "connectionStateUpdating"
-	ConnectionStateReadyType             ConnectionStateEnum = "connectionStateReady"
-)
-
-// MaskPointEnum Alias for abstract MaskPoint 'Sub-Classes', used as constant-enum here
-type MaskPointEnum string
-
-// MaskPoint enums
-const (
-	MaskPointForeheadType MaskPointEnum = "maskPointForehead"
-	MaskPointEyesType     MaskPointEnum = "maskPointEyes"
-	MaskPointMouthType    MaskPointEnum = "maskPointMouth"
-	MaskPointChinType     MaskPointEnum = "maskPointChin"
-)
-
-// CheckChatUsernameResultEnum Alias for abstract CheckChatUsernameResult 'Sub-Classes', used as constant-enum here
-type CheckChatUsernameResultEnum string
-
-// CheckChatUsernameResult enums
-const (
-	CheckChatUsernameResultOkType                      CheckChatUsernameResultEnum = "checkChatUsernameResultOk"
-	CheckChatUsernameResultUsernameInvalidType         CheckChatUsernameResultEnum = "checkChatUsernameResultUsernameInvalid"
-	CheckChatUsernameResultUsernameOccupiedType        CheckChatUsernameResultEnum = "checkChatUsernameResultUsernameOccupied"
-	CheckChatUsernameResultPublicChatsTooMuchType      CheckChatUsernameResultEnum = "checkChatUsernameResultPublicChatsTooMuch"
-	CheckChatUsernameResultPublicGroupsUnavailableType CheckChatUsernameResultEnum = "checkChatUsernameResultPublicGroupsUnavailable"
+	CallbackQueryPayloadDataType CallbackQueryPayloadEnum = "callbackQueryPayloadData"
+	CallbackQueryPayloadGameType CallbackQueryPayloadEnum = "callbackQueryPayloadGame"
 )
 
 // FileTypeEnum Alias for abstract FileType 'Sub-Classes', used as constant-enum here
@@ -700,28 +712,16 @@ const (
 	FileTypeSecretThumbnailType FileTypeEnum = "fileTypeSecretThumbnail"
 )
 
-// TopChatCategoryEnum Alias for abstract TopChatCategory 'Sub-Classes', used as constant-enum here
-type TopChatCategoryEnum string
+// NetworkTypeEnum Alias for abstract NetworkType 'Sub-Classes', used as constant-enum here
+type NetworkTypeEnum string
 
-// TopChatCategory enums
+// NetworkType enums
 const (
-	TopChatCategoryUsersType      TopChatCategoryEnum = "topChatCategoryUsers"
-	TopChatCategoryBotsType       TopChatCategoryEnum = "topChatCategoryBots"
-	TopChatCategoryGroupsType     TopChatCategoryEnum = "topChatCategoryGroups"
-	TopChatCategoryChannelsType   TopChatCategoryEnum = "topChatCategoryChannels"
-	TopChatCategoryInlineBotsType TopChatCategoryEnum = "topChatCategoryInlineBots"
-	TopChatCategoryCallsType      TopChatCategoryEnum = "topChatCategoryCalls"
-)
-
-// InputFileEnum Alias for abstract InputFile 'Sub-Classes', used as constant-enum here
-type InputFileEnum string
-
-// InputFile enums
-const (
-	InputFileIDType        InputFileEnum = "inputFileID"
-	InputFileRemoteType    InputFileEnum = "inputFileRemote"
-	InputFileLocalType     InputFileEnum = "inputFileLocal"
-	InputFileGeneratedType InputFileEnum = "inputFileGenerated"
+	NetworkTypeNoneType          NetworkTypeEnum = "networkTypeNone"
+	NetworkTypeMobileType        NetworkTypeEnum = "networkTypeMobile"
+	NetworkTypeMobileRoamingType NetworkTypeEnum = "networkTypeMobileRoaming"
+	NetworkTypeWiFiType          NetworkTypeEnum = "networkTypeWiFi"
+	NetworkTypeOtherType         NetworkTypeEnum = "networkTypeOther"
 ) // AuthenticationCodeType Provides information about the method by which an authentication code is delivered to the user
 type AuthenticationCodeType interface {
 	GetAuthenticationCodeTypeEnum() AuthenticationCodeTypeEnum
@@ -977,21 +977,21 @@ func (ok *Ok) MessageType() string {
 // TdlibParameters Contains parameters for TDLib initialization
 type TdlibParameters struct {
 	tdCommon
-	UseFileDatabase        bool   `json:"use_file_database"`        // If set to true, information about downloaded and uploaded files will be saved between application restarts
-	UseChatInfoDatabase    bool   `json:"use_chat_info_database"`   // If set to true, the library will maintain a cache of users, basic groups, supergroups, channels and secret chats. Implies use_file_database
-	UseMessageDatabase     bool   `json:"use_message_database"`     // If set to true, the library will maintain a cache of chats and messages. Implies use_chat_info_database
 	DeviceModel            string `json:"device_model"`             // Model of the device the application is being run on; must be non-empty
-	ApplicationVersion     string `json:"application_version"`      // Application version; must be non-empty
-	UseTestDc              bool   `json:"use_test_dc"`              // If set to true, the Telegram test environment will be used instead of the production environment
-	FilesDirectory         string `json:"files_directory"`          // The path to the directory for storing files; if empty, database_directory will be used
-	APIID                  int32  `json:"api_id"`                   // Application identifier for Telegram API access, which can be obtained at https://my.telegram.org
-	APIHash                string `json:"api_hash"`                 // Application identifier hash for Telegram API access, which can be obtained at https://my.telegram.org
-	DatabaseDirectory      string `json:"database_directory"`       // The path to the directory for the persistent database; if empty, the current working directory will be used
-	IgnoreFileNames        bool   `json:"ignore_file_names"`        // If set to true, original file names will be ignored. Otherwise, downloaded files will be saved under names as close as possible to the original name
 	SystemVersion          string `json:"system_version"`           // Version of the operating system the application is being run on; must be non-empty
+	ApplicationVersion     string `json:"application_version"`      // Application version; must be non-empty
+	IgnoreFileNames        bool   `json:"ignore_file_names"`        // If set to true, original file names will be ignored. Otherwise, downloaded files will be saved under names as close as possible to the original name
+	DatabaseDirectory      string `json:"database_directory"`       // The path to the directory for the persistent database; if empty, the current working directory will be used
+	UseChatInfoDatabase    bool   `json:"use_chat_info_database"`   // If set to true, the library will maintain a cache of users, basic groups, supergroups, channels and secret chats. Implies use_file_database
 	SystemLanguageCode     string `json:"system_language_code"`     // IETF language tag of the user's operating system language; must be non-empty
-	EnableStorageOptimizer bool   `json:"enable_storage_optimizer"` // If set to true, old files will automatically be deleted
+	APIHash                string `json:"api_hash"`                 // Application identifier hash for Telegram API access, which can be obtained at https://my.telegram.org
+	UseTestDc              bool   `json:"use_test_dc"`              // If set to true, the Telegram test environment will be used instead of the production environment
+	UseMessageDatabase     bool   `json:"use_message_database"`     // If set to true, the library will maintain a cache of chats and messages. Implies use_chat_info_database
 	UseSecretChats         bool   `json:"use_secret_chats"`         // If set to true, support for secret chats will be enabled
+	EnableStorageOptimizer bool   `json:"enable_storage_optimizer"` // If set to true, old files will automatically be deleted
+	FilesDirectory         string `json:"files_directory"`          // The path to the directory for storing files; if empty, database_directory will be used
+	UseFileDatabase        bool   `json:"use_file_database"`        // If set to true, information about downloaded and uploaded files will be saved between application restarts
+	APIID                  int32  `json:"api_id"`                   // Application identifier for Telegram API access, which can be obtained at https://my.telegram.org
 }
 
 // MessageType return the string telegram-type of TdlibParameters
@@ -1251,10 +1251,10 @@ func (authorizationStateClosed *AuthorizationStateClosed) GetAuthorizationStateE
 // PasswordState Represents the current state of 2-step verification
 type PasswordState struct {
 	tdCommon
-	HasRecoveryEmailAddress                bool   `json:"has_recovery_email_address"`                 // True if a recovery email has been set up
-	UnconfirmedRecoveryEmailAddressPattern string `json:"unconfirmed_recovery_email_address_pattern"` // Pattern of the email address to which a confirmation email was sent
 	HasPassword                            bool   `json:"has_password"`                               // True if a 2-step verification password has been set up
 	PasswordHint                           string `json:"password_hint"`                              // Hint for the password; can be empty
+	HasRecoveryEmailAddress                bool   `json:"has_recovery_email_address"`                 // True if a recovery email has been set up
+	UnconfirmedRecoveryEmailAddressPattern string `json:"unconfirmed_recovery_email_address_pattern"` // Pattern of the email address to which a confirmation email was sent
 }
 
 // MessageType return the string telegram-type of PasswordState
@@ -1299,13 +1299,13 @@ func (temporaryPasswordState *TemporaryPasswordState) MessageType() string {
 // LocalFile Represents a local file
 type LocalFile struct {
 	tdCommon
-	Path                   string `json:"path"`                     // Local path to the locally available file part; may be empty
-	CanBeDownloaded        bool   `json:"can_be_downloaded"`        // True, if it is possible to try to download or generate the file
-	CanBeDeleted           bool   `json:"can_be_deleted"`           // True, if the file can be deleted
 	IsDownloadingActive    bool   `json:"is_downloading_active"`    // True, if the file is currently being downloaded (or a local copy is being generated by some other means)
 	IsDownloadingCompleted bool   `json:"is_downloading_completed"` // True, if the local copy is fully available
 	DownloadedPrefixSize   int32  `json:"downloaded_prefix_size"`   // If is_downloading_completed is false, then only some prefix of the file is ready to be read. downloaded_prefix_size is the size of that prefix
 	DownloadedSize         int32  `json:"downloaded_size"`          // Total downloaded file bytes. Should be used only for calculating download progress. The actual file size may be bigger, and some parts of it may contain garbage
+	Path                   string `json:"path"`                     // Local path to the locally available file part; may be empty
+	CanBeDownloaded        bool   `json:"can_be_downloaded"`        // True, if it is possible to try to download or generate the file
+	CanBeDeleted           bool   `json:"can_be_deleted"`           // True, if the file can be deleted
 }
 
 // MessageType return the string telegram-type of LocalFile
@@ -1330,11 +1330,11 @@ func (remoteFile *RemoteFile) MessageType() string {
 // File Represents a file
 type File struct {
 	tdCommon
-	Local        LocalFile  `json:"local"`         // Information about the local copy of the file
-	Remote       RemoteFile `json:"remote"`        // Information about the remote copy of the file
 	ID           int32      `json:"id"`            // Unique file identifier
 	Size         int32      `json:"size"`          // File size; 0 if unknown
 	ExpectedSize int32      `json:"expected_size"` // Expected file size in case the exact file size is unknown, but an approximate size is known. Can be used to show download/upload progress
+	Local        LocalFile  `json:"local"`         // Information about the local copy of the file
+	Remote       RemoteFile `json:"remote"`        // Information about the remote copy of the file
 }
 
 // MessageType return the string telegram-type of File
@@ -1393,9 +1393,9 @@ func (inputFileLocal *InputFileLocal) GetInputFileEnum() InputFileEnum {
 // InputFileGenerated A file generated by the client
 type InputFileGenerated struct {
 	tdCommon
-	ExpectedSize int32  `json:"expected_size"` // Expected size of the generated file; 0 if unknown
 	OriginalPath string `json:"original_path"` // Local path to a file from which the file is generated, may be empty if there is no such file
 	Conversion   string `json:"conversion"`    // String specifying the conversion applied to the original file; should be persistent across application restarts
+	ExpectedSize int32  `json:"expected_size"` // Expected size of the generated file; 0 if unknown
 }
 
 // MessageType return the string telegram-type of InputFileGenerated
@@ -1411,10 +1411,10 @@ func (inputFileGenerated *InputFileGenerated) GetInputFileEnum() InputFileEnum {
 // PhotoSize Photo description
 type PhotoSize struct {
 	tdCommon
+	Type   string `json:"type"`   // Thumbnail type (see https://core.telegram.org/constructor/photoSize)
 	Photo  File   `json:"photo"`  // Information about the photo file
 	Width  int32  `json:"width"`  // Photo width
 	Height int32  `json:"height"` // Photo height
-	Type   string `json:"type"`   // Thumbnail type (see https://core.telegram.org/constructor/photoSize)
 }
 
 // MessageType return the string telegram-type of PhotoSize
@@ -1485,10 +1485,10 @@ func (maskPointChin *MaskPointChin) GetMaskPointEnum() MaskPointEnum {
 // MaskPosition Position on a photo where a mask should be placed
 type MaskPosition struct {
 	tdCommon
+	Point  MaskPoint `json:"point"`   // Part of the face, relative to which the mask should be placed
 	XShift float64   `json:"x_shift"` // Shift by X-axis measured in widths of the mask scaled to the face size, from left to right. (For example, -1.0 will place the mask just to the left of the default mask position)
 	YShift float64   `json:"y_shift"` // Shift by Y-axis measured in heights of the mask scaled to the face size, from top to bottom. (For example, 1.0 will place the mask just below the default mask position)
 	Scale  float64   `json:"scale"`   // Mask scaling coefficient. (For example, 2.0 means a doubled size)
-	Point  MaskPoint `json:"point"`   // Part of the face, relative to which the mask should be placed
 }
 
 // MessageType return the string telegram-type of MaskPosition
@@ -1508,7 +1508,6 @@ func (maskPosition *MaskPosition) UnmarshalJSON(b []byte) error {
 		XShift float64 `json:"x_shift"` // Shift by X-axis measured in widths of the mask scaled to the face size, from left to right. (For example, -1.0 will place the mask just to the left of the default mask position)
 		YShift float64 `json:"y_shift"` // Shift by Y-axis measured in heights of the mask scaled to the face size, from top to bottom. (For example, 1.0 will place the mask just below the default mask position)
 		Scale  float64 `json:"scale"`   // Mask scaling coefficient. (For example, 2.0 means a doubled size)
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -1529,9 +1528,9 @@ func (maskPosition *MaskPosition) UnmarshalJSON(b []byte) error {
 // TextEntity Represents a part of the text that needs to be formatted in some unusual way
 type TextEntity struct {
 	tdCommon
+	Type   TextEntityType `json:"type"`   // Type of the entity
 	Offset int32          `json:"offset"` // Offset of the entity in UTF-16 code points
 	Length int32          `json:"length"` // Length of the entity, in UTF-16 code points
-	Type   TextEntityType `json:"type"`   // Type of the entity
 }
 
 // MessageType return the string telegram-type of TextEntity
@@ -1550,7 +1549,6 @@ func (textEntity *TextEntity) UnmarshalJSON(b []byte) error {
 		tdCommon
 		Offset int32 `json:"offset"` // Offset of the entity in UTF-16 code points
 		Length int32 `json:"length"` // Length of the entity, in UTF-16 code points
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -1593,13 +1591,13 @@ func (formattedText *FormattedText) MessageType() string {
 // Animation Describes an animation file. The animation must be encoded in GIF or MPEG4 format
 type Animation struct {
 	tdCommon
-	Height    int32     `json:"height"`    // Height of the animation
-	FileName  string    `json:"file_name"` // Original name of the file; as defined by the sender
 	MimeType  string    `json:"mime_type"` // MIME type of the file, usually "image/gif" or "video/mp4"
 	Thumbnail PhotoSize `json:"thumbnail"` // Animation thumbnail; may be null
 	Animation File      `json:"animation"` // File containing the animation
 	Duration  int32     `json:"duration"`  // Duration of the animation, in seconds; as defined by the sender
 	Width     int32     `json:"width"`     // Width of the animation
+	Height    int32     `json:"height"`    // Height of the animation
+	FileName  string    `json:"file_name"` // Original name of the file; as defined by the sender
 }
 
 // MessageType return the string telegram-type of Animation
@@ -1610,13 +1608,13 @@ func (animation *Animation) MessageType() string {
 // Audio Describes an audio file. Audio is usually in MP3 format
 type Audio struct {
 	tdCommon
-	Title               string    `json:"title"`                 // Title of the audio; as defined by the sender
 	Performer           string    `json:"performer"`             // Performer of the audio; as defined by the sender
 	FileName            string    `json:"file_name"`             // Original name of the file; as defined by the sender
 	MimeType            string    `json:"mime_type"`             // The MIME type of the file; as defined by the sender
 	AlbumCoverThumbnail PhotoSize `json:"album_cover_thumbnail"` // The thumbnail of the album cover; as defined by the sender. The full size thumbnail should be extracted from the downloaded file; may be null
 	Audio               File      `json:"audio"`                 // File containing the audio
 	Duration            int32     `json:"duration"`              // Duration of the audio, in seconds; as defined by the sender
+	Title               string    `json:"title"`                 // Title of the audio; as defined by the sender
 }
 
 // MessageType return the string telegram-type of Audio
@@ -1627,10 +1625,10 @@ func (audio *Audio) MessageType() string {
 // Document Describes a document of any type
 type Document struct {
 	tdCommon
-	Document  File      `json:"document"`  // File containing the document
 	FileName  string    `json:"file_name"` // Original name of the file; as defined by the sender
 	MimeType  string    `json:"mime_type"` // MIME type of the file; as defined by the sender
 	Thumbnail PhotoSize `json:"thumbnail"` // Document thumbnail; as defined by the sender; may be null
+	Document  File      `json:"document"`  // File containing the document
 }
 
 // MessageType return the string telegram-type of Document
@@ -1654,14 +1652,14 @@ func (photo *Photo) MessageType() string {
 // Sticker Describes a sticker
 type Sticker struct {
 	tdCommon
-	Width        int32        `json:"width"`         // Sticker width; as defined by the sender
-	Height       int32        `json:"height"`        // Sticker height; as defined by the sender
-	Emoji        string       `json:"emoji"`         // Emoji corresponding to the sticker
 	IsMask       bool         `json:"is_mask"`       // True, if the sticker is a mask
 	MaskPosition MaskPosition `json:"mask_position"` // Position where the mask should be placed; may be null
 	Thumbnail    PhotoSize    `json:"thumbnail"`     // Sticker thumbnail in WEBP or JPEG format; may be null
 	Sticker      File         `json:"sticker"`       // File containing the sticker
 	SetID        int64        `json:"set_id"`        // The identifier of the sticker set to which the sticker belongs; 0 if none
+	Width        int32        `json:"width"`         // Sticker width; as defined by the sender
+	Height       int32        `json:"height"`        // Sticker height; as defined by the sender
+	Emoji        string       `json:"emoji"`         // Emoji corresponding to the sticker
 }
 
 // MessageType return the string telegram-type of Sticker
@@ -1672,15 +1670,15 @@ func (sticker *Sticker) MessageType() string {
 // Video Describes a video file
 type Video struct {
 	tdCommon
-	Thumbnail         PhotoSize `json:"thumbnail"`          // Video thumbnail; as defined by the sender; may be null
-	Video             File      `json:"video"`              // File containing the video
-	Width             int32     `json:"width"`              // Video width; as defined by the sender
-	FileName          string    `json:"file_name"`          // Original name of the file; as defined by the sender
-	MimeType          string    `json:"mime_type"`          // MIME type of the file; as defined by the sender
-	SupportsStreaming bool      `json:"supports_streaming"` // True, if the video should be tried to be streamed
 	Duration          int32     `json:"duration"`           // Duration of the video, in seconds; as defined by the sender
 	Height            int32     `json:"height"`             // Video height; as defined by the sender
+	FileName          string    `json:"file_name"`          // Original name of the file; as defined by the sender
+	MimeType          string    `json:"mime_type"`          // MIME type of the file; as defined by the sender
 	HasStickers       bool      `json:"has_stickers"`       // True, if stickers were added to the photo
+	Width             int32     `json:"width"`              // Video width; as defined by the sender
+	SupportsStreaming bool      `json:"supports_streaming"` // True, if the video should be tried to be streamed
+	Thumbnail         PhotoSize `json:"thumbnail"`          // Video thumbnail; as defined by the sender; may be null
+	Video             File      `json:"video"`              // File containing the video
 }
 
 // MessageType return the string telegram-type of Video
@@ -1691,10 +1689,10 @@ func (video *Video) MessageType() string {
 // VideoNote Describes a video note. The video must be equal in width and height, cropped to a circle, and stored in MPEG4 format
 type VideoNote struct {
 	tdCommon
-	Thumbnail PhotoSize `json:"thumbnail"` // Video thumbnail; as defined by the sender; may be null
 	Video     File      `json:"video"`     // File containing the video
 	Duration  int32     `json:"duration"`  // Duration of the video, in seconds; as defined by the sender
 	Length    int32     `json:"length"`    // Video width and height; as defined by the sender
+	Thumbnail PhotoSize `json:"thumbnail"` // Video thumbnail; as defined by the sender; may be null
 }
 
 // MessageType return the string telegram-type of VideoNote
@@ -1705,10 +1703,10 @@ func (videoNote *VideoNote) MessageType() string {
 // VoiceNote Describes a voice note. The voice note must be encoded with the Opus codec, and stored inside an OGG container. Voice notes can have only a single audio channel
 type VoiceNote struct {
 	tdCommon
-	Duration int32  `json:"duration"`  // Duration of the voice note, in seconds; as defined by the sender
 	Waveform []byte `json:"waveform"`  // A waveform representation of the voice note in 5-bit format
 	MimeType string `json:"mime_type"` // MIME type of the file; as defined by the sender
 	Voice    File   `json:"voice"`     // File containing the voice note
+	Duration int32  `json:"duration"`  // Duration of the voice note, in seconds; as defined by the sender
 }
 
 // MessageType return the string telegram-type of VoiceNote
@@ -1719,10 +1717,10 @@ func (voiceNote *VoiceNote) MessageType() string {
 // Contact Describes a user contact
 type Contact struct {
 	tdCommon
-	PhoneNumber string `json:"phone_number"` // Phone number of the user
 	FirstName   string `json:"first_name"`   // First name of the user; 1-255 characters in length
 	LastName    string `json:"last_name"`    // Last name of the user
 	UserID      int32  `json:"user_id"`      // Identifier of the user, if known; otherwise 0
+	PhoneNumber string `json:"phone_number"` // Phone number of the user
 }
 
 // MessageType return the string telegram-type of Contact
@@ -1733,8 +1731,8 @@ func (contact *Contact) MessageType() string {
 // Location Describes a location on planet Earth
 type Location struct {
 	tdCommon
-	Longitude float64 `json:"longitude"` // Longitude of the location, in degrees; as defined by the sender
 	Latitude  float64 `json:"latitude"`  // Latitude of the location in degrees; as defined by the sender
+	Longitude float64 `json:"longitude"` // Longitude of the location, in degrees; as defined by the sender
 }
 
 // MessageType return the string telegram-type of Location
@@ -1745,11 +1743,11 @@ func (location *Location) MessageType() string {
 // Venue Describes a venue
 type Venue struct {
 	tdCommon
+	Title    string   `json:"title"`    // Venue name; as defined by the sender
+	Address  string   `json:"address"`  // Venue address; as defined by the sender
 	Provider string   `json:"provider"` // Provider of the venue database; as defined by the sender. Currently only "foursquare" needs to be supported
 	ID       string   `json:"id"`       // Identifier of the venue in the provider database; as defined by the sender
 	Location Location `json:"location"` // Venue location; as defined by the sender
-	Title    string   `json:"title"`    // Venue name; as defined by the sender
-	Address  string   `json:"address"`  // Venue address; as defined by the sender
 }
 
 // MessageType return the string telegram-type of Venue
@@ -1760,13 +1758,13 @@ func (venue *Venue) MessageType() string {
 // Game Describes a game
 type Game struct {
 	tdCommon
+	ID          int64         `json:"id"`          // Game ID
 	ShortName   string        `json:"short_name"`  // Game short name. To share a game use the URL https://t.me/{bot_username}?game={game_short_name}
 	Title       string        `json:"title"`       // Game title
 	Text        FormattedText `json:"text"`        // Game text, usually containing scoreboards for a game
 	Description string        `json:"description"` //
 	Photo       Photo         `json:"photo"`       // Game photo
 	Animation   Animation     `json:"animation"`   // Game animation; may be null
-	ID          int64         `json:"id"`          // Game ID
 }
 
 // MessageType return the string telegram-type of Game
@@ -1936,20 +1934,20 @@ func (botInfo *BotInfo) MessageType() string {
 // User Represents a user
 type User struct {
 	tdCommon
+	PhoneNumber       string       `json:"phone_number"`       // Phone number of the user
+	IncomingLink      LinkState    `json:"incoming_link"`      // Relationship from the other user to the current user
+	LanguageCode      string       `json:"language_code"`      // IETF language tag of the user's language; only available to bots
+	LastName          string       `json:"last_name"`          // Last name of the user
+	OutgoingLink      LinkState    `json:"outgoing_link"`      // Relationship from the current user to the other user
 	Type              UserType     `json:"type"`               // Type of the user
 	FirstName         string       `json:"first_name"`         // First name of the user
-	OutgoingLink      LinkState    `json:"outgoing_link"`      // Relationship from the current user to the other user
 	IsVerified        bool         `json:"is_verified"`        // True, if the user is verified
-	ProfilePhoto      ProfilePhoto `json:"profile_photo"`      // Profile photo of the user; may be null
-	IncomingLink      LinkState    `json:"incoming_link"`      // Relationship from the other user to the current user
 	RestrictionReason string       `json:"restriction_reason"` // If non-empty, it contains the reason why access to this user must be restricted. The format of the string is "{type}: {description}".
+	ProfilePhoto      ProfilePhoto `json:"profile_photo"`      // Profile photo of the user; may be null
 	HaveAccess        bool         `json:"have_access"`        // If false, the user is inaccessible, and the only information known about the user is inside this class. It can't be passed to any method except GetUser
-	LastName          string       `json:"last_name"`          // Last name of the user
-	Username          string       `json:"username"`           // Username of the user
-	PhoneNumber       string       `json:"phone_number"`       // Phone number of the user
-	Status            UserStatus   `json:"status"`             // Current online status of the user
 	ID                int32        `json:"id"`                 // User identifier
-	LanguageCode      string       `json:"language_code"`      // IETF language tag of the user's language; only available to bots
+	Username          string       `json:"username"`           // Username of the user
+	Status            UserStatus   `json:"status"`             // Current online status of the user
 }
 
 // MessageType return the string telegram-type of User
@@ -1966,16 +1964,17 @@ func (user *User) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
+		PhoneNumber       string       `json:"phone_number"`       // Phone number of the user
+		LanguageCode      string       `json:"language_code"`      // IETF language tag of the user's language; only available to bots
+		LastName          string       `json:"last_name"`          // Last name of the user
 		FirstName         string       `json:"first_name"`         // First name of the user
 		IsVerified        bool         `json:"is_verified"`        // True, if the user is verified
-		ProfilePhoto      ProfilePhoto `json:"profile_photo"`      // Profile photo of the user; may be null
 		RestrictionReason string       `json:"restriction_reason"` // If non-empty, it contains the reason why access to this user must be restricted. The format of the string is "{type}: {description}".
+		ProfilePhoto      ProfilePhoto `json:"profile_photo"`      // Profile photo of the user; may be null
 		HaveAccess        bool         `json:"have_access"`        // If false, the user is inaccessible, and the only information known about the user is inside this class. It can't be passed to any method except GetUser
-		LastName          string       `json:"last_name"`          // Last name of the user
-		Username          string       `json:"username"`           // Username of the user
-		PhoneNumber       string       `json:"phone_number"`       // Phone number of the user
 		ID                int32        `json:"id"`                 // User identifier
-		LanguageCode      string       `json:"language_code"`      // IETF language tag of the user's language; only available to bots
+		Username          string       `json:"username"`           // Username of the user
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -1983,25 +1982,25 @@ func (user *User) UnmarshalJSON(b []byte) error {
 	}
 
 	user.tdCommon = tempObj.tdCommon
+	user.PhoneNumber = tempObj.PhoneNumber
+	user.LanguageCode = tempObj.LanguageCode
+	user.LastName = tempObj.LastName
 	user.FirstName = tempObj.FirstName
 	user.IsVerified = tempObj.IsVerified
-	user.ProfilePhoto = tempObj.ProfilePhoto
 	user.RestrictionReason = tempObj.RestrictionReason
+	user.ProfilePhoto = tempObj.ProfilePhoto
 	user.HaveAccess = tempObj.HaveAccess
-	user.LastName = tempObj.LastName
-	user.Username = tempObj.Username
-	user.PhoneNumber = tempObj.PhoneNumber
 	user.ID = tempObj.ID
-	user.LanguageCode = tempObj.LanguageCode
+	user.Username = tempObj.Username
 
-	fieldType, _ := unmarshalUserType(objMap["type"])
-	user.Type = fieldType
+	fieldIncomingLink, _ := unmarshalLinkState(objMap["incoming_link"])
+	user.IncomingLink = fieldIncomingLink
 
 	fieldOutgoingLink, _ := unmarshalLinkState(objMap["outgoing_link"])
 	user.OutgoingLink = fieldOutgoingLink
 
-	fieldIncomingLink, _ := unmarshalLinkState(objMap["incoming_link"])
-	user.IncomingLink = fieldIncomingLink
+	fieldType, _ := unmarshalUserType(objMap["type"])
+	user.Type = fieldType
 
 	fieldStatus, _ := unmarshalUserStatus(objMap["status"])
 	user.Status = fieldStatus
@@ -2012,13 +2011,13 @@ func (user *User) UnmarshalJSON(b []byte) error {
 // UserFullInfo Contains full information about a user (except the full list of profile photos)
 type UserFullInfo struct {
 	tdCommon
+	HasPrivateCalls    bool    `json:"has_private_calls"`     // True, if the user can't be called due to their privacy settings
 	Bio                string  `json:"bio"`                   // A short user bio
 	ShareText          string  `json:"share_text"`            // For bots, the text that is included with the link when users share the bot
 	GroupInCommonCount int32   `json:"group_in_common_count"` // Number of group chats where both the other user and the current user are a member; 0 for the current user
 	BotInfo            BotInfo `json:"bot_info"`              // If the user is a bot, information about the bot; may be null
 	IsBlocked          bool    `json:"is_blocked"`            // True, if the user is blacklisted by the current user
 	CanBeCalled        bool    `json:"can_be_called"`         // True, if the user can be called
-	HasPrivateCalls    bool    `json:"has_private_calls"`     // True, if the user can't be called due to their privacy settings
 }
 
 // MessageType return the string telegram-type of UserFullInfo
@@ -2069,15 +2068,15 @@ func (chatMemberStatusCreator *ChatMemberStatusCreator) GetChatMemberStatusEnum(
 // ChatMemberStatusAdministrator The user is a member of a chat and has some additional privileges. In basic groups, administrators can edit and delete messages sent by others, add new members, and ban unprivileged members. In supergroups and channels, there are more detailed options for administrator privileges
 type ChatMemberStatusAdministrator struct {
 	tdCommon
-	CanDeleteMessages  bool `json:"can_delete_messages"`  // True, if the administrator can delete messages of other users
 	CanInviteUsers     bool `json:"can_invite_users"`     // True, if the administrator can invite new users to the chat
 	CanRestrictMembers bool `json:"can_restrict_members"` // True, if the administrator can restrict, ban, or unban chat members
-	CanPromoteMembers  bool `json:"can_promote_members"`  // True, if the administrator can add new administrators with a subset of his own privileges or demote administrators that were directly or indirectly promoted by him
-	CanPostMessages    bool `json:"can_post_messages"`    // True, if the administrator can create channel posts; applicable to channels only
-	CanEditMessages    bool `json:"can_edit_messages"`    // True, if the administrator can edit messages of other users and pin messages; applicable to channels only
-	CanPinMessages     bool `json:"can_pin_messages"`     // True, if the administrator can pin messages; applicable to supergroups only
 	CanBeEdited        bool `json:"can_be_edited"`        // True, if the current user can edit the administrator privileges for the called user
+	CanEditMessages    bool `json:"can_edit_messages"`    // True, if the administrator can edit messages of other users and pin messages; applicable to channels only
+	CanDeleteMessages  bool `json:"can_delete_messages"`  // True, if the administrator can delete messages of other users
+	CanPinMessages     bool `json:"can_pin_messages"`     // True, if the administrator can pin messages; applicable to supergroups only
+	CanPromoteMembers  bool `json:"can_promote_members"`  // True, if the administrator can add new administrators with a subset of his own privileges or demote administrators that were directly or indirectly promoted by him
 	CanChangeInfo      bool `json:"can_change_info"`      // True, if the administrator can change the chat title, photo, and other settings
+	CanPostMessages    bool `json:"can_post_messages"`    // True, if the administrator can create channel posts; applicable to channels only
 }
 
 // MessageType return the string telegram-type of ChatMemberStatusAdministrator
@@ -2160,11 +2159,11 @@ func (chatMemberStatusBanned *ChatMemberStatusBanned) GetChatMemberStatusEnum() 
 // ChatMember A user with information about joining/leaving a chat
 type ChatMember struct {
 	tdCommon
-	BotInfo        BotInfo          `json:"bot_info"`         // If the user is a bot, information about the bot; may be null. Can be null even for a bot if the bot is not a chat member
-	UserID         int32            `json:"user_id"`          // User identifier of the chat member
 	InviterUserID  int32            `json:"inviter_user_id"`  // Identifier of a user that invited/promoted/banned this member in the chat; 0 if unknown
 	JoinedChatDate int32            `json:"joined_chat_date"` // Point in time (Unix timestamp) when the user joined a chat
 	Status         ChatMemberStatus `json:"status"`           // Status of the member in the chat
+	BotInfo        BotInfo          `json:"bot_info"`         // If the user is a bot, information about the bot; may be null. Can be null even for a bot if the bot is not a chat member
+	UserID         int32            `json:"user_id"`          // User identifier of the chat member
 }
 
 // MessageType return the string telegram-type of ChatMember
@@ -2181,11 +2180,10 @@ func (chatMember *ChatMember) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
-		BotInfo        BotInfo `json:"bot_info"`         // If the user is a bot, information about the bot; may be null. Can be null even for a bot if the bot is not a chat member
-		UserID         int32   `json:"user_id"`          // User identifier of the chat member
 		InviterUserID  int32   `json:"inviter_user_id"`  // Identifier of a user that invited/promoted/banned this member in the chat; 0 if unknown
 		JoinedChatDate int32   `json:"joined_chat_date"` // Point in time (Unix timestamp) when the user joined a chat
-
+		BotInfo        BotInfo `json:"bot_info"`         // If the user is a bot, information about the bot; may be null. Can be null even for a bot if the bot is not a chat member
+		UserID         int32   `json:"user_id"`          // User identifier of the chat member
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -2193,10 +2191,10 @@ func (chatMember *ChatMember) UnmarshalJSON(b []byte) error {
 	}
 
 	chatMember.tdCommon = tempObj.tdCommon
-	chatMember.BotInfo = tempObj.BotInfo
-	chatMember.UserID = tempObj.UserID
 	chatMember.InviterUserID = tempObj.InviterUserID
 	chatMember.JoinedChatDate = tempObj.JoinedChatDate
+	chatMember.BotInfo = tempObj.BotInfo
+	chatMember.UserID = tempObj.UserID
 
 	fieldStatus, _ := unmarshalChatMemberStatus(objMap["status"])
 	chatMember.Status = fieldStatus
@@ -2207,8 +2205,8 @@ func (chatMember *ChatMember) UnmarshalJSON(b []byte) error {
 // ChatMembers Contains a list of chat members
 type ChatMembers struct {
 	tdCommon
-	Members    []ChatMember `json:"members"`     // A list of chat members
 	TotalCount int32        `json:"total_count"` // Approximate total count of chat members found
+	Members    []ChatMember `json:"members"`     // A list of chat members
 }
 
 // MessageType return the string telegram-type of ChatMembers
@@ -2312,12 +2310,12 @@ func (supergroupMembersFilterBots *SupergroupMembersFilterBots) GetSupergroupMem
 // BasicGroup Represents a basic group of 0-200 users (must be upgraded to a supergroup to accommodate more than 200 users)
 type BasicGroup struct {
 	tdCommon
-	Status                  ChatMemberStatus `json:"status"`                    // Status of the current user in the group
 	EveryoneIsAdministrator bool             `json:"everyone_is_administrator"` // True, if all members have been granted administrator rights in the group
 	IsActive                bool             `json:"is_active"`                 // True, if the group is active
 	UpgradedToSupergroupID  int32            `json:"upgraded_to_supergroup_id"` // Identifier of the supergroup to which this group was upgraded; 0 if none
 	ID                      int32            `json:"id"`                        // Group identifier
 	MemberCount             int32            `json:"member_count"`              // Number of members in the group
+	Status                  ChatMemberStatus `json:"status"`                    // Status of the current user in the group
 }
 
 // MessageType return the string telegram-type of BasicGroup
@@ -2339,6 +2337,7 @@ func (basicGroup *BasicGroup) UnmarshalJSON(b []byte) error {
 		UpgradedToSupergroupID  int32 `json:"upgraded_to_supergroup_id"` // Identifier of the supergroup to which this group was upgraded; 0 if none
 		ID                      int32 `json:"id"`                        // Group identifier
 		MemberCount             int32 `json:"member_count"`              // Number of members in the group
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -2375,15 +2374,15 @@ func (basicGroupFullInfo *BasicGroupFullInfo) MessageType() string {
 type Supergroup struct {
 	tdCommon
 	Username          string           `json:"username"`           // Username of the supergroup or channel; empty for private supergroups or channels
-	Date              int32            `json:"date"`               // Point in time (Unix timestamp) when the current user joined, or the point in time when the supergroup or channel was created, in case the user is not a member
-	AnyoneCanInvite   bool             `json:"anyone_can_invite"`  // True, if any member of the supergroup can invite other members. This field has no meaning for channels
-	IsChannel         bool             `json:"is_channel"`         // True, if the supergroup is a channel
-	IsVerified        bool             `json:"is_verified"`        // True, if the supergroup or channel is verified
-	RestrictionReason string           `json:"restriction_reason"` // If non-empty, contains the reason why access to this supergroup or channel must be restricted. Format of the string is "{type}: {description}".
-	ID                int32            `json:"id"`                 // Supergroup or channel identifier
 	Status            ChatMemberStatus `json:"status"`             // Status of the current user in the supergroup or channel
 	MemberCount       int32            `json:"member_count"`       // Member count; 0 if unknown. Currently it is guaranteed to be known only if the supergroup or channel was found through SearchPublicChats
+	AnyoneCanInvite   bool             `json:"anyone_can_invite"`  // True, if any member of the supergroup can invite other members. This field has no meaning for channels
+	RestrictionReason string           `json:"restriction_reason"` // If non-empty, contains the reason why access to this supergroup or channel must be restricted. Format of the string is "{type}: {description}".
+	ID                int32            `json:"id"`                 // Supergroup or channel identifier
+	Date              int32            `json:"date"`               // Point in time (Unix timestamp) when the current user joined, or the point in time when the supergroup or channel was created, in case the user is not a member
 	SignMessages      bool             `json:"sign_messages"`      // True, if messages sent to the channel should contain information about the sender. This field is only applicable to channels
+	IsChannel         bool             `json:"is_channel"`         // True, if the supergroup is a channel
+	IsVerified        bool             `json:"is_verified"`        // True, if the supergroup or channel is verified
 }
 
 // MessageType return the string telegram-type of Supergroup
@@ -2401,14 +2400,14 @@ func (supergroup *Supergroup) UnmarshalJSON(b []byte) error {
 	tempObj := struct {
 		tdCommon
 		Username          string `json:"username"`           // Username of the supergroup or channel; empty for private supergroups or channels
-		Date              int32  `json:"date"`               // Point in time (Unix timestamp) when the current user joined, or the point in time when the supergroup or channel was created, in case the user is not a member
+		MemberCount       int32  `json:"member_count"`       // Member count; 0 if unknown. Currently it is guaranteed to be known only if the supergroup or channel was found through SearchPublicChats
 		AnyoneCanInvite   bool   `json:"anyone_can_invite"`  // True, if any member of the supergroup can invite other members. This field has no meaning for channels
-		IsChannel         bool   `json:"is_channel"`         // True, if the supergroup is a channel
-		IsVerified        bool   `json:"is_verified"`        // True, if the supergroup or channel is verified
 		RestrictionReason string `json:"restriction_reason"` // If non-empty, contains the reason why access to this supergroup or channel must be restricted. Format of the string is "{type}: {description}".
 		ID                int32  `json:"id"`                 // Supergroup or channel identifier
-		MemberCount       int32  `json:"member_count"`       // Member count; 0 if unknown. Currently it is guaranteed to be known only if the supergroup or channel was found through SearchPublicChats
+		Date              int32  `json:"date"`               // Point in time (Unix timestamp) when the current user joined, or the point in time when the supergroup or channel was created, in case the user is not a member
 		SignMessages      bool   `json:"sign_messages"`      // True, if messages sent to the channel should contain information about the sender. This field is only applicable to channels
+		IsChannel         bool   `json:"is_channel"`         // True, if the supergroup is a channel
+		IsVerified        bool   `json:"is_verified"`        // True, if the supergroup or channel is verified
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -2417,14 +2416,14 @@ func (supergroup *Supergroup) UnmarshalJSON(b []byte) error {
 
 	supergroup.tdCommon = tempObj.tdCommon
 	supergroup.Username = tempObj.Username
-	supergroup.Date = tempObj.Date
+	supergroup.MemberCount = tempObj.MemberCount
 	supergroup.AnyoneCanInvite = tempObj.AnyoneCanInvite
-	supergroup.IsChannel = tempObj.IsChannel
-	supergroup.IsVerified = tempObj.IsVerified
 	supergroup.RestrictionReason = tempObj.RestrictionReason
 	supergroup.ID = tempObj.ID
-	supergroup.MemberCount = tempObj.MemberCount
+	supergroup.Date = tempObj.Date
 	supergroup.SignMessages = tempObj.SignMessages
+	supergroup.IsChannel = tempObj.IsChannel
+	supergroup.IsVerified = tempObj.IsVerified
 
 	fieldStatus, _ := unmarshalChatMemberStatus(objMap["status"])
 	supergroup.Status = fieldStatus
@@ -2435,20 +2434,20 @@ func (supergroup *Supergroup) UnmarshalJSON(b []byte) error {
 // SupergroupFullInfo Contains full information about a supergroup or channel
 type SupergroupFullInfo struct {
 	tdCommon
-	UpgradedFromBasicGroupID int32  `json:"upgraded_from_basic_group_id"` // Identifier of the basic group from which supergroup was upgraded; 0 if none
-	Description              string `json:"description"`                  //
 	AdministratorCount       int32  `json:"administrator_count"`          // Number of privileged users in the supergroup or channel; 0 if unknown
-	PinnedMessageID          int64  `json:"pinned_message_id"`            // Identifier of the pinned message in the chat; 0 if none
-	MemberCount              int32  `json:"member_count"`                 // Number of members in the supergroup or channel; 0 if unknown
-	CanGetMembers            bool   `json:"can_get_members"`              // True, if members of the chat can be retrieved
-	CanSetStickerSet         bool   `json:"can_set_sticker_set"`          // True, if the supergroup sticker set can be changed
-	IsAllHistoryAvailable    bool   `json:"is_all_history_available"`     // True, if new chat members will have access to old messages. In public supergroups and both public and private channels, old messages are always available, so this option affects only private supergroups. The value of this field is only available for chat administrators
-	InviteLink               string `json:"invite_link"`                  // Invite link for this chat
-	StickerSetID             int64  `json:"sticker_set_id"`               // Identifier of the supergroup sticker set; 0 if none
-	UpgradedFromMaxMessageID int64  `json:"upgraded_from_max_message_id"` // Identifier of the last message in the basic group from which supergroup was upgraded; 0 if none
 	RestrictedCount          int32  `json:"restricted_count"`             // Number of restricted users in the supergroup; 0 if unknown
 	BannedCount              int32  `json:"banned_count"`                 // Number of users banned from chat; 0 if unknown
+	CanGetMembers            bool   `json:"can_get_members"`              // True, if members of the chat can be retrieved
 	CanSetUsername           bool   `json:"can_set_username"`             // True, if the chat can be made public
+	PinnedMessageID          int64  `json:"pinned_message_id"`            // Identifier of the pinned message in the chat; 0 if none
+	UpgradedFromBasicGroupID int32  `json:"upgraded_from_basic_group_id"` // Identifier of the basic group from which supergroup was upgraded; 0 if none
+	Description              string `json:"description"`                  //
+	InviteLink               string `json:"invite_link"`                  // Invite link for this chat
+	IsAllHistoryAvailable    bool   `json:"is_all_history_available"`     // True, if new chat members will have access to old messages. In public supergroups and both public and private channels, old messages are always available, so this option affects only private supergroups. The value of this field is only available for chat administrators
+	CanSetStickerSet         bool   `json:"can_set_sticker_set"`          // True, if the supergroup sticker set can be changed
+	StickerSetID             int64  `json:"sticker_set_id"`               // Identifier of the supergroup sticker set; 0 if none
+	UpgradedFromMaxMessageID int64  `json:"upgraded_from_max_message_id"` // Identifier of the last message in the basic group from which supergroup was upgraded; 0 if none
+	MemberCount              int32  `json:"member_count"`                 // Number of members in the supergroup or channel; 0 if unknown
 }
 
 // MessageType return the string telegram-type of SupergroupFullInfo
@@ -2556,10 +2555,10 @@ func (secretChat *SecretChat) UnmarshalJSON(b []byte) error {
 // MessageForwardedFromUser The message was originally written by a known user
 type MessageForwardedFromUser struct {
 	tdCommon
-	ForwardedFromMessageID int64 `json:"forwarded_from_message_id"` // For messages forwarded to the chat with the current user (saved messages) the identifier of the original message from which the new message was forwarded; 0 if unknown
 	SenderUserID           int32 `json:"sender_user_id"`            // Identifier of the user that originally sent this message
 	Date                   int32 `json:"date"`                      // Point in time (Unix timestamp) when the message was originally sent
 	ForwardedFromChatID    int64 `json:"forwarded_from_chat_id"`    // For messages forwarded to the chat with the current user (saved messages), the identifier of the chat from which the message was forwarded; 0 if unknown
+	ForwardedFromMessageID int64 `json:"forwarded_from_message_id"` // For messages forwarded to the chat with the current user (saved messages) the identifier of the original message from which the new message was forwarded; 0 if unknown
 }
 
 // MessageType return the string telegram-type of MessageForwardedFromUser
@@ -2626,29 +2625,29 @@ func (messageSendingStateFailed *MessageSendingStateFailed) GetMessageSendingSta
 // Message Describes a message
 type Message struct {
 	tdCommon
-	ReplyToMessageID        int64               `json:"reply_to_message_id"`          // If non-zero, the identifier of the message this message is replying to; can be the identifier of a deleted message
-	AuthorSignature         string              `json:"author_signature"`             // For channel posts, optional author signature
-	Views                   int32               `json:"views"`                        // Number of times this message was viewed
-	MediaAlbumID            int64               `json:"media_album_id"`               // Unique identifier of an album this message belongs to. Only photos and videos can be grouped together in albums
-	ContainsUnreadMention   bool                `json:"contains_unread_mention"`      // True, if the message contains an unread mention for the current user
-	ForwardInfo             MessageForwardInfo  `json:"forward_info"`                 // Information about the initial message sender; may be null
-	CanBeForwarded          bool                `json:"can_be_forwarded"`             // True, if the message can be forwarded
+	CanBeEdited             bool                `json:"can_be_edited"`                // True, if the message can be edited
+	TTL                     int32               `json:"ttl"`                          // For self-destructing messages, the message's TTL (Time To Live), in seconds; 0 if none. TDLib will send updateDeleteMessages or updateMessageContent once the TTL expires
 	CanBeDeletedOnlyForSelf bool                `json:"can_be_deleted_only_for_self"` // True, if the message can be deleted only for the current user while other users will continue to see it
 	CanBeDeletedForAllUsers bool                `json:"can_be_deleted_for_all_users"` // True, if the message can be deleted for all users
 	IsChannelPost           bool                `json:"is_channel_post"`              // True, if the message is a channel post. All messages to channels are channel posts, all other messages are not channel posts
+	ForwardInfo             MessageForwardInfo  `json:"forward_info"`                 // Information about the initial message sender; may be null
+	ID                      int64               `json:"id"`                           // Unique message identifier
+	SenderUserID            int32               `json:"sender_user_id"`               // Identifier of the user who sent the message; 0 if unknown. It is unknown for channel posts
+	SendingState            MessageSendingState `json:"sending_state"`                // Information about the sending state of the message; may be null
+	IsOutgoing              bool                `json:"is_outgoing"`                  // True, if the message is outgoing
+	AuthorSignature         string              `json:"author_signature"`             // For channel posts, optional author signature
+	Views                   int32               `json:"views"`                        // Number of times this message was viewed
+	TTLExpiresIn            float64             `json:"ttl_expires_in"`               // Time left before the message expires, in seconds
+	ViaBotUserID            int32               `json:"via_bot_user_id"`              // If non-zero, the user identifier of the bot through which this message was sent
+	MediaAlbumID            int64               `json:"media_album_id"`               // Unique identifier of an album this message belongs to. Only photos and videos can be grouped together in albums
+	Content                 MessageContent      `json:"content"`                      // Content of the message
+	ChatID                  int64               `json:"chat_id"`                      // Chat identifier
+	ContainsUnreadMention   bool                `json:"contains_unread_mention"`      // True, if the message contains an unread mention for the current user
 	Date                    int32               `json:"date"`                         // Point in time (Unix timestamp) when the message was sent
 	EditDate                int32               `json:"edit_date"`                    // Point in time (Unix timestamp) when the message was last edited
-	SenderUserID            int32               `json:"sender_user_id"`               // Identifier of the user who sent the message; 0 if unknown. It is unknown for channel posts
-	ChatID                  int64               `json:"chat_id"`                      // Chat identifier
-	ViaBotUserID            int32               `json:"via_bot_user_id"`              // If non-zero, the user identifier of the bot through which this message was sent
-	TTL                     int32               `json:"ttl"`                          // For self-destructing messages, the message's TTL (Time To Live), in seconds; 0 if none. TDLib will send updateDeleteMessages or updateMessageContent once the TTL expires
-	SendingState            MessageSendingState `json:"sending_state"`                // Information about the sending state of the message; may be null
-	CanBeEdited             bool                `json:"can_be_edited"`                // True, if the message can be edited
-	TTLExpiresIn            float64             `json:"ttl_expires_in"`               // Time left before the message expires, in seconds
-	Content                 MessageContent      `json:"content"`                      // Content of the message
 	ReplyMarkup             ReplyMarkup         `json:"reply_markup"`                 // Reply markup for the message; may be null
-	ID                      int64               `json:"id"`                           // Unique message identifier
-	IsOutgoing              bool                `json:"is_outgoing"`                  // True, if the message is outgoing
+	CanBeForwarded          bool                `json:"can_be_forwarded"`             // True, if the message can be forwarded
+	ReplyToMessageID        int64               `json:"reply_to_message_id"`          // If non-zero, the identifier of the message this message is replying to; can be the identifier of a deleted message
 }
 
 // MessageType return the string telegram-type of Message
@@ -2665,25 +2664,25 @@ func (message *Message) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
-		ReplyToMessageID        int64   `json:"reply_to_message_id"`          // If non-zero, the identifier of the message this message is replying to; can be the identifier of a deleted message
-		AuthorSignature         string  `json:"author_signature"`             // For channel posts, optional author signature
-		Views                   int32   `json:"views"`                        // Number of times this message was viewed
-		MediaAlbumID            int64   `json:"media_album_id"`               // Unique identifier of an album this message belongs to. Only photos and videos can be grouped together in albums
-		ContainsUnreadMention   bool    `json:"contains_unread_mention"`      // True, if the message contains an unread mention for the current user
-		CanBeForwarded          bool    `json:"can_be_forwarded"`             // True, if the message can be forwarded
+		CanBeEdited             bool    `json:"can_be_edited"`                // True, if the message can be edited
+		TTL                     int32   `json:"ttl"`                          // For self-destructing messages, the message's TTL (Time To Live), in seconds; 0 if none. TDLib will send updateDeleteMessages or updateMessageContent once the TTL expires
 		CanBeDeletedOnlyForSelf bool    `json:"can_be_deleted_only_for_self"` // True, if the message can be deleted only for the current user while other users will continue to see it
 		CanBeDeletedForAllUsers bool    `json:"can_be_deleted_for_all_users"` // True, if the message can be deleted for all users
 		IsChannelPost           bool    `json:"is_channel_post"`              // True, if the message is a channel post. All messages to channels are channel posts, all other messages are not channel posts
+		ID                      int64   `json:"id"`                           // Unique message identifier
+		SenderUserID            int32   `json:"sender_user_id"`               // Identifier of the user who sent the message; 0 if unknown. It is unknown for channel posts
+		IsOutgoing              bool    `json:"is_outgoing"`                  // True, if the message is outgoing
+		AuthorSignature         string  `json:"author_signature"`             // For channel posts, optional author signature
+		Views                   int32   `json:"views"`                        // Number of times this message was viewed
+		TTLExpiresIn            float64 `json:"ttl_expires_in"`               // Time left before the message expires, in seconds
+		ViaBotUserID            int32   `json:"via_bot_user_id"`              // If non-zero, the user identifier of the bot through which this message was sent
+		MediaAlbumID            int64   `json:"media_album_id"`               // Unique identifier of an album this message belongs to. Only photos and videos can be grouped together in albums
+		ChatID                  int64   `json:"chat_id"`                      // Chat identifier
+		ContainsUnreadMention   bool    `json:"contains_unread_mention"`      // True, if the message contains an unread mention for the current user
 		Date                    int32   `json:"date"`                         // Point in time (Unix timestamp) when the message was sent
 		EditDate                int32   `json:"edit_date"`                    // Point in time (Unix timestamp) when the message was last edited
-		SenderUserID            int32   `json:"sender_user_id"`               // Identifier of the user who sent the message; 0 if unknown. It is unknown for channel posts
-		ChatID                  int64   `json:"chat_id"`                      // Chat identifier
-		ViaBotUserID            int32   `json:"via_bot_user_id"`              // If non-zero, the user identifier of the bot through which this message was sent
-		TTL                     int32   `json:"ttl"`                          // For self-destructing messages, the message's TTL (Time To Live), in seconds; 0 if none. TDLib will send updateDeleteMessages or updateMessageContent once the TTL expires
-		CanBeEdited             bool    `json:"can_be_edited"`                // True, if the message can be edited
-		TTLExpiresIn            float64 `json:"ttl_expires_in"`               // Time left before the message expires, in seconds
-		ID                      int64   `json:"id"`                           // Unique message identifier
-		IsOutgoing              bool    `json:"is_outgoing"`                  // True, if the message is outgoing
+		CanBeForwarded          bool    `json:"can_be_forwarded"`             // True, if the message can be forwarded
+		ReplyToMessageID        int64   `json:"reply_to_message_id"`          // If non-zero, the identifier of the message this message is replying to; can be the identifier of a deleted message
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -2691,25 +2690,25 @@ func (message *Message) UnmarshalJSON(b []byte) error {
 	}
 
 	message.tdCommon = tempObj.tdCommon
-	message.ReplyToMessageID = tempObj.ReplyToMessageID
-	message.AuthorSignature = tempObj.AuthorSignature
-	message.Views = tempObj.Views
-	message.MediaAlbumID = tempObj.MediaAlbumID
-	message.ContainsUnreadMention = tempObj.ContainsUnreadMention
-	message.CanBeForwarded = tempObj.CanBeForwarded
+	message.CanBeEdited = tempObj.CanBeEdited
+	message.TTL = tempObj.TTL
 	message.CanBeDeletedOnlyForSelf = tempObj.CanBeDeletedOnlyForSelf
 	message.CanBeDeletedForAllUsers = tempObj.CanBeDeletedForAllUsers
 	message.IsChannelPost = tempObj.IsChannelPost
+	message.ID = tempObj.ID
+	message.SenderUserID = tempObj.SenderUserID
+	message.IsOutgoing = tempObj.IsOutgoing
+	message.AuthorSignature = tempObj.AuthorSignature
+	message.Views = tempObj.Views
+	message.TTLExpiresIn = tempObj.TTLExpiresIn
+	message.ViaBotUserID = tempObj.ViaBotUserID
+	message.MediaAlbumID = tempObj.MediaAlbumID
+	message.ChatID = tempObj.ChatID
+	message.ContainsUnreadMention = tempObj.ContainsUnreadMention
 	message.Date = tempObj.Date
 	message.EditDate = tempObj.EditDate
-	message.SenderUserID = tempObj.SenderUserID
-	message.ChatID = tempObj.ChatID
-	message.ViaBotUserID = tempObj.ViaBotUserID
-	message.TTL = tempObj.TTL
-	message.CanBeEdited = tempObj.CanBeEdited
-	message.TTLExpiresIn = tempObj.TTLExpiresIn
-	message.ID = tempObj.ID
-	message.IsOutgoing = tempObj.IsOutgoing
+	message.CanBeForwarded = tempObj.CanBeForwarded
+	message.ReplyToMessageID = tempObj.ReplyToMessageID
 
 	fieldForwardInfo, _ := unmarshalMessageForwardInfo(objMap["forward_info"])
 	message.ForwardInfo = fieldForwardInfo
@@ -2741,8 +2740,8 @@ func (messages *Messages) MessageType() string {
 // FoundMessages Contains a list of messages found by a search
 type FoundMessages struct {
 	tdCommon
-	NextFromSearchID int64     `json:"next_from_search_id"` // Value to pass as from_search_id to get more results
 	Messages         []Message `json:"messages"`            // List of messages
+	NextFromSearchID int64     `json:"next_from_search_id"` // Value to pass as from_search_id to get more results
 }
 
 // MessageType return the string telegram-type of FoundMessages
@@ -2897,8 +2896,8 @@ func (chatTypeBasicGroup *ChatTypeBasicGroup) GetChatTypeEnum() ChatTypeEnum {
 // ChatTypeSupergroup A supergroup (i.e. a chat with up to GetOption("supergroup_max_size") other users), or channel (with unlimited members)
 type ChatTypeSupergroup struct {
 	tdCommon
-	SupergroupID int32 `json:"supergroup_id"` // Supergroup or channel identifier
 	IsChannel    bool  `json:"is_channel"`    // True, if the supergroup is a channel
+	SupergroupID int32 `json:"supergroup_id"` // Supergroup or channel identifier
 }
 
 // MessageType return the string telegram-type of ChatTypeSupergroup
@@ -2931,22 +2930,22 @@ func (chatTypeSecret *ChatTypeSecret) GetChatTypeEnum() ChatTypeEnum {
 // Chat A chat. (Can be a private chat, basic group, supergroup, or secret chat)
 type Chat struct {
 	tdCommon
+	IsPinned                bool                 `json:"is_pinned"`                   // True, if the chat is pinned
 	NotificationSettings    NotificationSettings `json:"notification_settings"`       // Notification settings for this chat
-	Title                   string               `json:"title"`                       // Chat title
-	Type                    ChatType             `json:"type"`                        // Type of the chat
-	Photo                   ChatPhoto            `json:"photo"`                       // Chat photo; may be null
+	UnreadCount             int32                `json:"unread_count"`                // Number of unread messages in the chat
 	LastReadInboxMessageID  int64                `json:"last_read_inbox_message_id"`  // Identifier of the last read incoming message
 	LastReadOutboxMessageID int64                `json:"last_read_outbox_message_id"` // Identifier of the last read outgoing message
-	ID                      int64                `json:"id"`                          // Chat unique identifier
-	IsPinned                bool                 `json:"is_pinned"`                   // True, if the chat is pinned
-	CanBeReported           bool                 `json:"can_be_reported"`             // True, if the chat can be reported to Telegram moderators through reportChat
-	UnreadCount             int32                `json:"unread_count"`                // Number of unread messages in the chat
-	UnreadMentionCount      int32                `json:"unread_mention_count"`        // Number of unread messages with a mention/reply in the chat
-	ReplyMarkupMessageID    int64                `json:"reply_markup_message_id"`     // Identifier of the message from which reply markup needs to be used; 0 if there is no default custom reply markup in the chat
-	ClientData              string               `json:"client_data"`                 // Contains client-specific data associated with the chat. (For example, the chat position or local chat notification settings can be stored here.) Persistent if a message database is used
-	LastMessage             Message              `json:"last_message"`                // Last message in the chat; may be null
 	DraftMessage            DraftMessage         `json:"draft_message"`               // A draft of a message in the chat; may be null
+	ClientData              string               `json:"client_data"`                 // Contains client-specific data associated with the chat. (For example, the chat position or local chat notification settings can be stored here.) Persistent if a message database is used
+	Title                   string               `json:"title"`                       // Chat title
+	Photo                   ChatPhoto            `json:"photo"`                       // Chat photo; may be null
 	Order                   int64                `json:"order"`                       // Descending parameter by which chats are sorted in the main chat list. If the order number of two chats is the same, they must be sorted in descending order by ID. If 0, the position of the chat in the list is undetermined
+	ReplyMarkupMessageID    int64                `json:"reply_markup_message_id"`     // Identifier of the message from which reply markup needs to be used; 0 if there is no default custom reply markup in the chat
+	ID                      int64                `json:"id"`                          // Chat unique identifier
+	LastMessage             Message              `json:"last_message"`                // Last message in the chat; may be null
+	UnreadMentionCount      int32                `json:"unread_mention_count"`        // Number of unread messages with a mention/reply in the chat
+	Type                    ChatType             `json:"type"`                        // Type of the chat
+	CanBeReported           bool                 `json:"can_be_reported"`             // True, if the chat can be reported to Telegram moderators through reportChat
 }
 
 // MessageType return the string telegram-type of Chat
@@ -2963,21 +2962,21 @@ func (chat *Chat) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
+		IsPinned                bool                 `json:"is_pinned"`                   // True, if the chat is pinned
 		NotificationSettings    NotificationSettings `json:"notification_settings"`       // Notification settings for this chat
-		Title                   string               `json:"title"`                       // Chat title
-		Photo                   ChatPhoto            `json:"photo"`                       // Chat photo; may be null
+		UnreadCount             int32                `json:"unread_count"`                // Number of unread messages in the chat
 		LastReadInboxMessageID  int64                `json:"last_read_inbox_message_id"`  // Identifier of the last read incoming message
 		LastReadOutboxMessageID int64                `json:"last_read_outbox_message_id"` // Identifier of the last read outgoing message
-		ID                      int64                `json:"id"`                          // Chat unique identifier
-		IsPinned                bool                 `json:"is_pinned"`                   // True, if the chat is pinned
-		CanBeReported           bool                 `json:"can_be_reported"`             // True, if the chat can be reported to Telegram moderators through reportChat
-		UnreadCount             int32                `json:"unread_count"`                // Number of unread messages in the chat
-		UnreadMentionCount      int32                `json:"unread_mention_count"`        // Number of unread messages with a mention/reply in the chat
-		ReplyMarkupMessageID    int64                `json:"reply_markup_message_id"`     // Identifier of the message from which reply markup needs to be used; 0 if there is no default custom reply markup in the chat
-		ClientData              string               `json:"client_data"`                 // Contains client-specific data associated with the chat. (For example, the chat position or local chat notification settings can be stored here.) Persistent if a message database is used
-		LastMessage             Message              `json:"last_message"`                // Last message in the chat; may be null
 		DraftMessage            DraftMessage         `json:"draft_message"`               // A draft of a message in the chat; may be null
+		ClientData              string               `json:"client_data"`                 // Contains client-specific data associated with the chat. (For example, the chat position or local chat notification settings can be stored here.) Persistent if a message database is used
+		Title                   string               `json:"title"`                       // Chat title
+		Photo                   ChatPhoto            `json:"photo"`                       // Chat photo; may be null
 		Order                   int64                `json:"order"`                       // Descending parameter by which chats are sorted in the main chat list. If the order number of two chats is the same, they must be sorted in descending order by ID. If 0, the position of the chat in the list is undetermined
+		ReplyMarkupMessageID    int64                `json:"reply_markup_message_id"`     // Identifier of the message from which reply markup needs to be used; 0 if there is no default custom reply markup in the chat
+		ID                      int64                `json:"id"`                          // Chat unique identifier
+		LastMessage             Message              `json:"last_message"`                // Last message in the chat; may be null
+		UnreadMentionCount      int32                `json:"unread_mention_count"`        // Number of unread messages with a mention/reply in the chat
+		CanBeReported           bool                 `json:"can_be_reported"`             // True, if the chat can be reported to Telegram moderators through reportChat
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -2985,21 +2984,21 @@ func (chat *Chat) UnmarshalJSON(b []byte) error {
 	}
 
 	chat.tdCommon = tempObj.tdCommon
+	chat.IsPinned = tempObj.IsPinned
 	chat.NotificationSettings = tempObj.NotificationSettings
-	chat.Title = tempObj.Title
-	chat.Photo = tempObj.Photo
+	chat.UnreadCount = tempObj.UnreadCount
 	chat.LastReadInboxMessageID = tempObj.LastReadInboxMessageID
 	chat.LastReadOutboxMessageID = tempObj.LastReadOutboxMessageID
-	chat.ID = tempObj.ID
-	chat.IsPinned = tempObj.IsPinned
-	chat.CanBeReported = tempObj.CanBeReported
-	chat.UnreadCount = tempObj.UnreadCount
-	chat.UnreadMentionCount = tempObj.UnreadMentionCount
-	chat.ReplyMarkupMessageID = tempObj.ReplyMarkupMessageID
-	chat.ClientData = tempObj.ClientData
-	chat.LastMessage = tempObj.LastMessage
 	chat.DraftMessage = tempObj.DraftMessage
+	chat.ClientData = tempObj.ClientData
+	chat.Title = tempObj.Title
+	chat.Photo = tempObj.Photo
 	chat.Order = tempObj.Order
+	chat.ReplyMarkupMessageID = tempObj.ReplyMarkupMessageID
+	chat.ID = tempObj.ID
+	chat.LastMessage = tempObj.LastMessage
+	chat.UnreadMentionCount = tempObj.UnreadMentionCount
+	chat.CanBeReported = tempObj.CanBeReported
 
 	fieldType, _ := unmarshalChatType(objMap["type"])
 	chat.Type = fieldType
@@ -3129,8 +3128,8 @@ func (keyboardButtonTypeRequestLocation *KeyboardButtonTypeRequestLocation) GetK
 // KeyboardButton Represents a single button in a bot keyboard
 type KeyboardButton struct {
 	tdCommon
-	Text string             `json:"text"` // Text of the button
 	Type KeyboardButtonType `json:"type"` // Type of the button
+	Text string             `json:"text"` // Text of the button
 }
 
 // MessageType return the string telegram-type of KeyboardButton
@@ -3148,7 +3147,6 @@ func (keyboardButton *KeyboardButton) UnmarshalJSON(b []byte) error {
 	tempObj := struct {
 		tdCommon
 		Text string `json:"text"` // Text of the button
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -3316,10 +3314,10 @@ func (replyMarkupForceReply *ReplyMarkupForceReply) GetReplyMarkupEnum() ReplyMa
 // ReplyMarkupShowKeyboard Contains a custom keyboard layout to quickly reply to bots
 type ReplyMarkupShowKeyboard struct {
 	tdCommon
-	IsPersonal     bool               `json:"is_personal"`     // True, if the keyboard must automatically be shown to the current user. For outgoing messages, specify true to show the keyboard only for the mentioned users and for the target user of a reply
 	Rows           [][]KeyboardButton `json:"rows"`            // A list of rows of bot keyboard buttons
 	ResizeKeyboard bool               `json:"resize_keyboard"` // True, if the client needs to resize the keyboard vertically
 	OneTime        bool               `json:"one_time"`        // True, if the client needs to hide the keyboard after use
+	IsPersonal     bool               `json:"is_personal"`     // True, if the keyboard must automatically be shown to the current user. For outgoing messages, specify true to show the keyboard only for the mentioned users and for the target user of a reply
 }
 
 // MessageType return the string telegram-type of ReplyMarkupShowKeyboard
@@ -3562,8 +3560,8 @@ func (richTextFixed *RichTextFixed) GetRichTextEnum() RichTextEnum {
 // RichTextURL A rich text URL link
 type RichTextURL struct {
 	tdCommon
-	URL  string   `json:"url"`  // URL
 	Text RichText `json:"text"` // Text
+	URL  string   `json:"url"`  // URL
 }
 
 // MessageType return the string telegram-type of RichTextURL
@@ -3581,7 +3579,6 @@ func (richTextURL *RichTextURL) UnmarshalJSON(b []byte) error {
 	tempObj := struct {
 		tdCommon
 		URL string `json:"url"` // URL
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -3741,8 +3738,8 @@ func (pageBlockSubtitle *PageBlockSubtitle) GetPageBlockEnum() PageBlockEnum {
 // PageBlockAuthorDate The author and publishing date of a page
 type PageBlockAuthorDate struct {
 	tdCommon
-	PublishDate int32    `json:"publish_date"` // Point in time (Unix timestamp) when the article was published; 0 if unknown
 	Author      RichText `json:"author"`       // Author
+	PublishDate int32    `json:"publish_date"` // Point in time (Unix timestamp) when the article was published; 0 if unknown
 }
 
 // MessageType return the string telegram-type of PageBlockAuthorDate
@@ -3760,7 +3757,6 @@ func (pageBlockAuthorDate *PageBlockAuthorDate) UnmarshalJSON(b []byte) error {
 	tempObj := struct {
 		tdCommon
 		PublishDate int32 `json:"publish_date"` // Point in time (Unix timestamp) when the article was published; 0 if unknown
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -4335,14 +4331,14 @@ func (pageBlockCover *PageBlockCover) GetPageBlockEnum() PageBlockEnum {
 // PageBlockEmbedded An embedded web page
 type PageBlockEmbedded struct {
 	tdCommon
+	HTML           string   `json:"html"`            // HTML-markup of the embedded page
+	PosterPhoto    Photo    `json:"poster_photo"`    // Poster photo, if available; may be null
+	Width          int32    `json:"width"`           // Block width
 	Height         int32    `json:"height"`          // Block height
 	Caption        RichText `json:"caption"`         // Block caption
 	IsFullWidth    bool     `json:"is_full_width"`   // True, if the block should be full width
 	AllowScrolling bool     `json:"allow_scrolling"` // True, if scrolling should be allowed
 	URL            string   `json:"url"`             // Web page URL, if available
-	HTML           string   `json:"html"`            // HTML-markup of the embedded page
-	PosterPhoto    Photo    `json:"poster_photo"`    // Poster photo, if available; may be null
-	Width          int32    `json:"width"`           // Block width
 }
 
 // MessageType return the string telegram-type of PageBlockEmbedded
@@ -4359,13 +4355,13 @@ func (pageBlockEmbedded *PageBlockEmbedded) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
+		HTML           string `json:"html"`            // HTML-markup of the embedded page
+		PosterPhoto    Photo  `json:"poster_photo"`    // Poster photo, if available; may be null
+		Width          int32  `json:"width"`           // Block width
 		Height         int32  `json:"height"`          // Block height
 		IsFullWidth    bool   `json:"is_full_width"`   // True, if the block should be full width
 		AllowScrolling bool   `json:"allow_scrolling"` // True, if scrolling should be allowed
 		URL            string `json:"url"`             // Web page URL, if available
-		HTML           string `json:"html"`            // HTML-markup of the embedded page
-		PosterPhoto    Photo  `json:"poster_photo"`    // Poster photo, if available; may be null
-		Width          int32  `json:"width"`           // Block width
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -4373,13 +4369,13 @@ func (pageBlockEmbedded *PageBlockEmbedded) UnmarshalJSON(b []byte) error {
 	}
 
 	pageBlockEmbedded.tdCommon = tempObj.tdCommon
+	pageBlockEmbedded.HTML = tempObj.HTML
+	pageBlockEmbedded.PosterPhoto = tempObj.PosterPhoto
+	pageBlockEmbedded.Width = tempObj.Width
 	pageBlockEmbedded.Height = tempObj.Height
 	pageBlockEmbedded.IsFullWidth = tempObj.IsFullWidth
 	pageBlockEmbedded.AllowScrolling = tempObj.AllowScrolling
 	pageBlockEmbedded.URL = tempObj.URL
-	pageBlockEmbedded.HTML = tempObj.HTML
-	pageBlockEmbedded.PosterPhoto = tempObj.PosterPhoto
-	pageBlockEmbedded.Width = tempObj.Width
 
 	fieldCaption, _ := unmarshalRichText(objMap["caption"])
 	pageBlockEmbedded.Caption = fieldCaption
@@ -4395,12 +4391,12 @@ func (pageBlockEmbedded *PageBlockEmbedded) GetPageBlockEnum() PageBlockEnum {
 // PageBlockEmbeddedPost An embedded post
 type PageBlockEmbeddedPost struct {
 	tdCommon
-	PageBlocks  []PageBlock `json:"page_blocks"`  // Post content
-	Caption     RichText    `json:"caption"`      // Post caption
-	URL         string      `json:"url"`          // Web page URL
 	Author      string      `json:"author"`       // Post author
 	AuthorPhoto Photo       `json:"author_photo"` // Post author photo
 	Date        int32       `json:"date"`         // Point in time (Unix timestamp) when the post was created; 0 if unknown
+	PageBlocks  []PageBlock `json:"page_blocks"`  // Post content
+	Caption     RichText    `json:"caption"`      // Post caption
+	URL         string      `json:"url"`          // Web page URL
 }
 
 // MessageType return the string telegram-type of PageBlockEmbeddedPost
@@ -4417,11 +4413,11 @@ func (pageBlockEmbeddedPost *PageBlockEmbeddedPost) UnmarshalJSON(b []byte) erro
 	}
 	tempObj := struct {
 		tdCommon
-		PageBlocks  []PageBlock `json:"page_blocks"`  // Post content
-		URL         string      `json:"url"`          // Web page URL
 		Author      string      `json:"author"`       // Post author
 		AuthorPhoto Photo       `json:"author_photo"` // Post author photo
 		Date        int32       `json:"date"`         // Point in time (Unix timestamp) when the post was created; 0 if unknown
+		PageBlocks  []PageBlock `json:"page_blocks"`  // Post content
+		URL         string      `json:"url"`          // Web page URL
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -4429,11 +4425,11 @@ func (pageBlockEmbeddedPost *PageBlockEmbeddedPost) UnmarshalJSON(b []byte) erro
 	}
 
 	pageBlockEmbeddedPost.tdCommon = tempObj.tdCommon
-	pageBlockEmbeddedPost.PageBlocks = tempObj.PageBlocks
-	pageBlockEmbeddedPost.URL = tempObj.URL
 	pageBlockEmbeddedPost.Author = tempObj.Author
 	pageBlockEmbeddedPost.AuthorPhoto = tempObj.AuthorPhoto
 	pageBlockEmbeddedPost.Date = tempObj.Date
+	pageBlockEmbeddedPost.PageBlocks = tempObj.PageBlocks
+	pageBlockEmbeddedPost.URL = tempObj.URL
 
 	fieldCaption, _ := unmarshalRichText(objMap["caption"])
 	pageBlockEmbeddedPost.Caption = fieldCaption
@@ -4535,9 +4531,9 @@ func (pageBlockSlideshow *PageBlockSlideshow) GetPageBlockEnum() PageBlockEnum {
 // PageBlockChatLink A link to a chat
 type PageBlockChatLink struct {
 	tdCommon
-	Title    string    `json:"title"`    // Chat title
 	Photo    ChatPhoto `json:"photo"`    // Chat photo; may be null
 	Username string    `json:"username"` // Chat username, by which all other information about the chat should be resolved
+	Title    string    `json:"title"`    // Chat title
 }
 
 // MessageType return the string telegram-type of PageBlockChatLink
@@ -4565,27 +4561,27 @@ func (webPageInstantView *WebPageInstantView) MessageType() string {
 // WebPage Describes a web page preview
 type WebPage struct {
 	tdCommon
-	EmbedHeight    int32     `json:"embed_height"`     // Height of the embedded preview
-	DisplayURL     string    `json:"display_url"`      // URL to display
-	Type           string    `json:"type"`             // Type of the web page. Can be: article, photo, audio, video, document, profile, app, or something else
-	SiteName       string    `json:"site_name"`        // Short name of the site (e.g., Google Docs, App Store)
-	EmbedWidth     int32     `json:"embed_width"`      // Width of the embedded preview
-	Sticker        Sticker   `json:"sticker"`          // Preview of the content as a sticker for small WEBP files, if available; may be null
-	Description    string    `json:"description"`      //
-	Photo          Photo     `json:"photo"`            // Image representing the content; may be null
-	EmbedURL       string    `json:"embed_url"`        // URL to show in the embedded preview
 	Animation      Animation `json:"animation"`        // Preview of the content as an animation, if available; may be null
-	Duration       int32     `json:"duration"`         // Duration of the content, in seconds
 	Audio          Audio     `json:"audio"`            // Preview of the content as an audio file, if available; may be null
-	VoiceNote      VoiceNote `json:"voice_note"`       // Preview of the content as a voice note, if available; may be null
 	Document       Document  `json:"document"`         // Preview of the content as a document, if available (currently only available for small PDF files and ZIP archives); may be null
+	Photo          Photo     `json:"photo"`            // Image representing the content; may be null
+	Duration       int32     `json:"duration"`         // Duration of the content, in seconds
+	SiteName       string    `json:"site_name"`        // Short name of the site (e.g., Google Docs, App Store)
+	Description    string    `json:"description"`      //
+	Author         string    `json:"author"`           // Author of the content
+	URL            string    `json:"url"`              // Original URL of the link
+	DisplayURL     string    `json:"display_url"`      // URL to display
+	EmbedHeight    int32     `json:"embed_height"`     // Height of the embedded preview
 	Video          Video     `json:"video"`            // Preview of the content as a video, if available; may be null
 	VideoNote      VideoNote `json:"video_note"`       // Preview of the content as a video note, if available; may be null
-	HasInstantView bool      `json:"has_instant_view"` // True, if the web page has an instant view
-	URL            string    `json:"url"`              // Original URL of the link
 	Title          string    `json:"title"`            // Title of the content
+	EmbedWidth     int32     `json:"embed_width"`      // Width of the embedded preview
 	EmbedType      string    `json:"embed_type"`       // MIME type of the embedded preview, (e.g., text/html or video/mp4)
-	Author         string    `json:"author"`           // Author of the content
+	Sticker        Sticker   `json:"sticker"`          // Preview of the content as a sticker for small WEBP files, if available; may be null
+	VoiceNote      VoiceNote `json:"voice_note"`       // Preview of the content as a voice note, if available; may be null
+	HasInstantView bool      `json:"has_instant_view"` // True, if the web page has an instant view
+	Type           string    `json:"type"`             // Type of the web page. Can be: article, photo, audio, video, document, profile, app, or something else
+	EmbedURL       string    `json:"embed_url"`        // URL to show in the embedded preview
 }
 
 // MessageType return the string telegram-type of WebPage
@@ -4608,13 +4604,13 @@ func (labeledPricePart *LabeledPricePart) MessageType() string {
 // Invoice Product invoice
 type Invoice struct {
 	tdCommon
-	NeedName                   bool               `json:"need_name"`                      // True, if the user's name is needed for payment
+	IsTest                     bool               `json:"is_test"`                        // True, if the payment is a test payment
+	NeedPhoneNumber            bool               `json:"need_phone_number"`              // True, if the user's phone number is needed for payment
 	NeedShippingAddress        bool               `json:"need_shipping_address"`          // True, if the user's shipping address is needed for payment
 	SendPhoneNumberToProvider  bool               `json:"send_phone_number_to_provider"`  // True, if the user's phone number will be sent to the provider
 	SendEmailAddressToProvider bool               `json:"send_email_address_to_provider"` // True, if the user's email address will be sent to the provider
 	Currency                   string             `json:"currency"`                       // ISO 4217 currency code
-	IsTest                     bool               `json:"is_test"`                        // True, if the payment is a test payment
-	NeedPhoneNumber            bool               `json:"need_phone_number"`              // True, if the user's phone number is needed for payment
+	NeedName                   bool               `json:"need_name"`                      // True, if the user's name is needed for payment
 	NeedEmailAddress           bool               `json:"need_email_address"`             // True, if the user's email address is needed for payment
 	IsFlexible                 bool               `json:"is_flexible"`                    // True, if the total price depends on the shipping method
 	PriceParts                 []LabeledPricePart `json:"price_parts"`                    // A list of objects used to calculate the total price of the product
@@ -4644,10 +4640,10 @@ func (shippingAddress *ShippingAddress) MessageType() string {
 // OrderInfo Order information
 type OrderInfo struct {
 	tdCommon
+	Name            string          `json:"name"`             // Name of the user
 	PhoneNumber     string          `json:"phone_number"`     // Phone number of the user
 	EmailAddress    string          `json:"email_address"`    // Email address of the user
 	ShippingAddress ShippingAddress `json:"shipping_address"` // Shipping address for this order; may be null
-	Name            string          `json:"name"`             // Name of the user
 }
 
 // MessageType return the string telegram-type of OrderInfo
@@ -4658,9 +4654,9 @@ func (orderInfo *OrderInfo) MessageType() string {
 // ShippingOption One shipping option
 type ShippingOption struct {
 	tdCommon
+	ID         string             `json:"id"`          // Shipping option identifier
 	Title      string             `json:"title"`       // Option title
 	PriceParts []LabeledPricePart `json:"price_parts"` // A list of objects used to calculate the total shipping costs
-	ID         string             `json:"id"`          // Shipping option identifier
 }
 
 // MessageType return the string telegram-type of ShippingOption
@@ -4699,8 +4695,8 @@ func (inputCredentialsSaved *InputCredentialsSaved) GetInputCredentialsEnum() In
 // InputCredentialsNew Applies if a user enters new credentials on a payment provider website
 type InputCredentialsNew struct {
 	tdCommon
-	AllowSave bool   `json:"allow_save"` // True, if the credential identifier can be saved on the server side
 	Data      string `json:"data"`       // Contains JSON-encoded data with a credential identifier from the payment provider
+	AllowSave bool   `json:"allow_save"` // True, if the credential identifier can be saved on the server side
 }
 
 // MessageType return the string telegram-type of InputCredentialsNew
@@ -4762,13 +4758,13 @@ func (paymentsProviderStripe *PaymentsProviderStripe) MessageType() string {
 // PaymentForm Contains information about an invoice payment form
 type PaymentForm struct {
 	tdCommon
+	Invoice            Invoice                `json:"invoice"`              // Full information of the invoice
 	URL                string                 `json:"url"`                  // Payment form URL
 	PaymentsProvider   PaymentsProviderStripe `json:"payments_provider"`    // Contains information about the payment provider, if available, to support it natively without the need for opening the URL; may be null
 	SavedOrderInfo     OrderInfo              `json:"saved_order_info"`     // Saved server-side order information; may be null
 	SavedCredentials   SavedCredentials       `json:"saved_credentials"`    // Contains information about saved card credentials; may be null
 	CanSaveCredentials bool                   `json:"can_save_credentials"` // True, if the user can choose to save credentials
 	NeedPassword       bool                   `json:"need_password"`        // True, if the user will be able to save credentials protected by a password they set up
-	Invoice            Invoice                `json:"invoice"`              // Full information of the invoice
 }
 
 // MessageType return the string telegram-type of PaymentForm
@@ -4791,8 +4787,8 @@ func (validatedOrderInfo *ValidatedOrderInfo) MessageType() string {
 // PaymentResult Contains the result of a payment request
 type PaymentResult struct {
 	tdCommon
-	VerificationURL string `json:"verification_url"` // URL for additional payment credentials verification
 	Success         bool   `json:"success"`          // True, if the payment request was successful; otherwise the verification_url will be not empty
+	VerificationURL string `json:"verification_url"` // URL for additional payment credentials verification
 }
 
 // MessageType return the string telegram-type of PaymentResult
@@ -4803,12 +4799,12 @@ func (paymentResult *PaymentResult) MessageType() string {
 // PaymentReceipt Contains information about a successful payment
 type PaymentReceipt struct {
 	tdCommon
+	Date                   int32          `json:"date"`                      // Point in time (Unix timestamp) when the payment was made
 	PaymentsProviderUserID int32          `json:"payments_provider_user_id"` // User identifier of the payment provider bot
 	Invoice                Invoice        `json:"invoice"`                   // Contains information about the invoice
 	OrderInfo              OrderInfo      `json:"order_info"`                // Contains order information; may be null
 	ShippingOption         ShippingOption `json:"shipping_option"`           // Chosen shipping option; may be null
 	CredentialsTitle       string         `json:"credentials_title"`         // Title of the saved credentials
-	Date                   int32          `json:"date"`                      // Point in time (Unix timestamp) when the payment was made
 }
 
 // MessageType return the string telegram-type of PaymentReceipt
@@ -4854,8 +4850,8 @@ func (messageAnimation *MessageAnimation) GetMessageContentEnum() MessageContent
 // MessageAudio An audio message
 type MessageAudio struct {
 	tdCommon
-	Caption FormattedText `json:"caption"` // Audio caption
 	Audio   Audio         `json:"audio"`   // Message content
+	Caption FormattedText `json:"caption"` // Audio caption
 }
 
 // MessageType return the string telegram-type of MessageAudio
@@ -4871,8 +4867,8 @@ func (messageAudio *MessageAudio) GetMessageContentEnum() MessageContentEnum {
 // MessageDocument A document message (general file)
 type MessageDocument struct {
 	tdCommon
-	Caption  FormattedText `json:"caption"`  // Document caption
 	Document Document      `json:"document"` // Message content
+	Caption  FormattedText `json:"caption"`  // Document caption
 }
 
 // MessageType return the string telegram-type of MessageDocument
@@ -5006,9 +5002,9 @@ func (messageVoiceNote *MessageVoiceNote) GetMessageContentEnum() MessageContent
 // MessageLocation A message with a location
 type MessageLocation struct {
 	tdCommon
-	ExpiresIn  int32    `json:"expires_in"`  // Left time for which the location can be updated, in seconds. updateMessageContent is not sent when this field changes
 	Location   Location `json:"location"`    // Message content
 	LivePeriod int32    `json:"live_period"` // Time relative to the message sent date until which the location can be updated, in seconds
+	ExpiresIn  int32    `json:"expires_in"`  // Left time for which the location can be updated, in seconds. updateMessageContent is not sent when this field changes
 }
 
 // MessageType return the string telegram-type of MessageLocation
@@ -5072,15 +5068,15 @@ func (messageGame *MessageGame) GetMessageContentEnum() MessageContentEnum {
 // MessageInvoice A message with an invoice from a bot
 type MessageInvoice struct {
 	tdCommon
-	Title               string `json:"title"`                 // Product title
-	Description         string `json:"description"`           //
-	Photo               Photo  `json:"photo"`                 // Product photo; may be null
-	Currency            string `json:"currency"`              // Currency for the product price
-	TotalAmount         int64  `json:"total_amount"`          // Product total price in the minimal quantity of the currency
 	ReceiptMessageID    int64  `json:"receipt_message_id"`    // The identifier of the message with the receipt, after the product has been purchased
+	Title               string `json:"title"`                 // Product title
+	Currency            string `json:"currency"`              // Currency for the product price
 	StartParameter      string `json:"start_parameter"`       // Unique invoice bot start_parameter. To share an invoice use the URL https://t.me/{bot_username}?start={start_parameter}
 	IsTest              bool   `json:"is_test"`               // True, if the invoice is a test invoice
 	NeedShippingAddress bool   `json:"need_shipping_address"` // True, if the shipping address should be specified
+	Description         string `json:"description"`           //
+	Photo               Photo  `json:"photo"`                 // Product photo; may be null
+	TotalAmount         int64  `json:"total_amount"`          // Product total price in the minimal quantity of the currency
 }
 
 // MessageType return the string telegram-type of MessageInvoice
@@ -5281,8 +5277,8 @@ func (messageChatUpgradeTo *MessageChatUpgradeTo) GetMessageContentEnum() Messag
 // MessageChatUpgradeFrom A supergroup has been created from a basic group
 type MessageChatUpgradeFrom struct {
 	tdCommon
-	Title        string `json:"title"`          // Title of the newly created supergroup
 	BasicGroupID int32  `json:"basic_group_id"` // The identifier of the original basic group
+	Title        string `json:"title"`          // Title of the newly created supergroup
 }
 
 // MessageType return the string telegram-type of MessageChatUpgradeFrom
@@ -5361,9 +5357,9 @@ func (messageCustomServiceAction *MessageCustomServiceAction) GetMessageContentE
 // MessageGameScore A new high score was achieved in a game
 type MessageGameScore struct {
 	tdCommon
+	GameMessageID int64 `json:"game_message_id"` // Identifier of the message with the game, can be an identifier of a deleted message
 	GameID        int64 `json:"game_id"`         // Identifier of the game, may be different from the games presented in the message with the game
 	Score         int32 `json:"score"`           // New score
-	GameMessageID int64 `json:"game_message_id"` // Identifier of the message with the game, can be an identifier of a deleted message
 }
 
 // MessageType return the string telegram-type of MessageGameScore
@@ -5379,9 +5375,9 @@ func (messageGameScore *MessageGameScore) GetMessageContentEnum() MessageContent
 // MessagePaymentSuccessful A payment has been completed
 type MessagePaymentSuccessful struct {
 	tdCommon
+	Currency         string `json:"currency"`           // Currency for the price of the product
 	TotalAmount      int64  `json:"total_amount"`       // Total price for the product, in the minimal quantity of the currency
 	InvoiceMessageID int64  `json:"invoice_message_id"` // Identifier of the message with the corresponding invoice; can be an identifier of a deleted message
-	Currency         string `json:"currency"`           // Currency for the price of the product
 }
 
 // MessageType return the string telegram-type of MessagePaymentSuccessful
@@ -5397,14 +5393,14 @@ func (messagePaymentSuccessful *MessagePaymentSuccessful) GetMessageContentEnum(
 // MessagePaymentSuccessfulBot A payment has been completed; for bots only
 type MessagePaymentSuccessfulBot struct {
 	tdCommon
-	InvoicePayload          []byte    `json:"invoice_payload"`            // Invoice payload
-	ShippingOptionID        string    `json:"shipping_option_id"`         // Identifier of the shipping option chosen by the user, may be empty if not applicable
-	OrderInfo               OrderInfo `json:"order_info"`                 // Information about the order; may be null
 	TelegramPaymentChargeID string    `json:"telegram_payment_charge_id"` // Telegram payment identifier
 	ProviderPaymentChargeID string    `json:"provider_payment_charge_id"` // Provider payment identifier
 	InvoiceMessageID        int64     `json:"invoice_message_id"`         // Identifier of the message with the corresponding invoice; can be an identifier of a deleted message
 	Currency                string    `json:"currency"`                   // Currency for price of the product
 	TotalAmount             int64     `json:"total_amount"`               // Total price for the product, in the minimal quantity of the currency
+	InvoicePayload          []byte    `json:"invoice_payload"`            // Invoice payload
+	ShippingOptionID        string    `json:"shipping_option_id"`         // Identifier of the shipping option chosen by the user, may be empty if not applicable
+	OrderInfo               OrderInfo `json:"order_info"`                 // Information about the order; may be null
 }
 
 // MessageType return the string telegram-type of MessagePaymentSuccessfulBot
@@ -5679,9 +5675,9 @@ func (textEntityTypePhoneNumber *TextEntityTypePhoneNumber) GetTextEntityTypeEnu
 // InputThumbnail A thumbnail to be sent along with a file; should be in JPEG or WEBP format for stickers, and less than 200 kB in size
 type InputThumbnail struct {
 	tdCommon
-	Thumbnail InputFile `json:"thumbnail"` // Thumbnail file to send. Sending thumbnails by file_id is currently not supported
 	Width     int32     `json:"width"`     // Thumbnail width, usually shouldn't exceed 90. Use 0 if unknown
 	Height    int32     `json:"height"`    // Thumbnail height, usually shouldn't exceed 90. Use 0 if unknown
+	Thumbnail InputFile `json:"thumbnail"` // Thumbnail file to send. Sending thumbnails by file_id is currently not supported
 }
 
 // MessageType return the string telegram-type of InputThumbnail
@@ -5700,6 +5696,7 @@ func (inputThumbnail *InputThumbnail) UnmarshalJSON(b []byte) error {
 		tdCommon
 		Width  int32 `json:"width"`  // Thumbnail width, usually shouldn't exceed 90. Use 0 if unknown
 		Height int32 `json:"height"` // Thumbnail height, usually shouldn't exceed 90. Use 0 if unknown
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -5791,12 +5788,12 @@ func (inputMessageAnimation *InputMessageAnimation) GetInputMessageContentEnum()
 // InputMessageAudio An audio message
 type InputMessageAudio struct {
 	tdCommon
-	AlbumCoverThumbnail InputThumbnail `json:"album_cover_thumbnail"` // Thumbnail of the cover for the album, if available
-	Duration            int32          `json:"duration"`              // Duration of the audio, in seconds; may be replaced by the server
 	Title               string         `json:"title"`                 // Title of the audio; 0-64 characters; may be replaced by the server
 	Performer           string         `json:"performer"`             // Performer of the audio; 0-64 characters, may be replaced by the server
 	Caption             FormattedText  `json:"caption"`               // Audio caption; 0-200 characters
 	Audio               InputFile      `json:"audio"`                 // Audio file to be sent
+	AlbumCoverThumbnail InputThumbnail `json:"album_cover_thumbnail"` // Thumbnail of the cover for the album, if available
+	Duration            int32          `json:"duration"`              // Duration of the audio, in seconds; may be replaced by the server
 }
 
 // MessageType return the string telegram-type of InputMessageAudio
@@ -5813,12 +5810,11 @@ func (inputMessageAudio *InputMessageAudio) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
-		AlbumCoverThumbnail InputThumbnail `json:"album_cover_thumbnail"` // Thumbnail of the cover for the album, if available
-		Duration            int32          `json:"duration"`              // Duration of the audio, in seconds; may be replaced by the server
 		Title               string         `json:"title"`                 // Title of the audio; 0-64 characters; may be replaced by the server
 		Performer           string         `json:"performer"`             // Performer of the audio; 0-64 characters, may be replaced by the server
 		Caption             FormattedText  `json:"caption"`               // Audio caption; 0-200 characters
-
+		AlbumCoverThumbnail InputThumbnail `json:"album_cover_thumbnail"` // Thumbnail of the cover for the album, if available
+		Duration            int32          `json:"duration"`              // Duration of the audio, in seconds; may be replaced by the server
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -5826,11 +5822,11 @@ func (inputMessageAudio *InputMessageAudio) UnmarshalJSON(b []byte) error {
 	}
 
 	inputMessageAudio.tdCommon = tempObj.tdCommon
-	inputMessageAudio.AlbumCoverThumbnail = tempObj.AlbumCoverThumbnail
-	inputMessageAudio.Duration = tempObj.Duration
 	inputMessageAudio.Title = tempObj.Title
 	inputMessageAudio.Performer = tempObj.Performer
 	inputMessageAudio.Caption = tempObj.Caption
+	inputMessageAudio.AlbumCoverThumbnail = tempObj.AlbumCoverThumbnail
+	inputMessageAudio.Duration = tempObj.Duration
 
 	fieldAudio, _ := unmarshalInputFile(objMap["audio"])
 	inputMessageAudio.Audio = fieldAudio
@@ -5891,13 +5887,13 @@ func (inputMessageDocument *InputMessageDocument) GetInputMessageContentEnum() I
 // InputMessagePhoto A photo message
 type InputMessagePhoto struct {
 	tdCommon
+	Height              int32          `json:"height"`                 // Photo height
+	Caption             FormattedText  `json:"caption"`                // Photo caption; 0-200 characters
 	TTL                 int32          `json:"ttl"`                    // Photo TTL (Time To Live), in seconds (0-60). A non-zero TTL can be specified only in private chats
 	Photo               InputFile      `json:"photo"`                  // Photo to send
 	Thumbnail           InputThumbnail `json:"thumbnail"`              // Photo thumbnail to be sent, this is sent to the other party in secret chats only
 	AddedStickerFileIDs []int32        `json:"added_sticker_file_ids"` // File identifiers of the stickers added to the photo, if applicable
 	Width               int32          `json:"width"`                  // Photo width
-	Height              int32          `json:"height"`                 // Photo height
-	Caption             FormattedText  `json:"caption"`                // Photo caption; 0-200 characters
 }
 
 // MessageType return the string telegram-type of InputMessagePhoto
@@ -5914,12 +5910,12 @@ func (inputMessagePhoto *InputMessagePhoto) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
+		Height              int32          `json:"height"`                 // Photo height
+		Caption             FormattedText  `json:"caption"`                // Photo caption; 0-200 characters
 		TTL                 int32          `json:"ttl"`                    // Photo TTL (Time To Live), in seconds (0-60). A non-zero TTL can be specified only in private chats
 		Thumbnail           InputThumbnail `json:"thumbnail"`              // Photo thumbnail to be sent, this is sent to the other party in secret chats only
 		AddedStickerFileIDs []int32        `json:"added_sticker_file_ids"` // File identifiers of the stickers added to the photo, if applicable
 		Width               int32          `json:"width"`                  // Photo width
-		Height              int32          `json:"height"`                 // Photo height
-		Caption             FormattedText  `json:"caption"`                // Photo caption; 0-200 characters
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -5927,12 +5923,12 @@ func (inputMessagePhoto *InputMessagePhoto) UnmarshalJSON(b []byte) error {
 	}
 
 	inputMessagePhoto.tdCommon = tempObj.tdCommon
+	inputMessagePhoto.Height = tempObj.Height
+	inputMessagePhoto.Caption = tempObj.Caption
 	inputMessagePhoto.TTL = tempObj.TTL
 	inputMessagePhoto.Thumbnail = tempObj.Thumbnail
 	inputMessagePhoto.AddedStickerFileIDs = tempObj.AddedStickerFileIDs
 	inputMessagePhoto.Width = tempObj.Width
-	inputMessagePhoto.Height = tempObj.Height
-	inputMessagePhoto.Caption = tempObj.Caption
 
 	fieldPhoto, _ := unmarshalInputFile(objMap["photo"])
 	inputMessagePhoto.Photo = fieldPhoto
@@ -5996,15 +5992,15 @@ func (inputMessageSticker *InputMessageSticker) GetInputMessageContentEnum() Inp
 // InputMessageVideo A video message
 type InputMessageVideo struct {
 	tdCommon
-	Video               InputFile      `json:"video"`                  // Video to be sent
-	Duration            int32          `json:"duration"`               // Duration of the video, in seconds
-	Width               int32          `json:"width"`                  // Video width
 	Height              int32          `json:"height"`                 // Video height
 	SupportsStreaming   bool           `json:"supports_streaming"`     // True, if the video should be tried to be streamed
 	Thumbnail           InputThumbnail `json:"thumbnail"`              // Video thumbnail, if available
 	AddedStickerFileIDs []int32        `json:"added_sticker_file_ids"` // File identifiers of the stickers added to the video, if applicable
+	Duration            int32          `json:"duration"`               // Duration of the video, in seconds
+	Width               int32          `json:"width"`                  // Video width
 	Caption             FormattedText  `json:"caption"`                // Video caption; 0-200 characters
 	TTL                 int32          `json:"ttl"`                    // Video TTL (Time To Live), in seconds (0-60). A non-zero TTL can be specified only in private chats
+	Video               InputFile      `json:"video"`                  // Video to be sent
 }
 
 // MessageType return the string telegram-type of InputMessageVideo
@@ -6021,14 +6017,15 @@ func (inputMessageVideo *InputMessageVideo) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
-		Duration            int32          `json:"duration"`               // Duration of the video, in seconds
-		Width               int32          `json:"width"`                  // Video width
 		Height              int32          `json:"height"`                 // Video height
 		SupportsStreaming   bool           `json:"supports_streaming"`     // True, if the video should be tried to be streamed
 		Thumbnail           InputThumbnail `json:"thumbnail"`              // Video thumbnail, if available
 		AddedStickerFileIDs []int32        `json:"added_sticker_file_ids"` // File identifiers of the stickers added to the video, if applicable
+		Duration            int32          `json:"duration"`               // Duration of the video, in seconds
+		Width               int32          `json:"width"`                  // Video width
 		Caption             FormattedText  `json:"caption"`                // Video caption; 0-200 characters
 		TTL                 int32          `json:"ttl"`                    // Video TTL (Time To Live), in seconds (0-60). A non-zero TTL can be specified only in private chats
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -6036,12 +6033,12 @@ func (inputMessageVideo *InputMessageVideo) UnmarshalJSON(b []byte) error {
 	}
 
 	inputMessageVideo.tdCommon = tempObj.tdCommon
-	inputMessageVideo.Duration = tempObj.Duration
-	inputMessageVideo.Width = tempObj.Width
 	inputMessageVideo.Height = tempObj.Height
 	inputMessageVideo.SupportsStreaming = tempObj.SupportsStreaming
 	inputMessageVideo.Thumbnail = tempObj.Thumbnail
 	inputMessageVideo.AddedStickerFileIDs = tempObj.AddedStickerFileIDs
+	inputMessageVideo.Duration = tempObj.Duration
+	inputMessageVideo.Width = tempObj.Width
 	inputMessageVideo.Caption = tempObj.Caption
 	inputMessageVideo.TTL = tempObj.TTL
 
@@ -6221,17 +6218,17 @@ func (inputMessageGame *InputMessageGame) GetInputMessageContentEnum() InputMess
 // InputMessageInvoice A message with an invoice; can be used only by bots and only in private chats
 type InputMessageInvoice struct {
 	tdCommon
-	Description    string  `json:"description"`     //
-	PhotoHeight    int32   `json:"photo_height"`    // Product photo height
-	StartParameter string  `json:"start_parameter"` // Unique invoice bot start_parameter for the generation of this invoice
-	Invoice        Invoice `json:"invoice"`         // Invoice
-	Title          string  `json:"title"`           // Product title; 1-32 characters
-	PhotoWidth     int32   `json:"photo_width"`     // Product photo width
-	Payload        []byte  `json:"payload"`         // The invoice payload
 	ProviderToken  string  `json:"provider_token"`  // Payment provider token
 	ProviderData   string  `json:"provider_data"`   // JSON-encoded data about the invoice, which will be shared with the payment provider
+	Title          string  `json:"title"`           // Product title; 1-32 characters
+	Description    string  `json:"description"`     //
+	PhotoWidth     int32   `json:"photo_width"`     // Product photo width
+	PhotoHeight    int32   `json:"photo_height"`    // Product photo height
+	Payload        []byte  `json:"payload"`         // The invoice payload
+	Invoice        Invoice `json:"invoice"`         // Invoice
 	PhotoURL       string  `json:"photo_url"`       // Product photo URL; optional
 	PhotoSize      int32   `json:"photo_size"`      // Product photo size
+	StartParameter string  `json:"start_parameter"` // Unique invoice bot start_parameter for the generation of this invoice
 }
 
 // MessageType return the string telegram-type of InputMessageInvoice
@@ -6247,9 +6244,9 @@ func (inputMessageInvoice *InputMessageInvoice) GetInputMessageContentEnum() Inp
 // InputMessageForwarded A forwarded message
 type InputMessageForwarded struct {
 	tdCommon
+	FromChatID  int64 `json:"from_chat_id"`  // Identifier for the chat this forwarded message came from
 	MessageID   int64 `json:"message_id"`    // Identifier of the message to forward
 	InGameShare bool  `json:"in_game_share"` // True, if a game message should be shared within a launched game; applies only to game messages
-	FromChatID  int64 `json:"from_chat_id"`  // Identifier for the chat this forwarded message came from
 }
 
 // MessageType return the string telegram-type of InputMessageForwarded
@@ -6820,15 +6817,15 @@ func (stickerEmojis *StickerEmojis) MessageType() string {
 type StickerSet struct {
 	tdCommon
 	Stickers    []Sticker       `json:"stickers"`     // List of stickers in this set
-	ID          int64           `json:"id"`           // Identifier of the sticker set
-	IsOfficial  bool            `json:"is_official"`  // True, if the sticker set is official
-	IsInstalled bool            `json:"is_installed"` // True, if the sticker set has been installed by the current user
-	IsArchived  bool            `json:"is_archived"`  // True, if the sticker set has been archived. A sticker set can't be installed and archived simultaneously
-	IsMasks     bool            `json:"is_masks"`     // True, if the stickers in the set are masks
-	IsViewed    bool            `json:"is_viewed"`    // True for already viewed trending sticker sets
 	Emojis      []StickerEmojis `json:"emojis"`       // A list of emoji corresponding to the stickers in the same order
 	Title       string          `json:"title"`        // Title of the sticker set
 	Name        string          `json:"name"`         // Name of the sticker set
+	IsInstalled bool            `json:"is_installed"` // True, if the sticker set has been installed by the current user
+	IsArchived  bool            `json:"is_archived"`  // True, if the sticker set has been archived. A sticker set can't be installed and archived simultaneously
+	IsViewed    bool            `json:"is_viewed"`    // True for already viewed trending sticker sets
+	ID          int64           `json:"id"`           // Identifier of the sticker set
+	IsOfficial  bool            `json:"is_official"`  // True, if the sticker set is official
+	IsMasks     bool            `json:"is_masks"`     // True, if the stickers in the set are masks
 }
 
 // MessageType return the string telegram-type of StickerSet
@@ -6839,16 +6836,16 @@ func (stickerSet *StickerSet) MessageType() string {
 // StickerSetInfo Represents short information about a sticker set
 type StickerSetInfo struct {
 	tdCommon
-	IsOfficial  bool      `json:"is_official"`  // True, if the sticker set is official
-	IsMasks     bool      `json:"is_masks"`     // True, if the stickers in the set are masks
+	IsArchived  bool      `json:"is_archived"`  // True, if the sticker set has been archived. A sticker set can't be installed and archived simultaneously
 	IsViewed    bool      `json:"is_viewed"`    // True for already viewed trending sticker sets
-	Size        int32     `json:"size"`         // Total number of stickers in the set
+	Covers      []Sticker `json:"covers"`       // Contains up to the first 5 stickers from the set, depending on the context. If the client needs more stickers the full set should be requested
 	ID          int64     `json:"id"`           // Identifier of the sticker set
 	Name        string    `json:"name"`         // Name of the sticker set
 	IsInstalled bool      `json:"is_installed"` // True, if the sticker set has been installed by current user
-	IsArchived  bool      `json:"is_archived"`  // True, if the sticker set has been archived. A sticker set can't be installed and archived simultaneously
-	Covers      []Sticker `json:"covers"`       // Contains up to the first 5 stickers from the set, depending on the context. If the client needs more stickers the full set should be requested
+	Size        int32     `json:"size"`         // Total number of stickers in the set
 	Title       string    `json:"title"`        // Title of the sticker set
+	IsOfficial  bool      `json:"is_official"`  // True, if the sticker set is official
+	IsMasks     bool      `json:"is_masks"`     // True, if the stickers in the set are masks
 }
 
 // MessageType return the string telegram-type of StickerSetInfo
@@ -6946,10 +6943,10 @@ func (callDiscardReasonHungUp *CallDiscardReasonHungUp) GetCallDiscardReasonEnum
 // CallProtocol Specifies the supported call protocols
 type CallProtocol struct {
 	tdCommon
+	UDPP2p       bool  `json:"udp_p2p"`       // True, if UDP peer-to-peer connections are supported
 	UDPReflector bool  `json:"udp_reflector"` // True, if connection through UDP reflectors is supported
 	MinLayer     int32 `json:"min_layer"`     // Minimum supported API layer; use 65
 	MaxLayer     int32 `json:"max_layer"`     // Maximum supported API layer; use 65
-	UDPP2p       bool  `json:"udp_p2p"`       // True, if UDP peer-to-peer connections are supported
 }
 
 // MessageType return the string telegram-type of CallProtocol
@@ -6960,11 +6957,11 @@ func (callProtocol *CallProtocol) MessageType() string {
 // CallConnection Describes the address of UDP reflectors
 type CallConnection struct {
 	tdCommon
-	IP      string `json:"ip"`       // IPv4 reflector address
-	IPv6    string `json:"ipv6"`     // IPv6 reflector address
 	Port    int32  `json:"port"`     // Reflector port number
 	PeerTag []byte `json:"peer_tag"` // Connection peer tag
 	ID      int64  `json:"id"`       // Reflector identifier
+	IP      string `json:"ip"`       // IPv4 reflector address
+	IPv6    string `json:"ipv6"`     // IPv6 reflector address
 }
 
 // MessageType return the string telegram-type of CallConnection
@@ -7053,9 +7050,9 @@ func (callStateHangingUp *CallStateHangingUp) GetCallStateEnum() CallStateEnum {
 // CallStateDiscarded The call has ended successfully
 type CallStateDiscarded struct {
 	tdCommon
+	Reason               CallDiscardReason `json:"reason"`                 // The reason, why the call has ended
 	NeedRating           bool              `json:"need_rating"`            // True, if the call rating should be sent to the server
 	NeedDebugInformation bool              `json:"need_debug_information"` // True, if the call debug information should be sent to the server
-	Reason               CallDiscardReason `json:"reason"`                 // The reason, why the call has ended
 }
 
 // MessageType return the string telegram-type of CallStateDiscarded
@@ -7074,7 +7071,6 @@ func (callStateDiscarded *CallStateDiscarded) UnmarshalJSON(b []byte) error {
 		tdCommon
 		NeedRating           bool `json:"need_rating"`            // True, if the call rating should be sent to the server
 		NeedDebugInformation bool `json:"need_debug_information"` // True, if the call debug information should be sent to the server
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7182,15 +7178,15 @@ func (importedContacts *ImportedContacts) MessageType() string {
 // InputInlineQueryResultAnimatedGif Represents a link to an animated GIF
 type InputInlineQueryResultAnimatedGif struct {
 	tdCommon
+	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageAnimation, InputMessageLocation, InputMessageVenue or InputMessageContact
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
+	GifDuration         int32               `json:"gif_duration"`          // Duration of the GIF, in seconds
+	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
+	GifWidth            int32               `json:"gif_width"`             // Width of the GIF
+	GifHeight           int32               `json:"gif_height"`            // Height of the GIF
 	Title               string              `json:"title"`                 // Title of the query result
 	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the static result thumbnail (JPEG or GIF), if it exists
 	GifURL              string              `json:"gif_url"`               // The URL of the GIF-file (file size must not exceed 1MB)
-	GifDuration         int32               `json:"gif_duration"`          // Duration of the GIF, in seconds
-	GifHeight           int32               `json:"gif_height"`            // Height of the GIF
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
-	GifWidth            int32               `json:"gif_width"`             // Width of the GIF
-	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
-	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageAnimation, InputMessageLocation, InputMessageVenue or InputMessageContact
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultAnimatedGif
@@ -7207,14 +7203,13 @@ func (inputInlineQueryResultAnimatedGif *InputInlineQueryResultAnimatedGif) Unma
 	}
 	tempObj := struct {
 		tdCommon
+		ID           string `json:"id"`            // Unique identifier of the query result
+		GifDuration  int32  `json:"gif_duration"`  // Duration of the GIF, in seconds
+		GifWidth     int32  `json:"gif_width"`     // Width of the GIF
+		GifHeight    int32  `json:"gif_height"`    // Height of the GIF
 		Title        string `json:"title"`         // Title of the query result
 		ThumbnailURL string `json:"thumbnail_url"` // URL of the static result thumbnail (JPEG or GIF), if it exists
 		GifURL       string `json:"gif_url"`       // The URL of the GIF-file (file size must not exceed 1MB)
-		GifDuration  int32  `json:"gif_duration"`  // Duration of the GIF, in seconds
-		GifHeight    int32  `json:"gif_height"`    // Height of the GIF
-		ID           string `json:"id"`            // Unique identifier of the query result
-		GifWidth     int32  `json:"gif_width"`     // Width of the GIF
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7222,19 +7217,19 @@ func (inputInlineQueryResultAnimatedGif *InputInlineQueryResultAnimatedGif) Unma
 	}
 
 	inputInlineQueryResultAnimatedGif.tdCommon = tempObj.tdCommon
+	inputInlineQueryResultAnimatedGif.ID = tempObj.ID
+	inputInlineQueryResultAnimatedGif.GifDuration = tempObj.GifDuration
+	inputInlineQueryResultAnimatedGif.GifWidth = tempObj.GifWidth
+	inputInlineQueryResultAnimatedGif.GifHeight = tempObj.GifHeight
 	inputInlineQueryResultAnimatedGif.Title = tempObj.Title
 	inputInlineQueryResultAnimatedGif.ThumbnailURL = tempObj.ThumbnailURL
 	inputInlineQueryResultAnimatedGif.GifURL = tempObj.GifURL
-	inputInlineQueryResultAnimatedGif.GifDuration = tempObj.GifDuration
-	inputInlineQueryResultAnimatedGif.GifHeight = tempObj.GifHeight
-	inputInlineQueryResultAnimatedGif.ID = tempObj.ID
-	inputInlineQueryResultAnimatedGif.GifWidth = tempObj.GifWidth
-
-	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
-	inputInlineQueryResultAnimatedGif.ReplyMarkup = fieldReplyMarkup
 
 	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
 	inputInlineQueryResultAnimatedGif.InputMessageContent = fieldInputMessageContent
+
+	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
+	inputInlineQueryResultAnimatedGif.ReplyMarkup = fieldReplyMarkup
 
 	return nil
 }
@@ -7247,15 +7242,15 @@ func (inputInlineQueryResultAnimatedGif *InputInlineQueryResultAnimatedGif) GetI
 // InputInlineQueryResultAnimatedMpeg4 Represents a link to an animated (i.e. without sound) H.264/MPEG-4 AVC video
 type InputInlineQueryResultAnimatedMpeg4 struct {
 	tdCommon
-	Mpeg4Height         int32               `json:"mpeg4_height"`          // Height of the video
-	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageAnimation, InputMessageLocation, InputMessageVenue or InputMessageContact
-	Title               string              `json:"title"`                 // Title of the result
 	Mpeg4URL            string              `json:"mpeg4_url"`             // The URL of the MPEG4-file (file size must not exceed 1MB)
-	Mpeg4Width          int32               `json:"mpeg4_width"`           // Width of the video
-	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
-	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the static result thumbnail (JPEG or GIF), if it exists
 	Mpeg4Duration       int32               `json:"mpeg4_duration"`        // Duration of the video, in seconds
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
+	Title               string              `json:"title"`                 // Title of the result
+	Mpeg4Height         int32               `json:"mpeg4_height"`          // Height of the video
+	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
+	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageAnimation, InputMessageLocation, InputMessageVenue or InputMessageContact
+	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the static result thumbnail (JPEG or GIF), if it exists
+	Mpeg4Width          int32               `json:"mpeg4_width"`           // Width of the video
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultAnimatedMpeg4
@@ -7272,13 +7267,13 @@ func (inputInlineQueryResultAnimatedMpeg4 *InputInlineQueryResultAnimatedMpeg4) 
 	}
 	tempObj := struct {
 		tdCommon
-		Mpeg4Height   int32  `json:"mpeg4_height"`   // Height of the video
-		Title         string `json:"title"`          // Title of the result
 		Mpeg4URL      string `json:"mpeg4_url"`      // The URL of the MPEG4-file (file size must not exceed 1MB)
-		Mpeg4Width    int32  `json:"mpeg4_width"`    // Width of the video
-		ID            string `json:"id"`             // Unique identifier of the query result
-		ThumbnailURL  string `json:"thumbnail_url"`  // URL of the static result thumbnail (JPEG or GIF), if it exists
 		Mpeg4Duration int32  `json:"mpeg4_duration"` // Duration of the video, in seconds
+		ID            string `json:"id"`             // Unique identifier of the query result
+		Title         string `json:"title"`          // Title of the result
+		Mpeg4Height   int32  `json:"mpeg4_height"`   // Height of the video
+		ThumbnailURL  string `json:"thumbnail_url"`  // URL of the static result thumbnail (JPEG or GIF), if it exists
+		Mpeg4Width    int32  `json:"mpeg4_width"`    // Width of the video
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7286,19 +7281,19 @@ func (inputInlineQueryResultAnimatedMpeg4 *InputInlineQueryResultAnimatedMpeg4) 
 	}
 
 	inputInlineQueryResultAnimatedMpeg4.tdCommon = tempObj.tdCommon
-	inputInlineQueryResultAnimatedMpeg4.Mpeg4Height = tempObj.Mpeg4Height
-	inputInlineQueryResultAnimatedMpeg4.Title = tempObj.Title
 	inputInlineQueryResultAnimatedMpeg4.Mpeg4URL = tempObj.Mpeg4URL
-	inputInlineQueryResultAnimatedMpeg4.Mpeg4Width = tempObj.Mpeg4Width
-	inputInlineQueryResultAnimatedMpeg4.ID = tempObj.ID
-	inputInlineQueryResultAnimatedMpeg4.ThumbnailURL = tempObj.ThumbnailURL
 	inputInlineQueryResultAnimatedMpeg4.Mpeg4Duration = tempObj.Mpeg4Duration
-
-	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
-	inputInlineQueryResultAnimatedMpeg4.InputMessageContent = fieldInputMessageContent
+	inputInlineQueryResultAnimatedMpeg4.ID = tempObj.ID
+	inputInlineQueryResultAnimatedMpeg4.Title = tempObj.Title
+	inputInlineQueryResultAnimatedMpeg4.Mpeg4Height = tempObj.Mpeg4Height
+	inputInlineQueryResultAnimatedMpeg4.ThumbnailURL = tempObj.ThumbnailURL
+	inputInlineQueryResultAnimatedMpeg4.Mpeg4Width = tempObj.Mpeg4Width
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultAnimatedMpeg4.ReplyMarkup = fieldReplyMarkup
+
+	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
+	inputInlineQueryResultAnimatedMpeg4.InputMessageContent = fieldInputMessageContent
 
 	return nil
 }
@@ -7311,15 +7306,15 @@ func (inputInlineQueryResultAnimatedMpeg4 *InputInlineQueryResultAnimatedMpeg4) 
 // InputInlineQueryResultArticle Represents a link to an article or web page
 type InputInlineQueryResultArticle struct {
 	tdCommon
-	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageLocation, InputMessageVenue or InputMessageContact
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
-	URL                 string              `json:"url"`                   // URL of the result, if it exists
 	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the result thumbnail, if it exists
 	ThumbnailWidth      int32               `json:"thumbnail_width"`       // Thumbnail width, if known
 	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
-	HideURL             bool                `json:"hide_url"`              // True, if the URL must be not shown
+	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageLocation, InputMessageVenue or InputMessageContact
+	URL                 string              `json:"url"`                   // URL of the result, if it exists
 	Title               string              `json:"title"`                 // Title of the result
 	Description         string              `json:"description"`           //
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
+	HideURL             bool                `json:"hide_url"`              // True, if the URL must be not shown
 	ThumbnailHeight     int32               `json:"thumbnail_height"`      // Thumbnail height, if known
 }
 
@@ -7337,13 +7332,13 @@ func (inputInlineQueryResultArticle *InputInlineQueryResultArticle) UnmarshalJSO
 	}
 	tempObj := struct {
 		tdCommon
-		ID              string `json:"id"`               // Unique identifier of the query result
-		URL             string `json:"url"`              // URL of the result, if it exists
 		ThumbnailURL    string `json:"thumbnail_url"`    // URL of the result thumbnail, if it exists
 		ThumbnailWidth  int32  `json:"thumbnail_width"`  // Thumbnail width, if known
-		HideURL         bool   `json:"hide_url"`         // True, if the URL must be not shown
+		URL             string `json:"url"`              // URL of the result, if it exists
 		Title           string `json:"title"`            // Title of the result
 		Description     string `json:"description"`      //
+		ID              string `json:"id"`               // Unique identifier of the query result
+		HideURL         bool   `json:"hide_url"`         // True, if the URL must be not shown
 		ThumbnailHeight int32  `json:"thumbnail_height"` // Thumbnail height, if known
 	}{}
 	err = json.Unmarshal(b, &tempObj)
@@ -7352,20 +7347,20 @@ func (inputInlineQueryResultArticle *InputInlineQueryResultArticle) UnmarshalJSO
 	}
 
 	inputInlineQueryResultArticle.tdCommon = tempObj.tdCommon
-	inputInlineQueryResultArticle.ID = tempObj.ID
-	inputInlineQueryResultArticle.URL = tempObj.URL
 	inputInlineQueryResultArticle.ThumbnailURL = tempObj.ThumbnailURL
 	inputInlineQueryResultArticle.ThumbnailWidth = tempObj.ThumbnailWidth
-	inputInlineQueryResultArticle.HideURL = tempObj.HideURL
+	inputInlineQueryResultArticle.URL = tempObj.URL
 	inputInlineQueryResultArticle.Title = tempObj.Title
 	inputInlineQueryResultArticle.Description = tempObj.Description
+	inputInlineQueryResultArticle.ID = tempObj.ID
+	inputInlineQueryResultArticle.HideURL = tempObj.HideURL
 	inputInlineQueryResultArticle.ThumbnailHeight = tempObj.ThumbnailHeight
-
-	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
-	inputInlineQueryResultArticle.InputMessageContent = fieldInputMessageContent
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultArticle.ReplyMarkup = fieldReplyMarkup
+
+	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
+	inputInlineQueryResultArticle.InputMessageContent = fieldInputMessageContent
 
 	return nil
 }
@@ -7378,13 +7373,13 @@ func (inputInlineQueryResultArticle *InputInlineQueryResultArticle) GetInputInli
 // InputInlineQueryResultAudio Represents a link to an MP3 audio file
 type InputInlineQueryResultAudio struct {
 	tdCommon
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
 	Title               string              `json:"title"`                 // Title of the audio file
 	Performer           string              `json:"performer"`             // Performer of the audio file
 	AudioURL            string              `json:"audio_url"`             // The URL of the audio file
 	AudioDuration       int32               `json:"audio_duration"`        // Audio file duration, in seconds
 	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
 	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageAudio, InputMessageLocation, InputMessageVenue or InputMessageContact
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultAudio
@@ -7401,11 +7396,12 @@ func (inputInlineQueryResultAudio *InputInlineQueryResultAudio) UnmarshalJSON(b 
 	}
 	tempObj := struct {
 		tdCommon
+		ID            string `json:"id"`             // Unique identifier of the query result
 		Title         string `json:"title"`          // Title of the audio file
 		Performer     string `json:"performer"`      // Performer of the audio file
 		AudioURL      string `json:"audio_url"`      // The URL of the audio file
 		AudioDuration int32  `json:"audio_duration"` // Audio file duration, in seconds
-		ID            string `json:"id"`             // Unique identifier of the query result
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7413,11 +7409,11 @@ func (inputInlineQueryResultAudio *InputInlineQueryResultAudio) UnmarshalJSON(b 
 	}
 
 	inputInlineQueryResultAudio.tdCommon = tempObj.tdCommon
+	inputInlineQueryResultAudio.ID = tempObj.ID
 	inputInlineQueryResultAudio.Title = tempObj.Title
 	inputInlineQueryResultAudio.Performer = tempObj.Performer
 	inputInlineQueryResultAudio.AudioURL = tempObj.AudioURL
 	inputInlineQueryResultAudio.AudioDuration = tempObj.AudioDuration
-	inputInlineQueryResultAudio.ID = tempObj.ID
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultAudio.ReplyMarkup = fieldReplyMarkup
@@ -7436,13 +7432,13 @@ func (inputInlineQueryResultAudio *InputInlineQueryResultAudio) GetInputInlineQu
 // InputInlineQueryResultContact Represents a user contact
 type InputInlineQueryResultContact struct {
 	tdCommon
-	ThumbnailHeight     int32               `json:"thumbnail_height"`      // Thumbnail height, if known
-	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
 	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageLocation, InputMessageVenue or InputMessageContact
 	ID                  string              `json:"id"`                    // Unique identifier of the query result
 	Contact             Contact             `json:"contact"`               // User contact
 	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the result thumbnail, if it exists
 	ThumbnailWidth      int32               `json:"thumbnail_width"`       // Thumbnail width, if known
+	ThumbnailHeight     int32               `json:"thumbnail_height"`      // Thumbnail height, if known
+	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultContact
@@ -7459,11 +7455,12 @@ func (inputInlineQueryResultContact *InputInlineQueryResultContact) UnmarshalJSO
 	}
 	tempObj := struct {
 		tdCommon
-		ThumbnailHeight int32   `json:"thumbnail_height"` // Thumbnail height, if known
 		ID              string  `json:"id"`               // Unique identifier of the query result
 		Contact         Contact `json:"contact"`          // User contact
 		ThumbnailURL    string  `json:"thumbnail_url"`    // URL of the result thumbnail, if it exists
 		ThumbnailWidth  int32   `json:"thumbnail_width"`  // Thumbnail width, if known
+		ThumbnailHeight int32   `json:"thumbnail_height"` // Thumbnail height, if known
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7471,17 +7468,17 @@ func (inputInlineQueryResultContact *InputInlineQueryResultContact) UnmarshalJSO
 	}
 
 	inputInlineQueryResultContact.tdCommon = tempObj.tdCommon
-	inputInlineQueryResultContact.ThumbnailHeight = tempObj.ThumbnailHeight
 	inputInlineQueryResultContact.ID = tempObj.ID
 	inputInlineQueryResultContact.Contact = tempObj.Contact
 	inputInlineQueryResultContact.ThumbnailURL = tempObj.ThumbnailURL
 	inputInlineQueryResultContact.ThumbnailWidth = tempObj.ThumbnailWidth
-
-	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
-	inputInlineQueryResultContact.ReplyMarkup = fieldReplyMarkup
+	inputInlineQueryResultContact.ThumbnailHeight = tempObj.ThumbnailHeight
 
 	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
 	inputInlineQueryResultContact.InputMessageContent = fieldInputMessageContent
+
+	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
+	inputInlineQueryResultContact.ReplyMarkup = fieldReplyMarkup
 
 	return nil
 }
@@ -7494,16 +7491,16 @@ func (inputInlineQueryResultContact *InputInlineQueryResultContact) GetInputInli
 // InputInlineQueryResultDocument Represents a link to a file
 type InputInlineQueryResultDocument struct {
 	tdCommon
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
-	Description         string              `json:"description"`           //
+	Title               string              `json:"title"`                 // Title of the resulting file
 	DocumentURL         string              `json:"document_url"`          // URL of the file
-	MimeType            string              `json:"mime_type"`             // MIME type of the file content; only "application/pdf" and "application/zip" are currently allowed
-	ThumbnailURL        string              `json:"thumbnail_url"`         // The URL of the file thumbnail, if it exists
 	ThumbnailHeight     int32               `json:"thumbnail_height"`      // Height of the thumbnail
 	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageDocument, InputMessageLocation, InputMessageVenue or InputMessageContact
-	Title               string              `json:"title"`                 // Title of the resulting file
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
+	MimeType            string              `json:"mime_type"`             // MIME type of the file content; only "application/pdf" and "application/zip" are currently allowed
+	ThumbnailURL        string              `json:"thumbnail_url"`         // The URL of the file thumbnail, if it exists
 	ThumbnailWidth      int32               `json:"thumbnail_width"`       // Width of the thumbnail
 	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
+	Description         string              `json:"description"`           //
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultDocument
@@ -7520,15 +7517,14 @@ func (inputInlineQueryResultDocument *InputInlineQueryResultDocument) UnmarshalJ
 	}
 	tempObj := struct {
 		tdCommon
-		ID              string `json:"id"`               // Unique identifier of the query result
-		Description     string `json:"description"`      //
+		Title           string `json:"title"`            // Title of the resulting file
 		DocumentURL     string `json:"document_url"`     // URL of the file
+		ThumbnailHeight int32  `json:"thumbnail_height"` // Height of the thumbnail
+		ID              string `json:"id"`               // Unique identifier of the query result
 		MimeType        string `json:"mime_type"`        // MIME type of the file content; only "application/pdf" and "application/zip" are currently allowed
 		ThumbnailURL    string `json:"thumbnail_url"`    // The URL of the file thumbnail, if it exists
-		ThumbnailHeight int32  `json:"thumbnail_height"` // Height of the thumbnail
-		Title           string `json:"title"`            // Title of the resulting file
 		ThumbnailWidth  int32  `json:"thumbnail_width"`  // Width of the thumbnail
-
+		Description     string `json:"description"`      //
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7536,14 +7532,14 @@ func (inputInlineQueryResultDocument *InputInlineQueryResultDocument) UnmarshalJ
 	}
 
 	inputInlineQueryResultDocument.tdCommon = tempObj.tdCommon
-	inputInlineQueryResultDocument.ID = tempObj.ID
-	inputInlineQueryResultDocument.Description = tempObj.Description
+	inputInlineQueryResultDocument.Title = tempObj.Title
 	inputInlineQueryResultDocument.DocumentURL = tempObj.DocumentURL
+	inputInlineQueryResultDocument.ThumbnailHeight = tempObj.ThumbnailHeight
+	inputInlineQueryResultDocument.ID = tempObj.ID
 	inputInlineQueryResultDocument.MimeType = tempObj.MimeType
 	inputInlineQueryResultDocument.ThumbnailURL = tempObj.ThumbnailURL
-	inputInlineQueryResultDocument.ThumbnailHeight = tempObj.ThumbnailHeight
-	inputInlineQueryResultDocument.Title = tempObj.Title
 	inputInlineQueryResultDocument.ThumbnailWidth = tempObj.ThumbnailWidth
+	inputInlineQueryResultDocument.Description = tempObj.Description
 
 	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
 	inputInlineQueryResultDocument.InputMessageContent = fieldInputMessageContent
@@ -7562,9 +7558,9 @@ func (inputInlineQueryResultDocument *InputInlineQueryResultDocument) GetInputIn
 // InputInlineQueryResultGame Represents a game
 type InputInlineQueryResultGame struct {
 	tdCommon
+	ID            string      `json:"id"`              // Unique identifier of the query result
 	GameShortName string      `json:"game_short_name"` // Short name of the game
 	ReplyMarkup   ReplyMarkup `json:"reply_markup"`    // Message reply markup. Must be of type replyMarkupInlineKeyboard or null
-	ID            string      `json:"id"`              // Unique identifier of the query result
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultGame
@@ -7581,8 +7577,9 @@ func (inputInlineQueryResultGame *InputInlineQueryResultGame) UnmarshalJSON(b []
 	}
 	tempObj := struct {
 		tdCommon
-		GameShortName string `json:"game_short_name"` // Short name of the game
 		ID            string `json:"id"`              // Unique identifier of the query result
+		GameShortName string `json:"game_short_name"` // Short name of the game
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7590,8 +7587,8 @@ func (inputInlineQueryResultGame *InputInlineQueryResultGame) UnmarshalJSON(b []
 	}
 
 	inputInlineQueryResultGame.tdCommon = tempObj.tdCommon
-	inputInlineQueryResultGame.GameShortName = tempObj.GameShortName
 	inputInlineQueryResultGame.ID = tempObj.ID
+	inputInlineQueryResultGame.GameShortName = tempObj.GameShortName
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultGame.ReplyMarkup = fieldReplyMarkup
@@ -7607,15 +7604,15 @@ func (inputInlineQueryResultGame *InputInlineQueryResultGame) GetInputInlineQuer
 // InputInlineQueryResultLocation Represents a point on the map
 type InputInlineQueryResultLocation struct {
 	tdCommon
-	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageLocation, InputMessageVenue or InputMessageContact
+	ThumbnailHeight     int32               `json:"thumbnail_height"`      // Thumbnail height, if known
 	ID                  string              `json:"id"`                    // Unique identifier of the query result
 	Location            Location            `json:"location"`              // Location result
-	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the result thumbnail, if it exists
-	ThumbnailHeight     int32               `json:"thumbnail_height"`      // Thumbnail height, if known
 	LivePeriod          int32               `json:"live_period"`           // Amount of time relative to the message sent time until the location can be updated, in seconds
-	Title               string              `json:"title"`                 // Title of the result
+	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the result thumbnail, if it exists
 	ThumbnailWidth      int32               `json:"thumbnail_width"`       // Thumbnail width, if known
+	Title               string              `json:"title"`                 // Title of the result
 	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
+	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageLocation, InputMessageVenue or InputMessageContact
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultLocation
@@ -7632,13 +7629,13 @@ func (inputInlineQueryResultLocation *InputInlineQueryResultLocation) UnmarshalJ
 	}
 	tempObj := struct {
 		tdCommon
+		ThumbnailHeight int32    `json:"thumbnail_height"` // Thumbnail height, if known
 		ID              string   `json:"id"`               // Unique identifier of the query result
 		Location        Location `json:"location"`         // Location result
-		ThumbnailURL    string   `json:"thumbnail_url"`    // URL of the result thumbnail, if it exists
-		ThumbnailHeight int32    `json:"thumbnail_height"` // Thumbnail height, if known
 		LivePeriod      int32    `json:"live_period"`      // Amount of time relative to the message sent time until the location can be updated, in seconds
-		Title           string   `json:"title"`            // Title of the result
+		ThumbnailURL    string   `json:"thumbnail_url"`    // URL of the result thumbnail, if it exists
 		ThumbnailWidth  int32    `json:"thumbnail_width"`  // Thumbnail width, if known
+		Title           string   `json:"title"`            // Title of the result
 
 	}{}
 	err = json.Unmarshal(b, &tempObj)
@@ -7647,19 +7644,19 @@ func (inputInlineQueryResultLocation *InputInlineQueryResultLocation) UnmarshalJ
 	}
 
 	inputInlineQueryResultLocation.tdCommon = tempObj.tdCommon
+	inputInlineQueryResultLocation.ThumbnailHeight = tempObj.ThumbnailHeight
 	inputInlineQueryResultLocation.ID = tempObj.ID
 	inputInlineQueryResultLocation.Location = tempObj.Location
-	inputInlineQueryResultLocation.ThumbnailURL = tempObj.ThumbnailURL
-	inputInlineQueryResultLocation.ThumbnailHeight = tempObj.ThumbnailHeight
 	inputInlineQueryResultLocation.LivePeriod = tempObj.LivePeriod
-	inputInlineQueryResultLocation.Title = tempObj.Title
+	inputInlineQueryResultLocation.ThumbnailURL = tempObj.ThumbnailURL
 	inputInlineQueryResultLocation.ThumbnailWidth = tempObj.ThumbnailWidth
-
-	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
-	inputInlineQueryResultLocation.InputMessageContent = fieldInputMessageContent
+	inputInlineQueryResultLocation.Title = tempObj.Title
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultLocation.ReplyMarkup = fieldReplyMarkup
+
+	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
+	inputInlineQueryResultLocation.InputMessageContent = fieldInputMessageContent
 
 	return nil
 }
@@ -7672,15 +7669,15 @@ func (inputInlineQueryResultLocation *InputInlineQueryResultLocation) GetInputIn
 // InputInlineQueryResultPhoto Represents link to a JPEG image
 type InputInlineQueryResultPhoto struct {
 	tdCommon
-	PhotoURL            string              `json:"photo_url"`             // The URL of the JPEG photo (photo size must not exceed 5MB)
-	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessagePhoto, InputMessageLocation, InputMessageVenue or InputMessageContact
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
 	Title               string              `json:"title"`                 // Title of the result, if known
-	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the photo thumbnail, if it exists
-	PhotoWidth          int32               `json:"photo_width"`           // Width of the photo
+	Description         string              `json:"description"`           //
+	PhotoURL            string              `json:"photo_url"`             // The URL of the JPEG photo (photo size must not exceed 5MB)
 	PhotoHeight         int32               `json:"photo_height"`          // Height of the photo
 	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
-	Description         string              `json:"description"`           //
+	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the photo thumbnail, if it exists
+	PhotoWidth          int32               `json:"photo_width"`           // Width of the photo
+	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessagePhoto, InputMessageLocation, InputMessageVenue or InputMessageContact
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultPhoto
@@ -7697,13 +7694,14 @@ func (inputInlineQueryResultPhoto *InputInlineQueryResultPhoto) UnmarshalJSON(b 
 	}
 	tempObj := struct {
 		tdCommon
-		PhotoURL     string `json:"photo_url"`     // The URL of the JPEG photo (photo size must not exceed 5MB)
+		ID           string `json:"id"`            // Unique identifier of the query result
 		Title        string `json:"title"`         // Title of the result, if known
+		Description  string `json:"description"`   //
+		PhotoURL     string `json:"photo_url"`     // The URL of the JPEG photo (photo size must not exceed 5MB)
+		PhotoHeight  int32  `json:"photo_height"`  // Height of the photo
 		ThumbnailURL string `json:"thumbnail_url"` // URL of the photo thumbnail, if it exists
 		PhotoWidth   int32  `json:"photo_width"`   // Width of the photo
-		PhotoHeight  int32  `json:"photo_height"`  // Height of the photo
-		ID           string `json:"id"`            // Unique identifier of the query result
-		Description  string `json:"description"`   //
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7711,19 +7709,19 @@ func (inputInlineQueryResultPhoto *InputInlineQueryResultPhoto) UnmarshalJSON(b 
 	}
 
 	inputInlineQueryResultPhoto.tdCommon = tempObj.tdCommon
-	inputInlineQueryResultPhoto.PhotoURL = tempObj.PhotoURL
+	inputInlineQueryResultPhoto.ID = tempObj.ID
 	inputInlineQueryResultPhoto.Title = tempObj.Title
+	inputInlineQueryResultPhoto.Description = tempObj.Description
+	inputInlineQueryResultPhoto.PhotoURL = tempObj.PhotoURL
+	inputInlineQueryResultPhoto.PhotoHeight = tempObj.PhotoHeight
 	inputInlineQueryResultPhoto.ThumbnailURL = tempObj.ThumbnailURL
 	inputInlineQueryResultPhoto.PhotoWidth = tempObj.PhotoWidth
-	inputInlineQueryResultPhoto.PhotoHeight = tempObj.PhotoHeight
-	inputInlineQueryResultPhoto.ID = tempObj.ID
-	inputInlineQueryResultPhoto.Description = tempObj.Description
-
-	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
-	inputInlineQueryResultPhoto.InputMessageContent = fieldInputMessageContent
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultPhoto.ReplyMarkup = fieldReplyMarkup
+
+	fieldInputMessageContent, _ := unmarshalInputMessageContent(objMap["input_message_content"])
+	inputInlineQueryResultPhoto.InputMessageContent = fieldInputMessageContent
 
 	return nil
 }
@@ -7736,13 +7734,13 @@ func (inputInlineQueryResultPhoto *InputInlineQueryResultPhoto) GetInputInlineQu
 // InputInlineQueryResultSticker Represents a link to a WEBP sticker
 type InputInlineQueryResultSticker struct {
 	tdCommon
-	StickerURL          string              `json:"sticker_url"`           // The URL of the WEBP sticker (sticker file size must not exceed 5MB)
 	StickerWidth        int32               `json:"sticker_width"`         // Width of the sticker
 	StickerHeight       int32               `json:"sticker_height"`        // Height of the sticker
 	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
 	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, inputMessageSticker, InputMessageLocation, InputMessageVenue or InputMessageContact
 	ID                  string              `json:"id"`                    // Unique identifier of the query result
 	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the sticker thumbnail, if it exists
+	StickerURL          string              `json:"sticker_url"`           // The URL of the WEBP sticker (sticker file size must not exceed 5MB)
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultSticker
@@ -7759,11 +7757,11 @@ func (inputInlineQueryResultSticker *InputInlineQueryResultSticker) UnmarshalJSO
 	}
 	tempObj := struct {
 		tdCommon
-		StickerURL    string `json:"sticker_url"`    // The URL of the WEBP sticker (sticker file size must not exceed 5MB)
 		StickerWidth  int32  `json:"sticker_width"`  // Width of the sticker
 		StickerHeight int32  `json:"sticker_height"` // Height of the sticker
 		ID            string `json:"id"`             // Unique identifier of the query result
 		ThumbnailURL  string `json:"thumbnail_url"`  // URL of the sticker thumbnail, if it exists
+		StickerURL    string `json:"sticker_url"`    // The URL of the WEBP sticker (sticker file size must not exceed 5MB)
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7771,11 +7769,11 @@ func (inputInlineQueryResultSticker *InputInlineQueryResultSticker) UnmarshalJSO
 	}
 
 	inputInlineQueryResultSticker.tdCommon = tempObj.tdCommon
-	inputInlineQueryResultSticker.StickerURL = tempObj.StickerURL
 	inputInlineQueryResultSticker.StickerWidth = tempObj.StickerWidth
 	inputInlineQueryResultSticker.StickerHeight = tempObj.StickerHeight
 	inputInlineQueryResultSticker.ID = tempObj.ID
 	inputInlineQueryResultSticker.ThumbnailURL = tempObj.ThumbnailURL
+	inputInlineQueryResultSticker.StickerURL = tempObj.StickerURL
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultSticker.ReplyMarkup = fieldReplyMarkup
@@ -7794,13 +7792,13 @@ func (inputInlineQueryResultSticker *InputInlineQueryResultSticker) GetInputInli
 // InputInlineQueryResultVenue Represents information about a venue
 type InputInlineQueryResultVenue struct {
 	tdCommon
+	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
+	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageLocation, InputMessageVenue or InputMessageContact
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
 	Venue               Venue               `json:"venue"`                 // Venue result
 	ThumbnailURL        string              `json:"thumbnail_url"`         // URL of the result thumbnail, if it exists
 	ThumbnailWidth      int32               `json:"thumbnail_width"`       // Thumbnail width, if known
 	ThumbnailHeight     int32               `json:"thumbnail_height"`      // Thumbnail height, if known
-	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
-	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageLocation, InputMessageVenue or InputMessageContact
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultVenue
@@ -7817,11 +7815,11 @@ func (inputInlineQueryResultVenue *InputInlineQueryResultVenue) UnmarshalJSON(b 
 	}
 	tempObj := struct {
 		tdCommon
+		ID              string `json:"id"`               // Unique identifier of the query result
 		Venue           Venue  `json:"venue"`            // Venue result
 		ThumbnailURL    string `json:"thumbnail_url"`    // URL of the result thumbnail, if it exists
 		ThumbnailWidth  int32  `json:"thumbnail_width"`  // Thumbnail width, if known
 		ThumbnailHeight int32  `json:"thumbnail_height"` // Thumbnail height, if known
-		ID              string `json:"id"`               // Unique identifier of the query result
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7829,11 +7827,11 @@ func (inputInlineQueryResultVenue *InputInlineQueryResultVenue) UnmarshalJSON(b 
 	}
 
 	inputInlineQueryResultVenue.tdCommon = tempObj.tdCommon
+	inputInlineQueryResultVenue.ID = tempObj.ID
 	inputInlineQueryResultVenue.Venue = tempObj.Venue
 	inputInlineQueryResultVenue.ThumbnailURL = tempObj.ThumbnailURL
 	inputInlineQueryResultVenue.ThumbnailWidth = tempObj.ThumbnailWidth
 	inputInlineQueryResultVenue.ThumbnailHeight = tempObj.ThumbnailHeight
-	inputInlineQueryResultVenue.ID = tempObj.ID
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultVenue.ReplyMarkup = fieldReplyMarkup
@@ -7852,17 +7850,17 @@ func (inputInlineQueryResultVenue *InputInlineQueryResultVenue) GetInputInlineQu
 // InputInlineQueryResultVideo Represents a link to a page containing an embedded video player or a video file
 type InputInlineQueryResultVideo struct {
 	tdCommon
-	VideoDuration       int32               `json:"video_duration"`        // Video duration, in seconds
+	VideoWidth          int32               `json:"video_width"`           // Width of the video
+	VideoHeight         int32               `json:"video_height"`          // Height of the video
 	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
 	Description         string              `json:"description"`           //
 	ThumbnailURL        string              `json:"thumbnail_url"`         // The URL of the video thumbnail (JPEG), if it exists
-	MimeType            string              `json:"mime_type"`             // MIME type of the content of the video URL, only "text/html" or "video/mp4" are currently supported
-	VideoHeight         int32               `json:"video_height"`          // Height of the video
-	Title               string              `json:"title"`                 // Title of the result
 	VideoURL            string              `json:"video_url"`             // URL of the embedded video player or video file
-	VideoWidth          int32               `json:"video_width"`           // Width of the video
+	MimeType            string              `json:"mime_type"`             // MIME type of the content of the video URL, only "text/html" or "video/mp4" are currently supported
+	VideoDuration       int32               `json:"video_duration"`        // Video duration, in seconds
 	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageVideo, InputMessageLocation, InputMessageVenue or InputMessageContact
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
+	Title               string              `json:"title"`                 // Title of the result
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultVideo
@@ -7879,16 +7877,15 @@ func (inputInlineQueryResultVideo *InputInlineQueryResultVideo) UnmarshalJSON(b 
 	}
 	tempObj := struct {
 		tdCommon
-		VideoDuration int32  `json:"video_duration"` // Video duration, in seconds
-		ID            string `json:"id"`             // Unique identifier of the query result
+		VideoWidth    int32  `json:"video_width"`    // Width of the video
+		VideoHeight   int32  `json:"video_height"`   // Height of the video
 		Description   string `json:"description"`    //
 		ThumbnailURL  string `json:"thumbnail_url"`  // The URL of the video thumbnail (JPEG), if it exists
-		MimeType      string `json:"mime_type"`      // MIME type of the content of the video URL, only "text/html" or "video/mp4" are currently supported
-		VideoHeight   int32  `json:"video_height"`   // Height of the video
-		Title         string `json:"title"`          // Title of the result
 		VideoURL      string `json:"video_url"`      // URL of the embedded video player or video file
-		VideoWidth    int32  `json:"video_width"`    // Width of the video
-
+		MimeType      string `json:"mime_type"`      // MIME type of the content of the video URL, only "text/html" or "video/mp4" are currently supported
+		VideoDuration int32  `json:"video_duration"` // Video duration, in seconds
+		ID            string `json:"id"`             // Unique identifier of the query result
+		Title         string `json:"title"`          // Title of the result
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7896,15 +7893,15 @@ func (inputInlineQueryResultVideo *InputInlineQueryResultVideo) UnmarshalJSON(b 
 	}
 
 	inputInlineQueryResultVideo.tdCommon = tempObj.tdCommon
-	inputInlineQueryResultVideo.VideoDuration = tempObj.VideoDuration
-	inputInlineQueryResultVideo.ID = tempObj.ID
+	inputInlineQueryResultVideo.VideoWidth = tempObj.VideoWidth
+	inputInlineQueryResultVideo.VideoHeight = tempObj.VideoHeight
 	inputInlineQueryResultVideo.Description = tempObj.Description
 	inputInlineQueryResultVideo.ThumbnailURL = tempObj.ThumbnailURL
-	inputInlineQueryResultVideo.MimeType = tempObj.MimeType
-	inputInlineQueryResultVideo.VideoHeight = tempObj.VideoHeight
-	inputInlineQueryResultVideo.Title = tempObj.Title
 	inputInlineQueryResultVideo.VideoURL = tempObj.VideoURL
-	inputInlineQueryResultVideo.VideoWidth = tempObj.VideoWidth
+	inputInlineQueryResultVideo.MimeType = tempObj.MimeType
+	inputInlineQueryResultVideo.VideoDuration = tempObj.VideoDuration
+	inputInlineQueryResultVideo.ID = tempObj.ID
+	inputInlineQueryResultVideo.Title = tempObj.Title
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultVideo.ReplyMarkup = fieldReplyMarkup
@@ -7923,12 +7920,12 @@ func (inputInlineQueryResultVideo *InputInlineQueryResultVideo) GetInputInlineQu
 // InputInlineQueryResultVoiceNote Represents a link to an opus-encoded audio file within an OGG container, single channel audio
 type InputInlineQueryResultVoiceNote struct {
 	tdCommon
+	ID                  string              `json:"id"`                    // Unique identifier of the query result
 	Title               string              `json:"title"`                 // Title of the voice note
 	VoiceNoteURL        string              `json:"voice_note_url"`        // The URL of the voice note file
 	VoiceNoteDuration   int32               `json:"voice_note_duration"`   // Duration of the voice note, in seconds
 	ReplyMarkup         ReplyMarkup         `json:"reply_markup"`          // The message reply markup. Must be of type replyMarkupInlineKeyboard or null
 	InputMessageContent InputMessageContent `json:"input_message_content"` // The content of the message to be sent. Must be one of the following types: InputMessageText, InputMessageVoiceNote, InputMessageLocation, InputMessageVenue or InputMessageContact
-	ID                  string              `json:"id"`                    // Unique identifier of the query result
 }
 
 // MessageType return the string telegram-type of InputInlineQueryResultVoiceNote
@@ -7945,10 +7942,11 @@ func (inputInlineQueryResultVoiceNote *InputInlineQueryResultVoiceNote) Unmarsha
 	}
 	tempObj := struct {
 		tdCommon
+		ID                string `json:"id"`                  // Unique identifier of the query result
 		Title             string `json:"title"`               // Title of the voice note
 		VoiceNoteURL      string `json:"voice_note_url"`      // The URL of the voice note file
 		VoiceNoteDuration int32  `json:"voice_note_duration"` // Duration of the voice note, in seconds
-		ID                string `json:"id"`                  // Unique identifier of the query result
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -7956,10 +7954,10 @@ func (inputInlineQueryResultVoiceNote *InputInlineQueryResultVoiceNote) Unmarsha
 	}
 
 	inputInlineQueryResultVoiceNote.tdCommon = tempObj.tdCommon
+	inputInlineQueryResultVoiceNote.ID = tempObj.ID
 	inputInlineQueryResultVoiceNote.Title = tempObj.Title
 	inputInlineQueryResultVoiceNote.VoiceNoteURL = tempObj.VoiceNoteURL
 	inputInlineQueryResultVoiceNote.VoiceNoteDuration = tempObj.VoiceNoteDuration
-	inputInlineQueryResultVoiceNote.ID = tempObj.ID
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	inputInlineQueryResultVoiceNote.ReplyMarkup = fieldReplyMarkup
@@ -7978,12 +7976,12 @@ func (inputInlineQueryResultVoiceNote *InputInlineQueryResultVoiceNote) GetInput
 // InlineQueryResultArticle Represents a link to an article or web page
 type InlineQueryResultArticle struct {
 	tdCommon
+	Description string    `json:"description"` //
 	Thumbnail   PhotoSize `json:"thumbnail"`   // Result thumbnail; may be null
 	ID          string    `json:"id"`          // Unique identifier of the query result
 	URL         string    `json:"url"`         // URL of the result, if it exists
 	HideURL     bool      `json:"hide_url"`    // True, if the URL must be not shown
 	Title       string    `json:"title"`       // Title of the result
-	Description string    `json:"description"` //
 }
 
 // MessageType return the string telegram-type of InlineQueryResultArticle
@@ -8106,10 +8104,10 @@ func (inlineQueryResultAudio *InlineQueryResultAudio) GetInlineQueryResultEnum()
 // InlineQueryResultDocument Represents a document
 type InlineQueryResultDocument struct {
 	tdCommon
-	ID          string   `json:"id"`          // Unique identifier of the query result
-	Document    Document `json:"document"`    // Document
 	Title       string   `json:"title"`       // Document title
 	Description string   `json:"description"` //
+	ID          string   `json:"id"`          // Unique identifier of the query result
+	Document    Document `json:"document"`    // Document
 }
 
 // MessageType return the string telegram-type of InlineQueryResultDocument
@@ -8125,10 +8123,10 @@ func (inlineQueryResultDocument *InlineQueryResultDocument) GetInlineQueryResult
 // InlineQueryResultPhoto Represents a photo
 type InlineQueryResultPhoto struct {
 	tdCommon
-	ID          string `json:"id"`          // Unique identifier of the query result
-	Photo       Photo  `json:"photo"`       // Photo
 	Title       string `json:"title"`       // Title of the result, if known
 	Description string `json:"description"` //
+	ID          string `json:"id"`          // Unique identifier of the query result
+	Photo       Photo  `json:"photo"`       // Photo
 }
 
 // MessageType return the string telegram-type of InlineQueryResultPhoto
@@ -8198,11 +8196,11 @@ func (inlineQueryResultVoiceNote *InlineQueryResultVoiceNote) GetInlineQueryResu
 // InlineQueryResults Represents the results of the inline query. Use sendInlineQueryResultMessage to send the result of the query
 type InlineQueryResults struct {
 	tdCommon
-	SwitchPmText      string              `json:"switch_pm_text"`      // If non-empty, this text should be shown on the button, which opens a private chat with the bot and sends the bot a start message with the switch_pm_parameter
-	SwitchPmParameter string              `json:"switch_pm_parameter"` // Parameter for the bot start message
 	InlineQueryID     int64               `json:"inline_query_id"`     // Unique identifier of the inline query
 	NextOffset        string              `json:"next_offset"`         // The offset for the next request. If empty, there are no more results
 	Results           []InlineQueryResult `json:"results"`             // Results of the query
+	SwitchPmText      string              `json:"switch_pm_text"`      // If non-empty, this text should be shown on the button, which opens a private chat with the bot and sends the bot a start message with the switch_pm_parameter
+	SwitchPmParameter string              `json:"switch_pm_parameter"` // Parameter for the bot start message
 }
 
 // MessageType return the string telegram-type of InlineQueryResults
@@ -8245,9 +8243,9 @@ func (callbackQueryPayloadGame *CallbackQueryPayloadGame) GetCallbackQueryPayloa
 // CallbackQueryAnswer Contains a bot's answer to a callback query
 type CallbackQueryAnswer struct {
 	tdCommon
-	URL       string `json:"url"`        // URL to be opened
 	Text      string `json:"text"`       // Text of the answer
 	ShowAlert bool   `json:"show_alert"` // True, if an alert should be shown to the user instead of a toast notification
+	URL       string `json:"url"`        // URL to be opened
 }
 
 // MessageType return the string telegram-type of CallbackQueryAnswer
@@ -8430,9 +8428,9 @@ func (chatEventMemberInvited *ChatEventMemberInvited) GetChatEventActionEnum() C
 // ChatEventMemberPromoted A chat member has gained/lost administrator status, or the list of their administrator privileges has changed
 type ChatEventMemberPromoted struct {
 	tdCommon
-	UserID    int32            `json:"user_id"`    // Chat member user identifier
 	OldStatus ChatMemberStatus `json:"old_status"` // Previous status of the chat member
 	NewStatus ChatMemberStatus `json:"new_status"` // New status of the chat member
+	UserID    int32            `json:"user_id"`    // Chat member user identifier
 }
 
 // MessageType return the string telegram-type of ChatEventMemberPromoted
@@ -8450,7 +8448,6 @@ func (chatEventMemberPromoted *ChatEventMemberPromoted) UnmarshalJSON(b []byte) 
 	tempObj := struct {
 		tdCommon
 		UserID int32 `json:"user_id"` // Chat member user identifier
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -8558,8 +8555,8 @@ func (chatEventDescriptionChanged *ChatEventDescriptionChanged) GetChatEventActi
 // ChatEventUsernameChanged The chat username was changed
 type ChatEventUsernameChanged struct {
 	tdCommon
-	OldUsername string `json:"old_username"` // Previous chat username
 	NewUsername string `json:"new_username"` // New chat username
+	OldUsername string `json:"old_username"` // Previous chat username
 }
 
 // MessageType return the string telegram-type of ChatEventUsernameChanged
@@ -8657,10 +8654,10 @@ func (chatEventIsAllHistoryAvailableToggled *ChatEventIsAllHistoryAvailableToggl
 // ChatEvent Represents a chat event
 type ChatEvent struct {
 	tdCommon
+	ID     int64           `json:"id"`      // Chat event identifier
 	Date   int32           `json:"date"`    // Point in time (Unix timestamp) when the event happened
 	UserID int32           `json:"user_id"` // Identifier of the user who performed the action that triggered the event
 	Action ChatEventAction `json:"action"`  // Action performed by the user
-	ID     int64           `json:"id"`      // Chat event identifier
 }
 
 // MessageType return the string telegram-type of ChatEvent
@@ -8677,9 +8674,10 @@ func (chatEvent *ChatEvent) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
+		ID     int64 `json:"id"`      // Chat event identifier
 		Date   int32 `json:"date"`    // Point in time (Unix timestamp) when the event happened
 		UserID int32 `json:"user_id"` // Identifier of the user who performed the action that triggered the event
-		ID     int64 `json:"id"`      // Chat event identifier
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -8687,9 +8685,9 @@ func (chatEvent *ChatEvent) UnmarshalJSON(b []byte) error {
 	}
 
 	chatEvent.tdCommon = tempObj.tdCommon
+	chatEvent.ID = tempObj.ID
 	chatEvent.Date = tempObj.Date
 	chatEvent.UserID = tempObj.UserID
-	chatEvent.ID = tempObj.ID
 
 	fieldAction, _ := unmarshalChatEventAction(objMap["action"])
 	chatEvent.Action = fieldAction
@@ -8712,15 +8710,15 @@ func (chatEvents *ChatEvents) MessageType() string {
 type ChatEventLogFilters struct {
 	tdCommon
 	MessageEdits       bool `json:"message_edits"`       // True, if message edits should be returned
+	MessagePins        bool `json:"message_pins"`        // True, if pin/unpin events should be returned
+	MemberInvites      bool `json:"member_invites"`      // True, if invited member events should be returned
+	MemberRestrictions bool `json:"member_restrictions"` // True, if member restricted/unrestricted/banned/unbanned events should be returned
+	SettingChanges     bool `json:"setting_changes"`     // True, if changes in chat settings should be returned
+	MessageDeletions   bool `json:"message_deletions"`   // True, if message deletions should be returned
+	MemberJoins        bool `json:"member_joins"`        // True, if members joining events should be returned
 	MemberLeaves       bool `json:"member_leaves"`       // True, if members leaving events should be returned
 	MemberPromotions   bool `json:"member_promotions"`   // True, if member promotion/demotion events should be returned
-	MemberRestrictions bool `json:"member_restrictions"` // True, if member restricted/unrestricted/banned/unbanned events should be returned
-	MessageDeletions   bool `json:"message_deletions"`   // True, if message deletions should be returned
-	MessagePins        bool `json:"message_pins"`        // True, if pin/unpin events should be returned
-	MemberJoins        bool `json:"member_joins"`        // True, if members joining events should be returned
-	MemberInvites      bool `json:"member_invites"`      // True, if invited member events should be returned
 	InfoChanges        bool `json:"info_changes"`        // True, if changes in chat information should be returned
-	SettingChanges     bool `json:"setting_changes"`     // True, if changes in chat settings should be returned
 }
 
 // MessageType return the string telegram-type of ChatEventLogFilters
@@ -9243,20 +9241,20 @@ func (accountTTL *AccountTTL) MessageType() string {
 // Session Contains information about one session in a Telegram application used by the current user
 type Session struct {
 	tdCommon
-	IsCurrent             bool   `json:"is_current"`              // True, if this session is the current session
-	ApplicationVersion    string `json:"application_version"`     // The version of the application, as provided by the application
-	IP                    string `json:"ip"`                      // IP address from which the session was created, in human-readable format
 	ID                    int64  `json:"id"`                      // Session identifier
-	IsOfficialApplication bool   `json:"is_official_application"` // True, if the application is an official application or uses the api_id of an official application
-	DeviceModel           string `json:"device_model"`            // Model of the device the application has been run or is running on, as provided by the application
-	Region                string `json:"region"`                  // Region code from which the session was created, based on the IP address
 	APIID                 int32  `json:"api_id"`                  // Telegram API identifier, as provided by the application
-	ApplicationName       string `json:"application_name"`        // Name of the application, as provided by the application
-	Platform              string `json:"platform"`                // Operating system the application has been run or is running on, as provided by the application
+	ApplicationVersion    string `json:"application_version"`     // The version of the application, as provided by the application
+	DeviceModel           string `json:"device_model"`            // Model of the device the application has been run or is running on, as provided by the application
 	SystemVersion         string `json:"system_version"`          // Version of the operating system the application has been run or is running on, as provided by the application
-	LogInDate             int32  `json:"log_in_date"`             // Point in time (Unix timestamp) when the user has logged in
 	LastActiveDate        int32  `json:"last_active_date"`        // Point in time (Unix timestamp) when the session was last used
+	Region                string `json:"region"`                  // Region code from which the session was created, based on the IP address
+	ApplicationName       string `json:"application_name"`        // Name of the application, as provided by the application
 	Country               string `json:"country"`                 // A two-letter country code for the country from which the session was created, based on the IP address
+	IP                    string `json:"ip"`                      // IP address from which the session was created, in human-readable format
+	IsCurrent             bool   `json:"is_current"`              // True, if this session is the current session
+	IsOfficialApplication bool   `json:"is_official_application"` // True, if the application is an official application or uses the api_id of an official application
+	Platform              string `json:"platform"`                // Operating system the application has been run or is running on, as provided by the application
+	LogInDate             int32  `json:"log_in_date"`             // Point in time (Unix timestamp) when the user has logged in
 }
 
 // MessageType return the string telegram-type of Session
@@ -9279,14 +9277,14 @@ func (sessions *Sessions) MessageType() string {
 type ConnectedWebsite struct {
 	tdCommon
 	ID             int64  `json:"id"`               // Website identifier
-	LastActiveDate int32  `json:"last_active_date"` // Point in time (Unix timestamp) when obtained authorization was last used
-	IP             string `json:"ip"`               // IP address from which the user was logged in, in human-readable format
-	Platform       string `json:"platform"`         // Operating system the browser is running on
-	LogInDate      int32  `json:"log_in_date"`      // Point in time (Unix timestamp) when the user was logged in
-	Location       string `json:"location"`         // Human-readable description of a country and a region, from which the user was logged in, based on the IP address
-	DomainName     string `json:"domain_name"`      // The domain name of the website
 	BotUserID      int32  `json:"bot_user_id"`      // User identifier of a bot linked with the website
+	Platform       string `json:"platform"`         // Operating system the browser is running on
+	LastActiveDate int32  `json:"last_active_date"` // Point in time (Unix timestamp) when obtained authorization was last used
+	DomainName     string `json:"domain_name"`      // The domain name of the website
 	Browser        string `json:"browser"`          // The version of a browser used to log in
+	LogInDate      int32  `json:"log_in_date"`      // Point in time (Unix timestamp) when the user was logged in
+	IP             string `json:"ip"`               // IP address from which the user was logged in, in human-readable format
+	Location       string `json:"location"`         // Human-readable description of a country and a region, from which the user was logged in, based on the IP address
 }
 
 // MessageType return the string telegram-type of ConnectedWebsite
@@ -9657,10 +9655,10 @@ func (storageStatisticsByFileType *StorageStatisticsByFileType) UnmarshalJSON(b 
 // StorageStatisticsByChat Contains the storage usage statistics for a specific chat
 type StorageStatisticsByChat struct {
 	tdCommon
-	ChatID     int64                         `json:"chat_id"`      // Chat identifier; 0 if none
-	Size       int64                         `json:"size"`         // Total size of the files in the chat
 	Count      int32                         `json:"count"`        // Total number of files in the chat
 	ByFileType []StorageStatisticsByFileType `json:"by_file_type"` // Statistics split by file types
+	ChatID     int64                         `json:"chat_id"`      // Chat identifier; 0 if none
+	Size       int64                         `json:"size"`         // Total size of the files in the chat
 }
 
 // MessageType return the string telegram-type of StorageStatisticsByChat
@@ -10376,10 +10374,10 @@ func (updateMessageSendSucceeded *UpdateMessageSendSucceeded) GetUpdateEnum() Up
 // UpdateMessageSendFailed A message failed to send. Be aware that some messages being sent can be irrecoverably deleted, in which case updateDeleteMessages will be received instead of this update
 type UpdateMessageSendFailed struct {
 	tdCommon
+	Message      Message `json:"message"`        // Contains information about the message that failed to send
 	OldMessageID int64   `json:"old_message_id"` // The previous temporary message identifier
 	ErrorCode    int32   `json:"error_code"`     // An error code
 	ErrorMessage string  `json:"error_message"`  // Error message
-	Message      Message `json:"message"`        // Contains information about the message that failed to send
 }
 
 // MessageType return the string telegram-type of UpdateMessageSendFailed
@@ -10395,9 +10393,9 @@ func (updateMessageSendFailed *UpdateMessageSendFailed) GetUpdateEnum() UpdateEn
 // UpdateMessageContent The message content has changed
 type UpdateMessageContent struct {
 	tdCommon
-	ChatID     int64          `json:"chat_id"`     // Chat identifier
 	MessageID  int64          `json:"message_id"`  // Message identifier
 	NewContent MessageContent `json:"new_content"` // New message content
+	ChatID     int64          `json:"chat_id"`     // Chat identifier
 }
 
 // MessageType return the string telegram-type of UpdateMessageContent
@@ -10414,9 +10412,8 @@ func (updateMessageContent *UpdateMessageContent) UnmarshalJSON(b []byte) error 
 	}
 	tempObj := struct {
 		tdCommon
-		ChatID    int64 `json:"chat_id"`    // Chat identifier
 		MessageID int64 `json:"message_id"` // Message identifier
-
+		ChatID    int64 `json:"chat_id"`    // Chat identifier
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -10424,8 +10421,8 @@ func (updateMessageContent *UpdateMessageContent) UnmarshalJSON(b []byte) error 
 	}
 
 	updateMessageContent.tdCommon = tempObj.tdCommon
-	updateMessageContent.ChatID = tempObj.ChatID
 	updateMessageContent.MessageID = tempObj.MessageID
+	updateMessageContent.ChatID = tempObj.ChatID
 
 	fieldNewContent, _ := unmarshalMessageContent(objMap["new_content"])
 	updateMessageContent.NewContent = fieldNewContent
@@ -10441,10 +10438,10 @@ func (updateMessageContent *UpdateMessageContent) GetUpdateEnum() UpdateEnum {
 // UpdateMessageEdited A message was edited. Changes in the message content will come in a separate updateMessageContent
 type UpdateMessageEdited struct {
 	tdCommon
+	ChatID      int64       `json:"chat_id"`      // Chat identifier
 	MessageID   int64       `json:"message_id"`   // Message identifier
 	EditDate    int32       `json:"edit_date"`    // Point in time (Unix timestamp) when the message was edited
 	ReplyMarkup ReplyMarkup `json:"reply_markup"` // New message reply markup; may be null
-	ChatID      int64       `json:"chat_id"`      // Chat identifier
 }
 
 // MessageType return the string telegram-type of UpdateMessageEdited
@@ -10461,9 +10458,10 @@ func (updateMessageEdited *UpdateMessageEdited) UnmarshalJSON(b []byte) error {
 	}
 	tempObj := struct {
 		tdCommon
+		ChatID    int64 `json:"chat_id"`    // Chat identifier
 		MessageID int64 `json:"message_id"` // Message identifier
 		EditDate  int32 `json:"edit_date"`  // Point in time (Unix timestamp) when the message was edited
-		ChatID    int64 `json:"chat_id"`    // Chat identifier
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -10471,9 +10469,9 @@ func (updateMessageEdited *UpdateMessageEdited) UnmarshalJSON(b []byte) error {
 	}
 
 	updateMessageEdited.tdCommon = tempObj.tdCommon
+	updateMessageEdited.ChatID = tempObj.ChatID
 	updateMessageEdited.MessageID = tempObj.MessageID
 	updateMessageEdited.EditDate = tempObj.EditDate
-	updateMessageEdited.ChatID = tempObj.ChatID
 
 	fieldReplyMarkup, _ := unmarshalReplyMarkup(objMap["reply_markup"])
 	updateMessageEdited.ReplyMarkup = fieldReplyMarkup
@@ -10507,8 +10505,8 @@ func (updateMessageViews *UpdateMessageViews) GetUpdateEnum() UpdateEnum {
 // UpdateMessageContentOpened The message content was opened. Updates voice note messages to "listened", video note messages to "viewed" and starts the TTL timer for self-destructing messages
 type UpdateMessageContentOpened struct {
 	tdCommon
-	MessageID int64 `json:"message_id"` // Message identifier
 	ChatID    int64 `json:"chat_id"`    // Chat identifier
+	MessageID int64 `json:"message_id"` // Message identifier
 }
 
 // MessageType return the string telegram-type of UpdateMessageContentOpened
@@ -10592,9 +10590,9 @@ func (updateChatPhoto *UpdateChatPhoto) GetUpdateEnum() UpdateEnum {
 // UpdateChatLastMessage The last message of a chat was changed. If last_message is null then the last message in the chat became unknown. Some new unknown messages might be added to the chat in this case
 type UpdateChatLastMessage struct {
 	tdCommon
-	Order       int64   `json:"order"`        // New value of the chat order
 	ChatID      int64   `json:"chat_id"`      // Chat identifier
 	LastMessage Message `json:"last_message"` // The new last message in the chat; may be null
+	Order       int64   `json:"order"`        // New value of the chat order
 }
 
 // MessageType return the string telegram-type of UpdateChatLastMessage
@@ -10610,8 +10608,8 @@ func (updateChatLastMessage *UpdateChatLastMessage) GetUpdateEnum() UpdateEnum {
 // UpdateChatOrder The order of the chat in the chats list has changed. Instead of this update updateChatLastMessage, updateChatIsPinned or updateChatDraftMessage might be sent
 type UpdateChatOrder struct {
 	tdCommon
-	ChatID int64 `json:"chat_id"` // Chat identifier
 	Order  int64 `json:"order"`   // New value of the order
+	ChatID int64 `json:"chat_id"` // Chat identifier
 }
 
 // MessageType return the string telegram-type of UpdateChatOrder
@@ -10627,9 +10625,9 @@ func (updateChatOrder *UpdateChatOrder) GetUpdateEnum() UpdateEnum {
 // UpdateChatIsPinned A chat was pinned or unpinned
 type UpdateChatIsPinned struct {
 	tdCommon
-	ChatID   int64 `json:"chat_id"`   // Chat identifier
 	IsPinned bool  `json:"is_pinned"` // New value of is_pinned
 	Order    int64 `json:"order"`     // New value of the chat order
+	ChatID   int64 `json:"chat_id"`   // Chat identifier
 }
 
 // MessageType return the string telegram-type of UpdateChatIsPinned
@@ -10645,9 +10643,9 @@ func (updateChatIsPinned *UpdateChatIsPinned) GetUpdateEnum() UpdateEnum {
 // UpdateChatReadInbox Incoming messages were read or number of unread messages has been changed
 type UpdateChatReadInbox struct {
 	tdCommon
-	ChatID                 int64 `json:"chat_id"`                    // Chat identifier
 	LastReadInboxMessageID int64 `json:"last_read_inbox_message_id"` // Identifier of the last read incoming message
 	UnreadCount            int32 `json:"unread_count"`               // The number of unread messages left in the chat
+	ChatID                 int64 `json:"chat_id"`                    // Chat identifier
 }
 
 // MessageType return the string telegram-type of UpdateChatReadInbox
@@ -10697,8 +10695,8 @@ func (updateChatUnreadMentionCount *UpdateChatUnreadMentionCount) GetUpdateEnum(
 // UpdateNotificationSettings Notification settings for some chats were updated
 type UpdateNotificationSettings struct {
 	tdCommon
-	Scope                NotificationSettingsScope `json:"scope"`                 // Types of chats for which notification settings were updated
 	NotificationSettings NotificationSettings      `json:"notification_settings"` // The new notification settings
+	Scope                NotificationSettingsScope `json:"scope"`                 // Types of chats for which notification settings were updated
 }
 
 // MessageType return the string telegram-type of UpdateNotificationSettings
@@ -10716,6 +10714,7 @@ func (updateNotificationSettings *UpdateNotificationSettings) UnmarshalJSON(b []
 	tempObj := struct {
 		tdCommon
 		NotificationSettings NotificationSettings `json:"notification_settings"` // The new notification settings
+
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -10756,9 +10755,9 @@ func (updateChatReplyMarkup *UpdateChatReplyMarkup) GetUpdateEnum() UpdateEnum {
 // UpdateChatDraftMessage A draft has changed. Be aware that the update may come in the currently opened chat but with old content of the draft. If the user has changed the content of the draft, this update shouldn't be applied
 type UpdateChatDraftMessage struct {
 	tdCommon
-	Order        int64        `json:"order"`         // New value of the chat order
 	ChatID       int64        `json:"chat_id"`       // Chat identifier
 	DraftMessage DraftMessage `json:"draft_message"` // The new draft message; may be null
+	Order        int64        `json:"order"`         // New value of the chat order
 }
 
 // MessageType return the string telegram-type of UpdateChatDraftMessage
@@ -10793,9 +10792,9 @@ func (updateDeleteMessages *UpdateDeleteMessages) GetUpdateEnum() UpdateEnum {
 // UpdateUserChatAction User activity in the chat has changed
 type UpdateUserChatAction struct {
 	tdCommon
-	ChatID int64      `json:"chat_id"` // Chat identifier
 	UserID int32      `json:"user_id"` // Identifier of a user performing an action
 	Action ChatAction `json:"action"`  // The action description
+	ChatID int64      `json:"chat_id"` // Chat identifier
 }
 
 // MessageType return the string telegram-type of UpdateUserChatAction
@@ -10812,9 +10811,8 @@ func (updateUserChatAction *UpdateUserChatAction) UnmarshalJSON(b []byte) error 
 	}
 	tempObj := struct {
 		tdCommon
-		ChatID int64 `json:"chat_id"` // Chat identifier
 		UserID int32 `json:"user_id"` // Identifier of a user performing an action
-
+		ChatID int64 `json:"chat_id"` // Chat identifier
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -10822,8 +10820,8 @@ func (updateUserChatAction *UpdateUserChatAction) UnmarshalJSON(b []byte) error 
 	}
 
 	updateUserChatAction.tdCommon = tempObj.tdCommon
-	updateUserChatAction.ChatID = tempObj.ChatID
 	updateUserChatAction.UserID = tempObj.UserID
+	updateUserChatAction.ChatID = tempObj.ChatID
 
 	fieldAction, _ := unmarshalChatAction(objMap["action"])
 	updateUserChatAction.Action = fieldAction
@@ -11149,8 +11147,8 @@ func (updateUserPrivacySettingRules *UpdateUserPrivacySettingRules) GetUpdateEnu
 // UpdateUnreadMessageCount Number of unread messages has changed. This update is sent only if a message database is used
 type UpdateUnreadMessageCount struct {
 	tdCommon
-	UnreadUnmutedCount int32 `json:"unread_unmuted_count"` // Total number of unread messages in unmuted chats
 	UnreadCount        int32 `json:"unread_count"`         // Total number of unread messages
+	UnreadUnmutedCount int32 `json:"unread_unmuted_count"` // Total number of unread messages in unmuted chats
 }
 
 // MessageType return the string telegram-type of UpdateUnreadMessageCount
@@ -11209,8 +11207,8 @@ func (updateOption *UpdateOption) GetUpdateEnum() UpdateEnum {
 // UpdateInstalledStickerSets The list of installed sticker sets was updated
 type UpdateInstalledStickerSets struct {
 	tdCommon
-	IsMasks       bool    `json:"is_masks"`        // True, if the list of installed mask sticker sets was updated
 	StickerSetIDs []int64 `json:"sticker_set_ids"` // The new list of installed ordinary sticker sets
+	IsMasks       bool    `json:"is_masks"`        // True, if the list of installed mask sticker sets was updated
 }
 
 // MessageType return the string telegram-type of UpdateInstalledStickerSets
@@ -11330,11 +11328,11 @@ func (updateConnectionState *UpdateConnectionState) GetUpdateEnum() UpdateEnum {
 // UpdateNewInlineQuery A new incoming inline query; for bots only
 type UpdateNewInlineQuery struct {
 	tdCommon
+	ID           int64    `json:"id"`             // Unique query identifier
+	SenderUserID int32    `json:"sender_user_id"` // Identifier of the user who sent the query
 	UserLocation Location `json:"user_location"`  // User location, provided by the client; may be null
 	Query        string   `json:"query"`          // Text of the query
 	Offset       string   `json:"offset"`         // Offset of the first entry to return
-	ID           int64    `json:"id"`             // Unique query identifier
-	SenderUserID int32    `json:"sender_user_id"` // Identifier of the user who sent the query
 }
 
 // MessageType return the string telegram-type of UpdateNewInlineQuery
@@ -11350,11 +11348,11 @@ func (updateNewInlineQuery *UpdateNewInlineQuery) GetUpdateEnum() UpdateEnum {
 // UpdateNewChosenInlineResult The user has chosen a result of an inline query; for bots only
 type UpdateNewChosenInlineResult struct {
 	tdCommon
+	SenderUserID    int32    `json:"sender_user_id"`    // Identifier of the user who sent the query
+	UserLocation    Location `json:"user_location"`     // User location, provided by the client; may be null
 	Query           string   `json:"query"`             // Text of the query
 	ResultID        string   `json:"result_id"`         // Identifier of the chosen result
 	InlineMessageID string   `json:"inline_message_id"` // Identifier of the sent inline message, if known
-	SenderUserID    int32    `json:"sender_user_id"`    // Identifier of the user who sent the query
-	UserLocation    Location `json:"user_location"`     // User location, provided by the client; may be null
 }
 
 // MessageType return the string telegram-type of UpdateNewChosenInlineResult
@@ -11370,12 +11368,12 @@ func (updateNewChosenInlineResult *UpdateNewChosenInlineResult) GetUpdateEnum() 
 // UpdateNewCallbackQuery A new incoming callback query; for bots only
 type UpdateNewCallbackQuery struct {
 	tdCommon
-	ID           int64                `json:"id"`             // Unique query identifier
-	SenderUserID int32                `json:"sender_user_id"` // Identifier of the user who sent the query
-	ChatID       int64                `json:"chat_id"`        // Identifier of the chat, in which the query was sent
 	MessageID    int64                `json:"message_id"`     // Identifier of the message, from which the query originated
 	ChatInstance int64                `json:"chat_instance"`  // Identifier that uniquely corresponds to the chat to which the message was sent
 	Payload      CallbackQueryPayload `json:"payload"`        // Query payload
+	ID           int64                `json:"id"`             // Unique query identifier
+	SenderUserID int32                `json:"sender_user_id"` // Identifier of the user who sent the query
+	ChatID       int64                `json:"chat_id"`        // Identifier of the chat, in which the query was sent
 }
 
 // MessageType return the string telegram-type of UpdateNewCallbackQuery
@@ -11392,12 +11390,11 @@ func (updateNewCallbackQuery *UpdateNewCallbackQuery) UnmarshalJSON(b []byte) er
 	}
 	tempObj := struct {
 		tdCommon
+		MessageID    int64 `json:"message_id"`     // Identifier of the message, from which the query originated
+		ChatInstance int64 `json:"chat_instance"`  // Identifier that uniquely corresponds to the chat to which the message was sent
 		ID           int64 `json:"id"`             // Unique query identifier
 		SenderUserID int32 `json:"sender_user_id"` // Identifier of the user who sent the query
 		ChatID       int64 `json:"chat_id"`        // Identifier of the chat, in which the query was sent
-		MessageID    int64 `json:"message_id"`     // Identifier of the message, from which the query originated
-		ChatInstance int64 `json:"chat_instance"`  // Identifier that uniquely corresponds to the chat to which the message was sent
-
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -11405,11 +11402,11 @@ func (updateNewCallbackQuery *UpdateNewCallbackQuery) UnmarshalJSON(b []byte) er
 	}
 
 	updateNewCallbackQuery.tdCommon = tempObj.tdCommon
+	updateNewCallbackQuery.MessageID = tempObj.MessageID
+	updateNewCallbackQuery.ChatInstance = tempObj.ChatInstance
 	updateNewCallbackQuery.ID = tempObj.ID
 	updateNewCallbackQuery.SenderUserID = tempObj.SenderUserID
 	updateNewCallbackQuery.ChatID = tempObj.ChatID
-	updateNewCallbackQuery.MessageID = tempObj.MessageID
-	updateNewCallbackQuery.ChatInstance = tempObj.ChatInstance
 
 	fieldPayload, _ := unmarshalCallbackQueryPayload(objMap["payload"])
 	updateNewCallbackQuery.Payload = fieldPayload
@@ -11425,11 +11422,11 @@ func (updateNewCallbackQuery *UpdateNewCallbackQuery) GetUpdateEnum() UpdateEnum
 // UpdateNewInlineCallbackQuery A new incoming callback query from a message sent via a bot; for bots only
 type UpdateNewInlineCallbackQuery struct {
 	tdCommon
-	SenderUserID    int32                `json:"sender_user_id"`    // Identifier of the user who sent the query
-	InlineMessageID string               `json:"inline_message_id"` // Identifier of the inline message, from which the query originated
 	ChatInstance    int64                `json:"chat_instance"`     // An identifier uniquely corresponding to the chat a message was sent to
 	Payload         CallbackQueryPayload `json:"payload"`           // Query payload
 	ID              int64                `json:"id"`                // Unique query identifier
+	SenderUserID    int32                `json:"sender_user_id"`    // Identifier of the user who sent the query
+	InlineMessageID string               `json:"inline_message_id"` // Identifier of the inline message, from which the query originated
 }
 
 // MessageType return the string telegram-type of UpdateNewInlineCallbackQuery
@@ -11446,10 +11443,10 @@ func (updateNewInlineCallbackQuery *UpdateNewInlineCallbackQuery) UnmarshalJSON(
 	}
 	tempObj := struct {
 		tdCommon
-		SenderUserID    int32  `json:"sender_user_id"`    // Identifier of the user who sent the query
-		InlineMessageID string `json:"inline_message_id"` // Identifier of the inline message, from which the query originated
 		ChatInstance    int64  `json:"chat_instance"`     // An identifier uniquely corresponding to the chat a message was sent to
 		ID              int64  `json:"id"`                // Unique query identifier
+		SenderUserID    int32  `json:"sender_user_id"`    // Identifier of the user who sent the query
+		InlineMessageID string `json:"inline_message_id"` // Identifier of the inline message, from which the query originated
 	}{}
 	err = json.Unmarshal(b, &tempObj)
 	if err != nil {
@@ -11457,10 +11454,10 @@ func (updateNewInlineCallbackQuery *UpdateNewInlineCallbackQuery) UnmarshalJSON(
 	}
 
 	updateNewInlineCallbackQuery.tdCommon = tempObj.tdCommon
-	updateNewInlineCallbackQuery.SenderUserID = tempObj.SenderUserID
-	updateNewInlineCallbackQuery.InlineMessageID = tempObj.InlineMessageID
 	updateNewInlineCallbackQuery.ChatInstance = tempObj.ChatInstance
 	updateNewInlineCallbackQuery.ID = tempObj.ID
+	updateNewInlineCallbackQuery.SenderUserID = tempObj.SenderUserID
+	updateNewInlineCallbackQuery.InlineMessageID = tempObj.InlineMessageID
 
 	fieldPayload, _ := unmarshalCallbackQueryPayload(objMap["payload"])
 	updateNewInlineCallbackQuery.Payload = fieldPayload
@@ -11476,10 +11473,10 @@ func (updateNewInlineCallbackQuery *UpdateNewInlineCallbackQuery) GetUpdateEnum(
 // UpdateNewShippingQuery A new incoming shipping query; for bots only. Only for invoices with flexible price
 type UpdateNewShippingQuery struct {
 	tdCommon
-	ID              int64           `json:"id"`               // Unique query identifier
-	SenderUserID    int32           `json:"sender_user_id"`   // Identifier of the user who sent the query
 	InvoicePayload  string          `json:"invoice_payload"`  // Invoice payload
 	ShippingAddress ShippingAddress `json:"shipping_address"` // User shipping address
+	ID              int64           `json:"id"`               // Unique query identifier
+	SenderUserID    int32           `json:"sender_user_id"`   // Identifier of the user who sent the query
 }
 
 // MessageType return the string telegram-type of UpdateNewShippingQuery
@@ -11533,9 +11530,9 @@ func (updateNewCustomEvent *UpdateNewCustomEvent) GetUpdateEnum() UpdateEnum {
 // UpdateNewCustomQuery A new incoming query; for bots only
 type UpdateNewCustomQuery struct {
 	tdCommon
+	ID      int64  `json:"id"`      // The query identifier
 	Data    string `json:"data"`    // JSON-serialized query data
 	Timeout int32  `json:"timeout"` // Query timeout
-	ID      int64  `json:"id"`      // The query identifier
 }
 
 // MessageType return the string telegram-type of UpdateNewCustomQuery
@@ -11627,6 +11624,9 @@ func (testVectorStringObject *TestVectorStringObject) MessageType() string {
 
 func unmarshalAuthenticationCodeType(rawMsg *json.RawMessage) (AuthenticationCodeType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11661,6 +11661,9 @@ func unmarshalAuthenticationCodeType(rawMsg *json.RawMessage) (AuthenticationCod
 
 func unmarshalAuthorizationState(rawMsg *json.RawMessage) (AuthorizationState, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11720,6 +11723,9 @@ func unmarshalAuthorizationState(rawMsg *json.RawMessage) (AuthorizationState, e
 
 func unmarshalInputFile(rawMsg *json.RawMessage) (InputFile, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11754,6 +11760,9 @@ func unmarshalInputFile(rawMsg *json.RawMessage) (InputFile, error) {
 
 func unmarshalMaskPoint(rawMsg *json.RawMessage) (MaskPoint, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11788,6 +11797,9 @@ func unmarshalMaskPoint(rawMsg *json.RawMessage) (MaskPoint, error) {
 
 func unmarshalLinkState(rawMsg *json.RawMessage) (LinkState, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11817,6 +11829,9 @@ func unmarshalLinkState(rawMsg *json.RawMessage) (LinkState, error) {
 
 func unmarshalUserType(rawMsg *json.RawMessage) (UserType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11851,6 +11866,9 @@ func unmarshalUserType(rawMsg *json.RawMessage) (UserType, error) {
 
 func unmarshalChatMemberStatus(rawMsg *json.RawMessage) (ChatMemberStatus, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11895,6 +11913,9 @@ func unmarshalChatMemberStatus(rawMsg *json.RawMessage) (ChatMemberStatus, error
 
 func unmarshalSupergroupMembersFilter(rawMsg *json.RawMessage) (SupergroupMembersFilter, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11939,6 +11960,9 @@ func unmarshalSupergroupMembersFilter(rawMsg *json.RawMessage) (SupergroupMember
 
 func unmarshalSecretChatState(rawMsg *json.RawMessage) (SecretChatState, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11968,6 +11992,9 @@ func unmarshalSecretChatState(rawMsg *json.RawMessage) (SecretChatState, error) 
 
 func unmarshalMessageForwardInfo(rawMsg *json.RawMessage) (MessageForwardInfo, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -11992,6 +12019,9 @@ func unmarshalMessageForwardInfo(rawMsg *json.RawMessage) (MessageForwardInfo, e
 
 func unmarshalMessageSendingState(rawMsg *json.RawMessage) (MessageSendingState, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12016,6 +12046,9 @@ func unmarshalMessageSendingState(rawMsg *json.RawMessage) (MessageSendingState,
 
 func unmarshalNotificationSettingsScope(rawMsg *json.RawMessage) (NotificationSettingsScope, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12050,6 +12083,9 @@ func unmarshalNotificationSettingsScope(rawMsg *json.RawMessage) (NotificationSe
 
 func unmarshalChatType(rawMsg *json.RawMessage) (ChatType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12084,6 +12120,9 @@ func unmarshalChatType(rawMsg *json.RawMessage) (ChatType, error) {
 
 func unmarshalKeyboardButtonType(rawMsg *json.RawMessage) (KeyboardButtonType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12113,6 +12152,9 @@ func unmarshalKeyboardButtonType(rawMsg *json.RawMessage) (KeyboardButtonType, e
 
 func unmarshalInlineKeyboardButtonType(rawMsg *json.RawMessage) (InlineKeyboardButtonType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12152,6 +12194,9 @@ func unmarshalInlineKeyboardButtonType(rawMsg *json.RawMessage) (InlineKeyboardB
 
 func unmarshalReplyMarkup(rawMsg *json.RawMessage) (ReplyMarkup, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12186,6 +12231,9 @@ func unmarshalReplyMarkup(rawMsg *json.RawMessage) (ReplyMarkup, error) {
 
 func unmarshalRichText(rawMsg *json.RawMessage) (RichText, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12245,6 +12293,9 @@ func unmarshalRichText(rawMsg *json.RawMessage) (RichText, error) {
 
 func unmarshalPageBlock(rawMsg *json.RawMessage) (PageBlock, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12374,6 +12425,9 @@ func unmarshalPageBlock(rawMsg *json.RawMessage) (PageBlock, error) {
 
 func unmarshalInputCredentials(rawMsg *json.RawMessage) (InputCredentials, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12408,6 +12462,9 @@ func unmarshalInputCredentials(rawMsg *json.RawMessage) (InputCredentials, error
 
 func unmarshalMessageContent(rawMsg *json.RawMessage) (MessageContent, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12607,6 +12664,9 @@ func unmarshalMessageContent(rawMsg *json.RawMessage) (MessageContent, error) {
 
 func unmarshalTextEntityType(rawMsg *json.RawMessage) (TextEntityType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12691,6 +12751,9 @@ func unmarshalTextEntityType(rawMsg *json.RawMessage) (TextEntityType, error) {
 
 func unmarshalInputMessageContent(rawMsg *json.RawMessage) (InputMessageContent, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12780,6 +12843,9 @@ func unmarshalInputMessageContent(rawMsg *json.RawMessage) (InputMessageContent,
 
 func unmarshalSearchMessagesFilter(rawMsg *json.RawMessage) (SearchMessagesFilter, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12874,6 +12940,9 @@ func unmarshalSearchMessagesFilter(rawMsg *json.RawMessage) (SearchMessagesFilte
 
 func unmarshalChatAction(rawMsg *json.RawMessage) (ChatAction, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12953,6 +13022,9 @@ func unmarshalChatAction(rawMsg *json.RawMessage) (ChatAction, error) {
 
 func unmarshalUserStatus(rawMsg *json.RawMessage) (UserStatus, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -12997,6 +13069,9 @@ func unmarshalUserStatus(rawMsg *json.RawMessage) (UserStatus, error) {
 
 func unmarshalCallDiscardReason(rawMsg *json.RawMessage) (CallDiscardReason, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13036,6 +13111,9 @@ func unmarshalCallDiscardReason(rawMsg *json.RawMessage) (CallDiscardReason, err
 
 func unmarshalCallState(rawMsg *json.RawMessage) (CallState, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13080,6 +13158,9 @@ func unmarshalCallState(rawMsg *json.RawMessage) (CallState, error) {
 
 func unmarshalInputInlineQueryResult(rawMsg *json.RawMessage) (InputInlineQueryResult, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13159,6 +13240,9 @@ func unmarshalInputInlineQueryResult(rawMsg *json.RawMessage) (InputInlineQueryR
 
 func unmarshalInlineQueryResult(rawMsg *json.RawMessage) (InlineQueryResult, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13233,6 +13317,9 @@ func unmarshalInlineQueryResult(rawMsg *json.RawMessage) (InlineQueryResult, err
 
 func unmarshalCallbackQueryPayload(rawMsg *json.RawMessage) (CallbackQueryPayload, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13257,6 +13344,9 @@ func unmarshalCallbackQueryPayload(rawMsg *json.RawMessage) (CallbackQueryPayloa
 
 func unmarshalChatEventAction(rawMsg *json.RawMessage) (ChatEventAction, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13356,6 +13446,9 @@ func unmarshalChatEventAction(rawMsg *json.RawMessage) (ChatEventAction, error) 
 
 func unmarshalDeviceToken(rawMsg *json.RawMessage) (DeviceToken, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13425,6 +13518,9 @@ func unmarshalDeviceToken(rawMsg *json.RawMessage) (DeviceToken, error) {
 
 func unmarshalCheckChatUsernameResult(rawMsg *json.RawMessage) (CheckChatUsernameResult, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13464,6 +13560,9 @@ func unmarshalCheckChatUsernameResult(rawMsg *json.RawMessage) (CheckChatUsernam
 
 func unmarshalOptionValue(rawMsg *json.RawMessage) (OptionValue, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13498,6 +13597,9 @@ func unmarshalOptionValue(rawMsg *json.RawMessage) (OptionValue, error) {
 
 func unmarshalUserPrivacySettingRule(rawMsg *json.RawMessage) (UserPrivacySettingRule, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13542,6 +13644,9 @@ func unmarshalUserPrivacySettingRule(rawMsg *json.RawMessage) (UserPrivacySettin
 
 func unmarshalUserPrivacySetting(rawMsg *json.RawMessage) (UserPrivacySetting, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13571,6 +13676,9 @@ func unmarshalUserPrivacySetting(rawMsg *json.RawMessage) (UserPrivacySetting, e
 
 func unmarshalChatReportReason(rawMsg *json.RawMessage) (ChatReportReason, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13605,6 +13713,9 @@ func unmarshalChatReportReason(rawMsg *json.RawMessage) (ChatReportReason, error
 
 func unmarshalFileType(rawMsg *json.RawMessage) (FileType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13694,6 +13805,9 @@ func unmarshalFileType(rawMsg *json.RawMessage) (FileType, error) {
 
 func unmarshalNetworkType(rawMsg *json.RawMessage) (NetworkType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13733,6 +13847,9 @@ func unmarshalNetworkType(rawMsg *json.RawMessage) (NetworkType, error) {
 
 func unmarshalNetworkStatisticsEntry(rawMsg *json.RawMessage) (NetworkStatisticsEntry, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13757,6 +13874,9 @@ func unmarshalNetworkStatisticsEntry(rawMsg *json.RawMessage) (NetworkStatistics
 
 func unmarshalConnectionState(rawMsg *json.RawMessage) (ConnectionState, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13796,6 +13916,9 @@ func unmarshalConnectionState(rawMsg *json.RawMessage) (ConnectionState, error) 
 
 func unmarshalTopChatCategory(rawMsg *json.RawMessage) (TopChatCategory, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13840,6 +13963,9 @@ func unmarshalTopChatCategory(rawMsg *json.RawMessage) (TopChatCategory, error) 
 
 func unmarshalTMeURLType(rawMsg *json.RawMessage) (TMeURLType, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13874,6 +14000,9 @@ func unmarshalTMeURLType(rawMsg *json.RawMessage) (TMeURLType, error) {
 
 func unmarshalTextParseMode(rawMsg *json.RawMessage) (TextParseMode, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13898,6 +14027,9 @@ func unmarshalTextParseMode(rawMsg *json.RawMessage) (TextParseMode, error) {
 
 func unmarshalProxy(rawMsg *json.RawMessage) (Proxy, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
@@ -13922,6 +14054,9 @@ func unmarshalProxy(rawMsg *json.RawMessage) (Proxy, error) {
 
 func unmarshalUpdate(rawMsg *json.RawMessage) (Update, error) {
 
+	if rawMsg == nil {
+		return nil, nil
+	}
 	var objMap map[string]interface{}
 	err := json.Unmarshal(*rawMsg, &objMap)
 	if err != nil {
