@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"sort"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
@@ -35,25 +34,10 @@ const (
 // ClassInfo holds info of a Class in .tl file
 type ClassInfo struct {
 	Name        string          `json:"name"`
-	Properties  ClassProperties `json:"properties"`
+	Properties  []ClassProperty `json:"properties"`
 	Description string          `json:"description"`
 	RootName    string          `json:"rootName"`
 	IsFunction  bool            `json:"isFunction"`
-}
-
-// ClassProperties ...
-type ClassProperties []ClassProperty
-
-func (cm ClassProperties) Len() int {
-	return len(cm)
-}
-
-func (cm ClassProperties) Less(i, j int) bool {
-	return cm[i].Name < cm[j].Name
-}
-
-func (cm ClassProperties) Swap(i, j int) {
-	cm[i], cm[j] = cm[j], cm[i]
 }
 
 // ClassProperty holds info about properties of a class (or function)
@@ -78,6 +62,7 @@ type EnumInfo struct {
 var entityDesc string
 var paramDescs map[string]string
 var params map[string]string
+var paramsSlice []string
 var classInfoes []ClassInfo
 var interfaceInfoes []InterfaceInfo
 var enumInfoes []EnumInfo
@@ -113,6 +98,7 @@ func main() {
 
 	paramDescs = make(map[string]string)
 	params = make(map[string]string)
+	paramsSlice = make([]string, 0, 1)
 	hitFunctions := false
 
 	rd := bufio.NewReader(f)
@@ -205,6 +191,7 @@ func main() {
 				line = line[len(paramName)+1:]
 				paramType := line[:strings.Index(line, " ")]
 				params[paramName] = paramType
+				paramsSlice = append(paramsSlice, paramName)
 				line = line[len(paramType)+1:]
 			}
 
@@ -213,8 +200,7 @@ func main() {
 			var classProps []ClassProperty
 			classProps = make([]ClassProperty, 0, 0)
 
-			sortedParamsKeys := SortedKeys(params)
-			for _, paramName := range sortedParamsKeys {
+			for _, paramName := range paramsSlice {
 				paramType := params[paramName]
 				classProp := ClassProperty{
 					Name:        paramName,
@@ -236,6 +222,7 @@ func main() {
 			entityDesc = ""
 			paramDescs = make(map[string]string)
 			params = make(map[string]string)
+			paramsSlice = make([]string, 0, 1)
 			ok := false
 			var enumInfo EnumInfo
 			var i int
@@ -399,18 +386,18 @@ func main() {
 			assignStr := fmt.Sprintf("%s.tdCommon = tempObj.tdCommon\n", structNameCamel)
 			assignInterfacePropsStr := ""
 
-			sort.Sort(classInfoe.Properties)
-			for i, param := range classInfoe.Properties {
-				propName := govalidator.UnderscoreToCamelCase(param.Name)
+			// sort.Sort(classInfoe.Properties)
+			for i, prop := range classInfoe.Properties {
+				propName := govalidator.UnderscoreToCamelCase(prop.Name)
 				propName = replaceKeyWords(propName)
 
-				propsStrItem := fmt.Sprintf("%s %s `json:\"%s\"` // %s", propName, convertDataType(param.Type), param.Name, param.Description)
+				propsStrItem := fmt.Sprintf("%s %s `json:\"%s\"` // %s", propName, convertDataType(prop.Type), prop.Name, prop.Description)
 				if i < len(classInfoe.Properties)-1 {
 					propsStrItem += "\n"
 				}
 
 				propsStr += propsStrItem
-				if !checkIsInterface(param.Type) {
+				if !checkIsInterface(prop.Type) {
 					propsStrWithoutInterfaceOnes += propsStrItem
 					assignStr += fmt.Sprintf("%s.%s = tempObj.%s\n", structNameCamel, propName, propName)
 				} else {
@@ -419,7 +406,7 @@ func main() {
 						field%s, _  := 	unmarshal%s(objMap["%s"])
 						%s.%s = field%s
 						`,
-						propName, convertDataType(param.Type), param.Name,
+						propName, convertDataType(prop.Type), prop.Name,
 						structNameCamel, propName, propName)
 				}
 			}

@@ -116,15 +116,15 @@ func (client *Client) CheckDatabaseEncryptionKey(encryptionKey []byte) (*Ok, err
 }
 
 // SetAuthenticationPhoneNumber Sets the phone number of the user and sends an authentication code to the user. Works only when the current authorization state is authorizationStateWaitPhoneNumber
-// @param isCurrentPhoneNumber Pass true if the phone number is used on the current device. Ignored if allow_flash_call is false
-// @param allowFlashCall Pass true if the authentication code may be sent via flash call to the specified phone number
 // @param phoneNumber The phone number of the user, in international format
-func (client *Client) SetAuthenticationPhoneNumber(isCurrentPhoneNumber bool, allowFlashCall bool, phoneNumber string) (*Ok, error) {
+// @param allowFlashCall Pass true if the authentication code may be sent via flash call to the specified phone number
+// @param isCurrentPhoneNumber Pass true if the phone number is used on the current device. Ignored if allow_flash_call is false
+func (client *Client) SetAuthenticationPhoneNumber(phoneNumber string, allowFlashCall bool, isCurrentPhoneNumber bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                   "setAuthenticationPhoneNumber",
-		"is_current_phone_number": isCurrentPhoneNumber,
-		"allow_flash_call":        allowFlashCall,
 		"phone_number":            phoneNumber,
+		"allow_flash_call":        allowFlashCall,
+		"is_current_phone_number": isCurrentPhoneNumber,
 	})
 
 	if err != nil {
@@ -376,18 +376,18 @@ func (client *Client) GetPasswordState() (*PasswordState, error) {
 }
 
 // SetPassword Changes the password for the user. If a new recovery email address is specified, then the error EMAIL_UNCONFIRMED is returned and the password change will not be applied until the new recovery email address has been confirmed. The application should periodically call getPasswordState to check whether the new email address has been confirmed
-// @param setRecoveryEmailAddress Pass true if the recovery email address should be changed
 // @param oldPassword Previous password of the user
 // @param newPassword New password of the user; may be empty to remove the password
 // @param newHint New password hint; may be empty
+// @param setRecoveryEmailAddress Pass true if the recovery email address should be changed
 // @param newRecoveryEmailAddress New recovery email address; may be empty
-func (client *Client) SetPassword(setRecoveryEmailAddress bool, oldPassword string, newPassword string, newHint string, newRecoveryEmailAddress string) (*PasswordState, error) {
+func (client *Client) SetPassword(oldPassword string, newPassword string, newHint string, setRecoveryEmailAddress bool, newRecoveryEmailAddress string) (*PasswordState, error) {
 	result, err := client.SendAndCatch(UpdateData{
-		"@type": "setPassword",
-		"set_recovery_email_address": setRecoveryEmailAddress,
+		"@type":                      "setPassword",
 		"old_password":               oldPassword,
 		"new_password":               newPassword,
 		"new_hint":                   newHint,
+		"set_recovery_email_address": setRecoveryEmailAddress,
 		"new_recovery_email_address": newRecoveryEmailAddress,
 	})
 
@@ -494,13 +494,13 @@ func (client *Client) RecoverPassword(recoveryCode string) (*PasswordState, erro
 }
 
 // CreateTemporaryPassword Creates a new temporary password for processing payments
-// @param validFor Time during which the temporary password will be valid, in seconds; should be between 60 and 86400
 // @param password Persistent user password
-func (client *Client) CreateTemporaryPassword(validFor int32, password string) (*TemporaryPasswordState, error) {
+// @param validFor Time during which the temporary password will be valid, in seconds; should be between 60 and 86400
+func (client *Client) CreateTemporaryPassword(password string, validFor int32) (*TemporaryPasswordState, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "createTemporaryPassword",
-		"valid_for": validFor,
 		"password":  password,
+		"valid_for": validFor,
 	})
 
 	if err != nil {
@@ -874,13 +874,13 @@ func (client *Client) GetFile(fileID int32) (*File, error) {
 }
 
 // GetRemoteFile Returns information about a file by its remote ID; this is an offline request. Can be used to register a URL as a file for further uploading, or sending as a message
-// @param fileType File type, if known
 // @param remoteFileID Remote identifier of the file to get
-func (client *Client) GetRemoteFile(fileType FileType, remoteFileID string) (*File, error) {
+// @param fileType File type, if known
+func (client *Client) GetRemoteFile(remoteFileID string, fileType FileType) (*File, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getRemoteFile",
-		"file_type":      fileType,
 		"remote_file_id": remoteFileID,
+		"file_type":      fileType,
 	})
 
 	if err != nil {
@@ -898,15 +898,15 @@ func (client *Client) GetRemoteFile(fileType FileType, remoteFileID string) (*Fi
 }
 
 // GetChats Returns an ordered list of chats. Chats are sorted by the pair (order, chat_id) in decreasing order. (For example, to get a list of chats from the beginning, the offset_order should be equal to 2^63 - 1).
-// @param limit The maximum number of chats to be returned. It is possible that fewer chats than the limit are returned even if the end of the list is not reached
-// @param offsetChatID
 // @param offsetOrder
-func (client *Client) GetChats(limit int32, offsetChatID int64, offsetOrder JSONInt64) (*Chats, error) {
+// @param offsetChatID
+// @param limit The maximum number of chats to be returned. It is possible that fewer chats than the limit are returned even if the end of the list is not reached
+func (client *Client) GetChats(offsetOrder JSONInt64, offsetChatID int64, limit int32) (*Chats, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getChats",
-		"limit":          limit,
-		"offset_chat_id": offsetChatID,
 		"offset_order":   offsetOrder,
+		"offset_chat_id": offsetChatID,
+		"limit":          limit,
 	})
 
 	if err != nil {
@@ -968,13 +968,13 @@ func (client *Client) SearchPublicChats(query string) (*Chats, error) {
 }
 
 // SearchChats Searches for the specified query in the title and username of already known chats, this is an offline request. Returns chats in the order seen in the chat list
-// @param limit Maximum number of chats to be returned
 // @param query Query to search for. If the query is empty, returns up to 20 recently found chats
-func (client *Client) SearchChats(limit int32, query string) (*Chats, error) {
+// @param limit Maximum number of chats to be returned
+func (client *Client) SearchChats(query string, limit int32) (*Chats, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchChats",
-		"limit": limit,
 		"query": query,
+		"limit": limit,
 	})
 
 	if err != nil {
@@ -992,13 +992,13 @@ func (client *Client) SearchChats(limit int32, query string) (*Chats, error) {
 }
 
 // SearchChatsOnServer Searches for the specified query in the title and username of already known chats via request to the server. Returns chats in the order seen in the chat list
-// @param limit Maximum number of chats to be returned
 // @param query Query to search for
-func (client *Client) SearchChatsOnServer(limit int32, query string) (*Chats, error) {
+// @param limit Maximum number of chats to be returned
+func (client *Client) SearchChatsOnServer(query string, limit int32) (*Chats, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchChatsOnServer",
-		"limit": limit,
 		"query": query,
+		"limit": limit,
 	})
 
 	if err != nil {
@@ -1199,14 +1199,14 @@ func (client *Client) GetCreatedPublicChats() (*Chats, error) {
 
 // GetGroupsInCommon Returns a list of common chats with a given user. Chats are sorted by their type and creation date
 // @param userID User identifier
-// @param limit Maximum number of chats to be returned; up to 100
 // @param offsetChatID Chat identifier starting from which to return chats; use 0 for the first request
-func (client *Client) GetGroupsInCommon(userID int32, limit int32, offsetChatID int64) (*Chats, error) {
+// @param limit Maximum number of chats to be returned; up to 100
+func (client *Client) GetGroupsInCommon(userID int32, offsetChatID int64, limit int32) (*Chats, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getGroupsInCommon",
 		"user_id":        userID,
-		"limit":          limit,
 		"offset_chat_id": offsetChatID,
+		"limit":          limit,
 	})
 
 	if err != nil {
@@ -1224,19 +1224,19 @@ func (client *Client) GetGroupsInCommon(userID int32, limit int32, offsetChatID 
 }
 
 // GetChatHistory Returns messages in a chat. The messages are returned in a reverse chronological order (i.e., in order of decreasing message_id).
-// @param onlyLocal If true, returns only messages that are available locally without sending network requests
-// @param offset Specify 0 to get results from exactly the from_message_id or a negative offset to get the specified message and some newer messages
-// @param limit The maximum number of messages to be returned; must be positive and can't be greater than 100. If the offset is negative, the limit must be greater than -offset. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
 // @param chatID Chat identifier
 // @param fromMessageID Identifier of the message starting from which history must be fetched; use 0 to get results from the beginning (i.e., from oldest to newest)
-func (client *Client) GetChatHistory(onlyLocal bool, offset int32, limit int32, chatID int64, fromMessageID int64) (*Messages, error) {
+// @param offset Specify 0 to get results from exactly the from_message_id or a negative offset to get the specified message and some newer messages
+// @param limit The maximum number of messages to be returned; must be positive and can't be greater than 100. If the offset is negative, the limit must be greater than -offset. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
+// @param onlyLocal If true, returns only messages that are available locally without sending network requests
+func (client *Client) GetChatHistory(chatID int64, fromMessageID int64, offset int32, limit int32, onlyLocal bool) (*Messages, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "getChatHistory",
-		"only_local":      onlyLocal,
-		"offset":          offset,
-		"limit":           limit,
 		"chat_id":         chatID,
 		"from_message_id": fromMessageID,
+		"offset":          offset,
+		"limit":           limit,
+		"only_local":      onlyLocal,
 	})
 
 	if err != nil {
@@ -1254,13 +1254,13 @@ func (client *Client) GetChatHistory(onlyLocal bool, offset int32, limit int32, 
 }
 
 // DeleteChatHistory Deletes all messages in the chat only for the user. Cannot be used in channels and public supergroups
-// @param removeFromChatList Pass true if the chat should be removed from the chats list
 // @param chatID Chat identifier
-func (client *Client) DeleteChatHistory(removeFromChatList bool, chatID int64) (*Ok, error) {
+// @param removeFromChatList Pass true if the chat should be removed from the chats list
+func (client *Client) DeleteChatHistory(chatID int64, removeFromChatList bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "deleteChatHistory",
-		"remove_from_chat_list": removeFromChatList,
 		"chat_id":               chatID,
+		"remove_from_chat_list": removeFromChatList,
 	})
 
 	if err != nil {
@@ -1278,23 +1278,23 @@ func (client *Client) DeleteChatHistory(removeFromChatList bool, chatID int64) (
 }
 
 // SearchChatMessages Searches for messages with given words in the chat. Returns the results in reverse chronological order, i.e. in order of decreasing message_id. Cannot be used in secret chats with a non-empty query
-// @param filter Filter for message content in the search results
-// @param senderUserID If not 0, only messages sent by the specified user will be returned. Not supported in secret chats
-// @param offset Specify 0 to get results from exactly the from_message_id or a negative offset to get the specified message and some newer messages
-// @param limit The maximum number of messages to be returned; must be positive and can't be greater than 100. If the offset is negative, the limit must be greater than -offset. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
-// @param fromMessageID Identifier of the message starting from which history must be fetched; use 0 to get results from the beginning
 // @param chatID Identifier of the chat in which to search messages
 // @param query Query to search for
-func (client *Client) SearchChatMessages(filter SearchMessagesFilter, senderUserID int32, offset int32, limit int32, fromMessageID int64, chatID int64, query string) (*Messages, error) {
+// @param senderUserID If not 0, only messages sent by the specified user will be returned. Not supported in secret chats
+// @param fromMessageID Identifier of the message starting from which history must be fetched; use 0 to get results from the beginning
+// @param offset Specify 0 to get results from exactly the from_message_id or a negative offset to get the specified message and some newer messages
+// @param limit The maximum number of messages to be returned; must be positive and can't be greater than 100. If the offset is negative, the limit must be greater than -offset. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
+// @param filter Filter for message content in the search results
+func (client *Client) SearchChatMessages(chatID int64, query string, senderUserID int32, fromMessageID int64, offset int32, limit int32, filter SearchMessagesFilter) (*Messages, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "searchChatMessages",
-		"filter":          filter,
-		"sender_user_id":  senderUserID,
-		"offset":          offset,
-		"limit":           limit,
-		"from_message_id": fromMessageID,
 		"chat_id":         chatID,
 		"query":           query,
+		"sender_user_id":  senderUserID,
+		"from_message_id": fromMessageID,
+		"offset":          offset,
+		"limit":           limit,
+		"filter":          filter,
 	})
 
 	if err != nil {
@@ -1312,19 +1312,19 @@ func (client *Client) SearchChatMessages(filter SearchMessagesFilter, senderUser
 }
 
 // SearchMessages Searches for messages in all chats except secret chats. Returns the results in reverse chronological order (i.e., in order of decreasing (date, chat_id, message_id)).
-// @param limit The maximum number of messages to be returned, up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
-// @param offsetDate The date of the message starting from which the results should be fetched. Use 0 or any date in the future to get results from the beginning
-// @param offsetMessageID The message identifier of the last found message, or 0 for the first request
-// @param offsetChatID The chat identifier of the last found message, or 0 for the first request
 // @param query Query to search for
-func (client *Client) SearchMessages(limit int32, offsetDate int32, offsetMessageID int64, offsetChatID int64, query string) (*Messages, error) {
+// @param offsetDate The date of the message starting from which the results should be fetched. Use 0 or any date in the future to get results from the beginning
+// @param offsetChatID The chat identifier of the last found message, or 0 for the first request
+// @param offsetMessageID The message identifier of the last found message, or 0 for the first request
+// @param limit The maximum number of messages to be returned, up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
+func (client *Client) SearchMessages(query string, offsetDate int32, offsetChatID int64, offsetMessageID int64, limit int32) (*Messages, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "searchMessages",
-		"limit":             limit,
-		"offset_date":       offsetDate,
-		"offset_message_id": offsetMessageID,
-		"offset_chat_id":    offsetChatID,
 		"query":             query,
+		"offset_date":       offsetDate,
+		"offset_chat_id":    offsetChatID,
+		"offset_message_id": offsetMessageID,
+		"limit":             limit,
 	})
 
 	if err != nil {
@@ -1342,19 +1342,19 @@ func (client *Client) SearchMessages(limit int32, offsetDate int32, offsetMessag
 }
 
 // SearchSecretMessages Searches for messages in secret chats. Returns the results in reverse chronological order. For optimal performance the number of returned messages is chosen by the library
-// @param filter A filter for the content of messages in the search results
-// @param limit Maximum number of messages to be returned; up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
 // @param chatID Identifier of the chat in which to search. Specify 0 to search in all secret chats
-// @param fromSearchID The identifier from the result of a previous request, use 0 to get results from the beginning
 // @param query Query to search for. If empty, searchChatMessages should be used instead
-func (client *Client) SearchSecretMessages(filter SearchMessagesFilter, limit int32, chatID int64, fromSearchID JSONInt64, query string) (*FoundMessages, error) {
+// @param fromSearchID The identifier from the result of a previous request, use 0 to get results from the beginning
+// @param limit Maximum number of messages to be returned; up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
+// @param filter A filter for the content of messages in the search results
+func (client *Client) SearchSecretMessages(chatID int64, query string, fromSearchID JSONInt64, limit int32, filter SearchMessagesFilter) (*FoundMessages, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "searchSecretMessages",
-		"filter":         filter,
-		"limit":          limit,
 		"chat_id":        chatID,
-		"from_search_id": fromSearchID,
 		"query":          query,
+		"from_search_id": fromSearchID,
+		"limit":          limit,
+		"filter":         filter,
 	})
 
 	if err != nil {
@@ -1372,15 +1372,15 @@ func (client *Client) SearchSecretMessages(filter SearchMessagesFilter, limit in
 }
 
 // SearchCallMessages Searches for call messages. Returns the results in reverse chronological order (i. e., in order of decreasing message_id). For optimal performance the number of returned messages is chosen by the library
-// @param onlyMissed If true, returns only messages with missed calls
-// @param limit The maximum number of messages to be returned; up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
 // @param fromMessageID Identifier of the message from which to search; use 0 to get results from the beginning
-func (client *Client) SearchCallMessages(onlyMissed bool, limit int32, fromMessageID int64) (*Messages, error) {
+// @param limit The maximum number of messages to be returned; up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
+// @param onlyMissed If true, returns only messages with missed calls
+func (client *Client) SearchCallMessages(fromMessageID int64, limit int32, onlyMissed bool) (*Messages, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "searchCallMessages",
-		"only_missed":     onlyMissed,
-		"limit":           limit,
 		"from_message_id": fromMessageID,
+		"limit":           limit,
+		"only_missed":     onlyMissed,
 	})
 
 	if err != nil {
@@ -1398,13 +1398,13 @@ func (client *Client) SearchCallMessages(onlyMissed bool, limit int32, fromMessa
 }
 
 // SearchChatRecentLocationMessages Returns information about the recent locations of chat members that were sent to the chat. Returns up to 1 location message per user
-// @param limit Maximum number of messages to be returned
 // @param chatID Chat identifier
-func (client *Client) SearchChatRecentLocationMessages(limit int32, chatID int64) (*Messages, error) {
+// @param limit Maximum number of messages to be returned
+func (client *Client) SearchChatRecentLocationMessages(chatID int64, limit int32) (*Messages, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "searchChatRecentLocationMessages",
-		"limit":   limit,
 		"chat_id": chatID,
+		"limit":   limit,
 	})
 
 	if err != nil {
@@ -1442,13 +1442,13 @@ func (client *Client) GetActiveLiveLocationMessages() (*Messages, error) {
 }
 
 // GetChatMessageByDate Returns the last message sent in a chat no later than the specified date
-// @param date Point in time (Unix timestamp) relative to which to search for messages
 // @param chatID Chat identifier
-func (client *Client) GetChatMessageByDate(date int32, chatID int64) (*Message, error) {
+// @param date Point in time (Unix timestamp) relative to which to search for messages
+func (client *Client) GetChatMessageByDate(chatID int64, date int32) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getChatMessageByDate",
-		"date":    date,
 		"chat_id": chatID,
+		"date":    date,
 	})
 
 	if err != nil {
@@ -1466,15 +1466,15 @@ func (client *Client) GetChatMessageByDate(date int32, chatID int64) (*Message, 
 }
 
 // GetPublicMessageLink Returns a public HTTPS link to a message. Available only for messages in public supergroups and channels
-// @param forAlbum Pass true if a link for a whole media album should be returned
 // @param chatID Identifier of the chat to which the message belongs
 // @param messageID Identifier of the message
-func (client *Client) GetPublicMessageLink(forAlbum bool, chatID int64, messageID int64) (*PublicMessageLink, error) {
+// @param forAlbum Pass true if a link for a whole media album should be returned
+func (client *Client) GetPublicMessageLink(chatID int64, messageID int64, forAlbum bool) (*PublicMessageLink, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getPublicMessageLink",
-		"for_album":  forAlbum,
 		"chat_id":    chatID,
 		"message_id": messageID,
+		"for_album":  forAlbum,
 	})
 
 	if err != nil {
@@ -1492,21 +1492,21 @@ func (client *Client) GetPublicMessageLink(forAlbum bool, chatID int64, messageI
 }
 
 // SendMessage Sends a message. Returns the sent message
-// @param disableNotification Pass true to disable notification for the message. Not supported in secret chats
-// @param fromBackground Pass true if the message is sent from the background
-// @param inputMessageContent The content of the message to be sent
-// @param replyMarkup Markup for replying to the message; for bots only
 // @param chatID Target chat
 // @param replyToMessageID Identifier of the message to reply to or 0
-func (client *Client) SendMessage(disableNotification bool, fromBackground bool, inputMessageContent InputMessageContent, replyMarkup ReplyMarkup, chatID int64, replyToMessageID int64) (*Message, error) {
+// @param disableNotification Pass true to disable notification for the message. Not supported in secret chats
+// @param fromBackground Pass true if the message is sent from the background
+// @param replyMarkup Markup for replying to the message; for bots only
+// @param inputMessageContent The content of the message to be sent
+func (client *Client) SendMessage(chatID int64, replyToMessageID int64, disableNotification bool, fromBackground bool, replyMarkup ReplyMarkup, inputMessageContent InputMessageContent) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "sendMessage",
-		"disable_notification":  disableNotification,
-		"from_background":       fromBackground,
-		"input_message_content": inputMessageContent,
-		"reply_markup":          replyMarkup,
 		"chat_id":               chatID,
 		"reply_to_message_id":   replyToMessageID,
+		"disable_notification":  disableNotification,
+		"from_background":       fromBackground,
+		"reply_markup":          replyMarkup,
+		"input_message_content": inputMessageContent,
 	})
 
 	if err != nil {
@@ -1524,18 +1524,18 @@ func (client *Client) SendMessage(disableNotification bool, fromBackground bool,
 }
 
 // SendMessageAlbum Sends messages grouped together into an album. Currently only photo and video messages can be grouped into an album. Returns sent messages
+// @param chatID Target chat
+// @param replyToMessageID Identifier of a message to reply to or 0
 // @param disableNotification Pass true to disable notification for the messages. Not supported in secret chats
 // @param fromBackground Pass true if the messages are sent from the background
-// @param replyToMessageID Identifier of a message to reply to or 0
-// @param chatID Target chat
 // @param inputMessageContents Contents of messages to be sent
-func (client *Client) SendMessageAlbum(disableNotification bool, fromBackground bool, replyToMessageID int64, chatID int64, inputMessageContents []InputMessageContent) (*Messages, error) {
+func (client *Client) SendMessageAlbum(chatID int64, replyToMessageID int64, disableNotification bool, fromBackground bool, inputMessageContents []InputMessageContent) (*Messages, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                  "sendMessageAlbum",
+		"chat_id":                chatID,
+		"reply_to_message_id":    replyToMessageID,
 		"disable_notification":   disableNotification,
 		"from_background":        fromBackground,
-		"reply_to_message_id":    replyToMessageID,
-		"chat_id":                chatID,
 		"input_message_contents": inputMessageContents,
 	})
 
@@ -1580,19 +1580,19 @@ func (client *Client) SendBotStartMessage(botUserID int32, chatID int64, paramet
 }
 
 // SendInlineQueryResultMessage Sends the result of an inline query as a message. Returns the sent message. Always clears a chat draft message
-// @param disableNotification Pass true to disable notification for the message. Not supported in secret chats
-// @param fromBackground Pass true if the message is sent from background
 // @param chatID Target chat
 // @param replyToMessageID Identifier of a message to reply to or 0
+// @param disableNotification Pass true to disable notification for the message. Not supported in secret chats
+// @param fromBackground Pass true if the message is sent from background
 // @param queryID Identifier of the inline query
 // @param resultID Identifier of the inline result
-func (client *Client) SendInlineQueryResultMessage(disableNotification bool, fromBackground bool, chatID int64, replyToMessageID int64, queryID JSONInt64, resultID string) (*Message, error) {
+func (client *Client) SendInlineQueryResultMessage(chatID int64, replyToMessageID int64, disableNotification bool, fromBackground bool, queryID JSONInt64, resultID string) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                "sendInlineQueryResultMessage",
-		"disable_notification": disableNotification,
-		"from_background":      fromBackground,
 		"chat_id":              chatID,
 		"reply_to_message_id":  replyToMessageID,
+		"disable_notification": disableNotification,
+		"from_background":      fromBackground,
 		"query_id":             queryID,
 		"result_id":            resultID,
 	})
@@ -1612,21 +1612,21 @@ func (client *Client) SendInlineQueryResultMessage(disableNotification bool, fro
 }
 
 // ForwardMessages Forwards previously sent messages. Returns the forwarded messages in the same order as the message identifiers passed in message_ids. If a message can't be forwarded, null will be returned instead of the message
-// @param fromBackground Pass true if the message is sent from the background
-// @param asAlbum True, if the messages should be grouped into an album after forwarding. For this to work, no more than 10 messages may be forwarded, and all of them must be photo or video messages
-// @param disableNotification Pass true to disable notification for the message, doesn't work if messages are forwarded to a secret chat
 // @param chatID Identifier of the chat to which to forward messages
 // @param fromChatID Identifier of the chat from which to forward messages
 // @param messageIDs Identifiers of the messages to forward
-func (client *Client) ForwardMessages(fromBackground bool, asAlbum bool, disableNotification bool, chatID int64, fromChatID int64, messageIDs []int64) (*Messages, error) {
+// @param disableNotification Pass true to disable notification for the message, doesn't work if messages are forwarded to a secret chat
+// @param fromBackground Pass true if the message is sent from the background
+// @param asAlbum True, if the messages should be grouped into an album after forwarding. For this to work, no more than 10 messages may be forwarded, and all of them must be photo or video messages
+func (client *Client) ForwardMessages(chatID int64, fromChatID int64, messageIDs []int64, disableNotification bool, fromBackground bool, asAlbum bool) (*Messages, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                "forwardMessages",
-		"from_background":      fromBackground,
-		"as_album":             asAlbum,
-		"disable_notification": disableNotification,
 		"chat_id":              chatID,
 		"from_chat_id":         fromChatID,
 		"message_ids":          messageIDs,
+		"disable_notification": disableNotification,
+		"from_background":      fromBackground,
+		"as_album":             asAlbum,
 	})
 
 	if err != nil {
@@ -1644,13 +1644,13 @@ func (client *Client) ForwardMessages(fromBackground bool, asAlbum bool, disable
 }
 
 // SendChatSetTTLMessage Changes the current TTL setting (sets a new self-destruct timer) in a secret chat and sends the corresponding message
-// @param tTL New TTL value, in seconds
 // @param chatID Chat identifier
-func (client *Client) SendChatSetTTLMessage(tTL int32, chatID int64) (*Message, error) {
+// @param tTL New TTL value, in seconds
+func (client *Client) SendChatSetTTLMessage(chatID int64, tTL int32) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "sendChatSetTtlMessage",
-		"ttl":     tTL,
 		"chat_id": chatID,
+		"ttl":     tTL,
 	})
 
 	if err != nil {
@@ -1690,15 +1690,15 @@ func (client *Client) SendChatScreenshotTakenNotification(chatID int64) (*Ok, er
 }
 
 // DeleteMessages Deletes messages
-// @param revoke Pass true to try to delete outgoing messages for all chat members (may fail if messages are too old). Always true for supergroups, channels and secret chats
 // @param chatID Chat identifier
 // @param messageIDs Identifiers of the messages to be deleted
-func (client *Client) DeleteMessages(revoke bool, chatID int64, messageIDs []int64) (*Ok, error) {
+// @param revoke Pass true to try to delete outgoing messages for all chat members (may fail if messages are too old). Always true for supergroups, channels and secret chats
+func (client *Client) DeleteMessages(chatID int64, messageIDs []int64, revoke bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "deleteMessages",
-		"revoke":      revoke,
 		"chat_id":     chatID,
 		"message_ids": messageIDs,
+		"revoke":      revoke,
 	})
 
 	if err != nil {
@@ -1716,13 +1716,13 @@ func (client *Client) DeleteMessages(revoke bool, chatID int64, messageIDs []int
 }
 
 // DeleteChatMessagesFromUser Deletes all messages sent by the specified user to a chat. Supported only in supergroups; requires can_delete_messages administrator privileges
-// @param userID User identifier
 // @param chatID Chat identifier
-func (client *Client) DeleteChatMessagesFromUser(userID int32, chatID int64) (*Ok, error) {
+// @param userID User identifier
+func (client *Client) DeleteChatMessagesFromUser(chatID int64, userID int32) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "deleteChatMessagesFromUser",
-		"user_id": userID,
 		"chat_id": chatID,
+		"user_id": userID,
 	})
 
 	if err != nil {
@@ -1740,17 +1740,17 @@ func (client *Client) DeleteChatMessagesFromUser(userID int32, chatID int64) (*O
 }
 
 // EditMessageText Edits the text of a message (or a text of a game message). Non-bot users can edit messages for a limited period of time. Returns the edited message after the edit is completed on the server side
-// @param inputMessageContent New text content of the message. Should be of type InputMessageText
-// @param replyMarkup The new message reply markup; for bots only
 // @param chatID The chat the message belongs to
 // @param messageID Identifier of the message
-func (client *Client) EditMessageText(inputMessageContent InputMessageContent, replyMarkup ReplyMarkup, chatID int64, messageID int64) (*Message, error) {
+// @param replyMarkup The new message reply markup; for bots only
+// @param inputMessageContent New text content of the message. Should be of type InputMessageText
+func (client *Client) EditMessageText(chatID int64, messageID int64, replyMarkup ReplyMarkup, inputMessageContent InputMessageContent) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "editMessageText",
-		"input_message_content": inputMessageContent,
-		"reply_markup":          replyMarkup,
 		"chat_id":               chatID,
 		"message_id":            messageID,
+		"reply_markup":          replyMarkup,
+		"input_message_content": inputMessageContent,
 	})
 
 	if err != nil {
@@ -1768,16 +1768,16 @@ func (client *Client) EditMessageText(inputMessageContent InputMessageContent, r
 }
 
 // EditMessageLiveLocation Edits the message content of a live location. Messages can be edited for a limited period of time specified in the live location. Returns the edited message after the edit is completed server-side
-// @param replyMarkup Tew message reply markup; for bots only
 // @param chatID The chat the message belongs to
 // @param messageID Identifier of the message
+// @param replyMarkup Tew message reply markup; for bots only
 // @param location New location content of the message; may be null. Pass null to stop sharing the live location
-func (client *Client) EditMessageLiveLocation(replyMarkup ReplyMarkup, chatID int64, messageID int64, location Location) (*Message, error) {
+func (client *Client) EditMessageLiveLocation(chatID int64, messageID int64, replyMarkup ReplyMarkup, location Location) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "editMessageLiveLocation",
-		"reply_markup": replyMarkup,
 		"chat_id":      chatID,
 		"message_id":   messageID,
+		"reply_markup": replyMarkup,
 		"location":     location,
 	})
 
@@ -1796,17 +1796,17 @@ func (client *Client) EditMessageLiveLocation(replyMarkup ReplyMarkup, chatID in
 }
 
 // EditMessageCaption Edits the message content caption. Non-bots can edit messages for a limited period of time. Returns the edited message after the edit is completed server-side
-// @param replyMarkup The new message reply markup; for bots only
-// @param caption New message content caption; 0-200 characters
 // @param chatID The chat the message belongs to
 // @param messageID Identifier of the message
-func (client *Client) EditMessageCaption(replyMarkup ReplyMarkup, caption FormattedText, chatID int64, messageID int64) (*Message, error) {
+// @param replyMarkup The new message reply markup; for bots only
+// @param caption New message content caption; 0-200 characters
+func (client *Client) EditMessageCaption(chatID int64, messageID int64, replyMarkup ReplyMarkup, caption FormattedText) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "editMessageCaption",
-		"reply_markup": replyMarkup,
-		"caption":      caption,
 		"chat_id":      chatID,
 		"message_id":   messageID,
+		"reply_markup": replyMarkup,
+		"caption":      caption,
 	})
 
 	if err != nil {
@@ -1824,15 +1824,15 @@ func (client *Client) EditMessageCaption(replyMarkup ReplyMarkup, caption Format
 }
 
 // EditMessageReplyMarkup Edits the message reply markup; for bots only. Returns the edited message after the edit is completed server-side
-// @param replyMarkup New message reply markup
 // @param chatID The chat the message belongs to
 // @param messageID Identifier of the message
-func (client *Client) EditMessageReplyMarkup(replyMarkup ReplyMarkup, chatID int64, messageID int64) (*Message, error) {
+// @param replyMarkup New message reply markup
+func (client *Client) EditMessageReplyMarkup(chatID int64, messageID int64, replyMarkup ReplyMarkup) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "editMessageReplyMarkup",
-		"reply_markup": replyMarkup,
 		"chat_id":      chatID,
 		"message_id":   messageID,
+		"reply_markup": replyMarkup,
 	})
 
 	if err != nil {
@@ -1850,15 +1850,15 @@ func (client *Client) EditMessageReplyMarkup(replyMarkup ReplyMarkup, chatID int
 }
 
 // EditInlineMessageText Edits the text of an inline text or game message sent via a bot; for bots only
-// @param inputMessageContent New text content of the message. Should be of type InputMessageText
-// @param replyMarkup New message reply markup
 // @param inlineMessageID Inline message identifier
-func (client *Client) EditInlineMessageText(inputMessageContent InputMessageContent, replyMarkup ReplyMarkup, inlineMessageID string) (*Ok, error) {
+// @param replyMarkup New message reply markup
+// @param inputMessageContent New text content of the message. Should be of type InputMessageText
+func (client *Client) EditInlineMessageText(inlineMessageID string, replyMarkup ReplyMarkup, inputMessageContent InputMessageContent) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "editInlineMessageText",
-		"input_message_content": inputMessageContent,
-		"reply_markup":          replyMarkup,
 		"inline_message_id":     inlineMessageID,
+		"reply_markup":          replyMarkup,
+		"input_message_content": inputMessageContent,
 	})
 
 	if err != nil {
@@ -1876,15 +1876,15 @@ func (client *Client) EditInlineMessageText(inputMessageContent InputMessageCont
 }
 
 // EditInlineMessageLiveLocation Edits the content of a live location in an inline message sent via a bot; for bots only
+// @param inlineMessageID Inline message identifier
 // @param replyMarkup New message reply markup
 // @param location New location content of the message; may be null. Pass null to stop sharing the live location
-// @param inlineMessageID Inline message identifier
-func (client *Client) EditInlineMessageLiveLocation(replyMarkup ReplyMarkup, location Location, inlineMessageID string) (*Ok, error) {
+func (client *Client) EditInlineMessageLiveLocation(inlineMessageID string, replyMarkup ReplyMarkup, location Location) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "editInlineMessageLiveLocation",
+		"inline_message_id": inlineMessageID,
 		"reply_markup":      replyMarkup,
 		"location":          location,
-		"inline_message_id": inlineMessageID,
 	})
 
 	if err != nil {
@@ -1902,15 +1902,15 @@ func (client *Client) EditInlineMessageLiveLocation(replyMarkup ReplyMarkup, loc
 }
 
 // EditInlineMessageCaption Edits the caption of an inline message sent via a bot; for bots only
+// @param inlineMessageID Inline message identifier
 // @param replyMarkup New message reply markup
 // @param caption New message content caption; 0-200 characters
-// @param inlineMessageID Inline message identifier
-func (client *Client) EditInlineMessageCaption(replyMarkup ReplyMarkup, caption FormattedText, inlineMessageID string) (*Ok, error) {
+func (client *Client) EditInlineMessageCaption(inlineMessageID string, replyMarkup ReplyMarkup, caption FormattedText) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "editInlineMessageCaption",
+		"inline_message_id": inlineMessageID,
 		"reply_markup":      replyMarkup,
 		"caption":           caption,
-		"inline_message_id": inlineMessageID,
 	})
 
 	if err != nil {
@@ -1928,13 +1928,13 @@ func (client *Client) EditInlineMessageCaption(replyMarkup ReplyMarkup, caption 
 }
 
 // EditInlineMessageReplyMarkup Edits the reply markup of an inline message sent via a bot; for bots only
-// @param replyMarkup New message reply markup
 // @param inlineMessageID Inline message identifier
-func (client *Client) EditInlineMessageReplyMarkup(replyMarkup ReplyMarkup, inlineMessageID string) (*Ok, error) {
+// @param replyMarkup New message reply markup
+func (client *Client) EditInlineMessageReplyMarkup(inlineMessageID string, replyMarkup ReplyMarkup) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "editInlineMessageReplyMarkup",
-		"reply_markup":      replyMarkup,
 		"inline_message_id": inlineMessageID,
+		"reply_markup":      replyMarkup,
 	})
 
 	if err != nil {
@@ -1974,13 +1974,13 @@ func (client *Client) GetTextEntities(text string) (*TextEntities, error) {
 }
 
 // ParseTextEntities Parses Bold, Italic, Code, Pre, PreCode and TextUrl entities contained in the text. This is an offline method. Can be called before authorization. Can be called synchronously
-// @param parseMode Text parse mode
 // @param text The text which should be parsed
-func (client *Client) ParseTextEntities(parseMode TextParseMode, text string) (*FormattedText, error) {
+// @param parseMode Text parse mode
+func (client *Client) ParseTextEntities(text string, parseMode TextParseMode) (*FormattedText, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "parseTextEntities",
-		"parse_mode": parseMode,
 		"text":       text,
+		"parse_mode": parseMode,
 	})
 
 	if err != nil {
@@ -2045,16 +2045,16 @@ func (client *Client) GetFileExtension(mimeType string) (*Text, error) {
 // @param botUserID The identifier of the target bot
 // @param chatID Identifier of the chat, where the query was sent
 // @param userLocation Location of the user, only if needed
-// @param offset Offset of the first entry to return
 // @param query Text of the query
-func (client *Client) GetInlineQueryResults(botUserID int32, chatID int64, userLocation Location, offset string, query string) (*InlineQueryResults, error) {
+// @param offset Offset of the first entry to return
+func (client *Client) GetInlineQueryResults(botUserID int32, chatID int64, userLocation Location, query string, offset string) (*InlineQueryResults, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "getInlineQueryResults",
 		"bot_user_id":   botUserID,
 		"chat_id":       chatID,
 		"user_location": userLocation,
-		"offset":        offset,
 		"query":         query,
+		"offset":        offset,
 	})
 
 	if err != nil {
@@ -2072,23 +2072,23 @@ func (client *Client) GetInlineQueryResults(botUserID int32, chatID int64, userL
 }
 
 // AnswerInlineQuery Sets the result of an inline query; for bots only
-// @param isPersonal True, if the result of the query can be cached for the specified user
-// @param cacheTime Allowed time to cache the results of the query, in seconds
 // @param inlineQueryID Identifier of the inline query
+// @param isPersonal True, if the result of the query can be cached for the specified user
+// @param results The results of the query
+// @param cacheTime Allowed time to cache the results of the query, in seconds
+// @param nextOffset Offset for the next inline query; pass an empty string if there are no more results
 // @param switchPmText If non-empty, this text should be shown on the button that opens a private chat with the bot and sends a start message to the bot with the parameter switch_pm_parameter
 // @param switchPmParameter The parameter for the bot start message
-// @param nextOffset Offset for the next inline query; pass an empty string if there are no more results
-// @param results The results of the query
-func (client *Client) AnswerInlineQuery(isPersonal bool, cacheTime int32, inlineQueryID JSONInt64, switchPmText string, switchPmParameter string, nextOffset string, results []InputInlineQueryResult) (*Ok, error) {
+func (client *Client) AnswerInlineQuery(inlineQueryID JSONInt64, isPersonal bool, results []InputInlineQueryResult, cacheTime int32, nextOffset string, switchPmText string, switchPmParameter string) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":               "answerInlineQuery",
-		"is_personal":         isPersonal,
-		"cache_time":          cacheTime,
 		"inline_query_id":     inlineQueryID,
+		"is_personal":         isPersonal,
+		"results":             results,
+		"cache_time":          cacheTime,
+		"next_offset":         nextOffset,
 		"switch_pm_text":      switchPmText,
 		"switch_pm_parameter": switchPmParameter,
-		"next_offset":         nextOffset,
-		"results":             results,
 	})
 
 	if err != nil {
@@ -2106,15 +2106,15 @@ func (client *Client) AnswerInlineQuery(isPersonal bool, cacheTime int32, inline
 }
 
 // GetCallbackQueryAnswer Sends a callback query to a bot and returns an answer. Returns an error with code 502 if the bot fails to answer the query before the query timeout expires
-// @param payload Query payload
 // @param chatID Identifier of the chat with the message
 // @param messageID Identifier of the message from which the query originated
-func (client *Client) GetCallbackQueryAnswer(payload CallbackQueryPayload, chatID int64, messageID int64) (*CallbackQueryAnswer, error) {
+// @param payload Query payload
+func (client *Client) GetCallbackQueryAnswer(chatID int64, messageID int64, payload CallbackQueryPayload) (*CallbackQueryAnswer, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getCallbackQueryAnswer",
-		"payload":    payload,
 		"chat_id":    chatID,
 		"message_id": messageID,
+		"payload":    payload,
 	})
 
 	if err != nil {
@@ -2132,19 +2132,19 @@ func (client *Client) GetCallbackQueryAnswer(payload CallbackQueryPayload, chatI
 }
 
 // AnswerCallbackQuery Sets the result of a callback query; for bots only
-// @param showAlert If true, an alert should be shown to the user instead of a toast notification
-// @param cacheTime Time during which the result of the query can be cached, in seconds
 // @param callbackQueryID Identifier of the callback query
 // @param text Text of the answer
+// @param showAlert If true, an alert should be shown to the user instead of a toast notification
 // @param uRL URL to be opened
-func (client *Client) AnswerCallbackQuery(showAlert bool, cacheTime int32, callbackQueryID JSONInt64, text string, uRL string) (*Ok, error) {
+// @param cacheTime Time during which the result of the query can be cached, in seconds
+func (client *Client) AnswerCallbackQuery(callbackQueryID JSONInt64, text string, showAlert bool, uRL string, cacheTime int32) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "answerCallbackQuery",
-		"show_alert":        showAlert,
-		"cache_time":        cacheTime,
 		"callback_query_id": callbackQueryID,
 		"text":              text,
+		"show_alert":        showAlert,
 		"url":               uRL,
+		"cache_time":        cacheTime,
 	})
 
 	if err != nil {
@@ -2163,14 +2163,14 @@ func (client *Client) AnswerCallbackQuery(showAlert bool, cacheTime int32, callb
 
 // AnswerShippingQuery Sets the result of a shipping query; for bots only
 // @param shippingQueryID Identifier of the shipping query
-// @param errorMessage An error message, empty on success
 // @param shippingOptions Available shipping options
-func (client *Client) AnswerShippingQuery(shippingQueryID JSONInt64, errorMessage string, shippingOptions []ShippingOption) (*Ok, error) {
+// @param errorMessage An error message, empty on success
+func (client *Client) AnswerShippingQuery(shippingQueryID JSONInt64, shippingOptions []ShippingOption, errorMessage string) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "answerShippingQuery",
 		"shipping_query_id": shippingQueryID,
-		"error_message":     errorMessage,
 		"shipping_options":  shippingOptions,
+		"error_message":     errorMessage,
 	})
 
 	if err != nil {
@@ -2212,21 +2212,21 @@ func (client *Client) AnswerPreCheckoutQuery(preCheckoutQueryID JSONInt64, error
 }
 
 // SetGameScore Updates the game score of the specified user in the game; for bots only
-// @param editMessage True, if the message should be edited
-// @param force Pass true to update the score even if it decreases. If the score is 0, the user will be deleted from the high score table
-// @param userID User identifier
-// @param score The new score
 // @param chatID The chat to which the message with the game
 // @param messageID Identifier of the message
-func (client *Client) SetGameScore(editMessage bool, force bool, userID int32, score int32, chatID int64, messageID int64) (*Message, error) {
+// @param editMessage True, if the message should be edited
+// @param userID User identifier
+// @param score The new score
+// @param force Pass true to update the score even if it decreases. If the score is 0, the user will be deleted from the high score table
+func (client *Client) SetGameScore(chatID int64, messageID int64, editMessage bool, userID int32, score int32, force bool) (*Message, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "setGameScore",
-		"edit_message": editMessage,
-		"force":        force,
-		"user_id":      userID,
-		"score":        score,
 		"chat_id":      chatID,
 		"message_id":   messageID,
+		"edit_message": editMessage,
+		"user_id":      userID,
+		"score":        score,
+		"force":        force,
 	})
 
 	if err != nil {
@@ -2244,19 +2244,19 @@ func (client *Client) SetGameScore(editMessage bool, force bool, userID int32, s
 }
 
 // SetInlineGameScore Updates the game score of the specified user in a game; for bots only
+// @param inlineMessageID Inline message identifier
 // @param editMessage True, if the message should be edited
-// @param force Pass true to update the score even if it decreases. If the score is 0, the user will be deleted from the high score table
 // @param userID User identifier
 // @param score The new score
-// @param inlineMessageID Inline message identifier
-func (client *Client) SetInlineGameScore(editMessage bool, force bool, userID int32, score int32, inlineMessageID string) (*Ok, error) {
+// @param force Pass true to update the score even if it decreases. If the score is 0, the user will be deleted from the high score table
+func (client *Client) SetInlineGameScore(inlineMessageID string, editMessage bool, userID int32, score int32, force bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "setInlineGameScore",
+		"inline_message_id": inlineMessageID,
 		"edit_message":      editMessage,
-		"force":             force,
 		"user_id":           userID,
 		"score":             score,
-		"inline_message_id": inlineMessageID,
+		"force":             force,
 	})
 
 	if err != nil {
@@ -2274,15 +2274,15 @@ func (client *Client) SetInlineGameScore(editMessage bool, force bool, userID in
 }
 
 // GetGameHighScores Returns the high scores for a game and some part of the high score table in the range of the specified user; for bots only
-// @param userID User identifier
 // @param chatID The chat that contains the message with the game
 // @param messageID Identifier of the message
-func (client *Client) GetGameHighScores(userID int32, chatID int64, messageID int64) (*GameHighScores, error) {
+// @param userID User identifier
+func (client *Client) GetGameHighScores(chatID int64, messageID int64, userID int32) (*GameHighScores, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getGameHighScores",
-		"user_id":    userID,
 		"chat_id":    chatID,
 		"message_id": messageID,
+		"user_id":    userID,
 	})
 
 	if err != nil {
@@ -2300,13 +2300,13 @@ func (client *Client) GetGameHighScores(userID int32, chatID int64, messageID in
 }
 
 // GetInlineGameHighScores Returns game high scores and some part of the high score table in the range of the specified user; for bots only
-// @param userID User identifier
 // @param inlineMessageID Inline message identifier
-func (client *Client) GetInlineGameHighScores(userID int32, inlineMessageID string) (*GameHighScores, error) {
+// @param userID User identifier
+func (client *Client) GetInlineGameHighScores(inlineMessageID string, userID int32) (*GameHighScores, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "getInlineGameHighScores",
-		"user_id":           userID,
 		"inline_message_id": inlineMessageID,
+		"user_id":           userID,
 	})
 
 	if err != nil {
@@ -2348,13 +2348,13 @@ func (client *Client) DeleteChatReplyMarkup(chatID int64, messageID int64) (*Ok,
 }
 
 // SendChatAction Sends a notification about user activity in a chat
-// @param action The action description
 // @param chatID Chat identifier
-func (client *Client) SendChatAction(action ChatAction, chatID int64) (*Ok, error) {
+// @param action The action description
+func (client *Client) SendChatAction(chatID int64, action ChatAction) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "sendChatAction",
-		"action":  action,
 		"chat_id": chatID,
+		"action":  action,
 	})
 
 	if err != nil {
@@ -2416,15 +2416,15 @@ func (client *Client) CloseChat(chatID int64) (*Ok, error) {
 }
 
 // ViewMessages This method should be called if messages are being viewed by the user. Many useful activities depend on whether the messages are currently being viewed or not (e.g., marking messages as read, incrementing a view counter, updating a view counter, removing deleted messages in supergroups and channels)
-// @param forceRead True, if messages in closed chats should be marked as read
 // @param chatID Chat identifier
 // @param messageIDs The identifiers of the messages being viewed
-func (client *Client) ViewMessages(forceRead bool, chatID int64, messageIDs []int64) (*Ok, error) {
+// @param forceRead True, if messages in closed chats should be marked as read
+func (client *Client) ViewMessages(chatID int64, messageIDs []int64, forceRead bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "viewMessages",
-		"force_read":  forceRead,
 		"chat_id":     chatID,
 		"message_ids": messageIDs,
+		"force_read":  forceRead,
 	})
 
 	if err != nil {
@@ -2488,13 +2488,13 @@ func (client *Client) ReadAllChatMentions(chatID int64) (*Ok, error) {
 }
 
 // CreatePrivateChat Returns an existing chat corresponding to a given user
-// @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
 // @param userID User identifier
-func (client *Client) CreatePrivateChat(force bool, userID int32) (*Chat, error) {
+// @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
+func (client *Client) CreatePrivateChat(userID int32, force bool) (*Chat, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "createPrivateChat",
-		"force":   force,
 		"user_id": userID,
+		"force":   force,
 	})
 
 	if err != nil {
@@ -2512,13 +2512,13 @@ func (client *Client) CreatePrivateChat(force bool, userID int32) (*Chat, error)
 }
 
 // CreateBasicGroupChat Returns an existing chat corresponding to a known basic group
-// @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
 // @param basicGroupID Basic group identifier
-func (client *Client) CreateBasicGroupChat(force bool, basicGroupID int32) (*Chat, error) {
+// @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
+func (client *Client) CreateBasicGroupChat(basicGroupID int32, force bool) (*Chat, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "createBasicGroupChat",
-		"force":          force,
 		"basic_group_id": basicGroupID,
+		"force":          force,
 	})
 
 	if err != nil {
@@ -2536,13 +2536,13 @@ func (client *Client) CreateBasicGroupChat(force bool, basicGroupID int32) (*Cha
 }
 
 // CreateSupergroupChat Returns an existing chat corresponding to a known supergroup or channel
-// @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
 // @param supergroupID Supergroup or channel identifier
-func (client *Client) CreateSupergroupChat(force bool, supergroupID int32) (*Chat, error) {
+// @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
+func (client *Client) CreateSupergroupChat(supergroupID int32, force bool) (*Chat, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "createSupergroupChat",
-		"force":         force,
 		"supergroup_id": supergroupID,
+		"force":         force,
 	})
 
 	if err != nil {
@@ -2582,13 +2582,13 @@ func (client *Client) CreateSecretChat(secretChatID int32) (*Chat, error) {
 }
 
 // CreateNewBasicGroupChat Creates a new basic group and sends a corresponding messageBasicGroupChatCreate. Returns the newly created chat
-// @param title Title of the new basic group; 1-255 characters
 // @param userIDs Identifiers of users to be added to the basic group
-func (client *Client) CreateNewBasicGroupChat(title string, userIDs []int32) (*Chat, error) {
+// @param title Title of the new basic group; 1-255 characters
+func (client *Client) CreateNewBasicGroupChat(userIDs []int32, title string) (*Chat, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "createNewBasicGroupChat",
-		"title":    title,
 		"user_ids": userIDs,
+		"title":    title,
 	})
 
 	if err != nil {
@@ -2606,15 +2606,15 @@ func (client *Client) CreateNewBasicGroupChat(title string, userIDs []int32) (*C
 }
 
 // CreateNewSupergroupChat Creates a new supergroup or channel and sends a corresponding messageSupergroupChatCreate. Returns the newly created chat
+// @param title Title of the new chat; 1-255 characters
 // @param isChannel True, if a channel chat should be created
 // @param description
-// @param title Title of the new chat; 1-255 characters
-func (client *Client) CreateNewSupergroupChat(isChannel bool, description string, title string) (*Chat, error) {
+func (client *Client) CreateNewSupergroupChat(title string, isChannel bool, description string) (*Chat, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "createNewSupergroupChat",
+		"title":       title,
 		"is_channel":  isChannel,
 		"description": description,
-		"title":       title,
 	})
 
 	if err != nil {
@@ -2700,13 +2700,13 @@ func (client *Client) SetChatTitle(chatID int64, title string) (*Ok, error) {
 }
 
 // SetChatPhoto Changes the photo of a chat. Supported only for basic groups, supergroups and channels. Requires administrator rights in basic groups and the appropriate administrator rights in supergroups and channels. The photo will not be changed before request to the server has been completed
-// @param photo New chat photo. You can use a zero InputFileId to delete the chat photo. Files that are accessible only by HTTP URL are not acceptable
 // @param chatID Chat identifier
-func (client *Client) SetChatPhoto(photo InputFile, chatID int64) (*Ok, error) {
+// @param photo New chat photo. You can use a zero InputFileId to delete the chat photo. Files that are accessible only by HTTP URL are not acceptable
+func (client *Client) SetChatPhoto(chatID int64, photo InputFile) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "setChatPhoto",
-		"photo":   photo,
 		"chat_id": chatID,
+		"photo":   photo,
 	})
 
 	if err != nil {
@@ -2724,13 +2724,13 @@ func (client *Client) SetChatPhoto(photo InputFile, chatID int64) (*Ok, error) {
 }
 
 // SetChatDraftMessage Changes the draft message in a chat
-// @param draftMessage New draft message; may be null
 // @param chatID Chat identifier
-func (client *Client) SetChatDraftMessage(draftMessage DraftMessage, chatID int64) (*Ok, error) {
+// @param draftMessage New draft message; may be null
+func (client *Client) SetChatDraftMessage(chatID int64, draftMessage DraftMessage) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "setChatDraftMessage",
-		"draft_message": draftMessage,
 		"chat_id":       chatID,
+		"draft_message": draftMessage,
 	})
 
 	if err != nil {
@@ -2748,13 +2748,13 @@ func (client *Client) SetChatDraftMessage(draftMessage DraftMessage, chatID int6
 }
 
 // ToggleChatIsPinned Changes the pinned state of a chat. You can pin up to GetOption("pinned_chat_count_max") non-secret chats and the same number of secret chats
-// @param isPinned New value of is_pinned
 // @param chatID Chat identifier
-func (client *Client) ToggleChatIsPinned(isPinned bool, chatID int64) (*Ok, error) {
+// @param isPinned New value of is_pinned
+func (client *Client) ToggleChatIsPinned(chatID int64, isPinned bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "toggleChatIsPinned",
-		"is_pinned": isPinned,
 		"chat_id":   chatID,
+		"is_pinned": isPinned,
 	})
 
 	if err != nil {
@@ -2796,15 +2796,15 @@ func (client *Client) SetChatClientData(chatID int64, clientData string) (*Ok, e
 }
 
 // AddChatMember Adds a new member to a chat. Members can't be added to private or secret chats. Members will not be added until the chat state has been synchronized with the server
+// @param chatID Chat identifier
 // @param userID Identifier of the user
 // @param forwardLimit The number of earlier messages from the chat to be forwarded to the new member; up to 300. Ignored for supergroups and channels
-// @param chatID Chat identifier
-func (client *Client) AddChatMember(userID int32, forwardLimit int32, chatID int64) (*Ok, error) {
+func (client *Client) AddChatMember(chatID int64, userID int32, forwardLimit int32) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "addChatMember",
+		"chat_id":       chatID,
 		"user_id":       userID,
 		"forward_limit": forwardLimit,
-		"chat_id":       chatID,
 	})
 
 	if err != nil {
@@ -2846,15 +2846,15 @@ func (client *Client) AddChatMembers(chatID int64, userIDs []int32) (*Ok, error)
 }
 
 // SetChatMemberStatus Changes the status of a chat member, needs appropriate privileges. This function is currently not suitable for adding new members to the chat; instead, use addChatMember. The chat member status will not be changed until it has been synchronized with the server
-// @param status The new status of the member in the chat
-// @param userID User identifier
 // @param chatID Chat identifier
-func (client *Client) SetChatMemberStatus(status ChatMemberStatus, userID int32, chatID int64) (*Ok, error) {
+// @param userID User identifier
+// @param status The new status of the member in the chat
+func (client *Client) SetChatMemberStatus(chatID int64, userID int32, status ChatMemberStatus) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "setChatMemberStatus",
-		"status":  status,
-		"user_id": userID,
 		"chat_id": chatID,
+		"user_id": userID,
+		"status":  status,
 	})
 
 	if err != nil {
@@ -2872,13 +2872,13 @@ func (client *Client) SetChatMemberStatus(status ChatMemberStatus, userID int32,
 }
 
 // GetChatMember Returns information about a single member of a chat
-// @param userID User identifier
 // @param chatID Chat identifier
-func (client *Client) GetChatMember(userID int32, chatID int64) (*ChatMember, error) {
+// @param userID User identifier
+func (client *Client) GetChatMember(chatID int64, userID int32) (*ChatMember, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getChatMember",
-		"user_id": userID,
 		"chat_id": chatID,
+		"user_id": userID,
 	})
 
 	if err != nil {
@@ -2896,15 +2896,15 @@ func (client *Client) GetChatMember(userID int32, chatID int64) (*ChatMember, er
 }
 
 // SearchChatMembers Searches for a specified query in the first name, last name and username of the members of a specified chat. Requires administrator rights in channels
-// @param limit The maximum number of users to be returned
 // @param chatID Chat identifier
 // @param query Query to search for
-func (client *Client) SearchChatMembers(limit int32, chatID int64, query string) (*ChatMembers, error) {
+// @param limit The maximum number of users to be returned
+func (client *Client) SearchChatMembers(chatID int64, query string, limit int32) (*ChatMembers, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "searchChatMembers",
-		"limit":   limit,
 		"chat_id": chatID,
 		"query":   query,
+		"limit":   limit,
 	})
 
 	if err != nil {
@@ -2990,13 +2990,13 @@ func (client *Client) DownloadFile(fileID int32, priority int32) (*File, error) 
 }
 
 // CancelDownloadFile Stops the downloading of a file. If a file has already been downloaded, does nothing
-// @param onlyIfPending Pass true to stop downloading only if it hasn't been started, i.e. request hasn't been sent to server
 // @param fileID Identifier of a file to stop downloading
-func (client *Client) CancelDownloadFile(onlyIfPending bool, fileID int32) (*Ok, error) {
+// @param onlyIfPending Pass true to stop downloading only if it hasn't been started, i.e. request hasn't been sent to server
+func (client *Client) CancelDownloadFile(fileID int32, onlyIfPending bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "cancelDownloadFile",
-		"only_if_pending": onlyIfPending,
 		"file_id":         fileID,
+		"only_if_pending": onlyIfPending,
 	})
 
 	if err != nil {
@@ -3014,14 +3014,14 @@ func (client *Client) CancelDownloadFile(onlyIfPending bool, fileID int32) (*Ok,
 }
 
 // UploadFile Asynchronously uploads a file to the cloud without sending it in a message. updateFile will be used to notify about upload progress and successful completion of the upload. The file will not have a persistent remote identifier until it will be sent in a message
-// @param fileType File type
 // @param file File to upload
+// @param fileType File type
 // @param priority Priority of the upload (1-32). The higher the priority, the earlier the file will be uploaded. If the priorities of two files are equal, then the first one for which uploadFile was called will be uploaded first
-func (client *Client) UploadFile(fileType FileType, file InputFile, priority int32) (*File, error) {
+func (client *Client) UploadFile(file InputFile, fileType FileType, priority int32) (*File, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "uploadFile",
-		"file_type": fileType,
 		"file":      file,
+		"file_type": fileType,
 		"priority":  priority,
 	})
 
@@ -3062,15 +3062,15 @@ func (client *Client) CancelUploadFile(fileID int32) (*Ok, error) {
 }
 
 // SetFileGenerationProgress The next part of a file was generated
+// @param generationID The identifier of the generation process
 // @param expectedSize Expected size of the generated file, in bytes; 0 if unknown
 // @param localPrefixSize The number of bytes already generated
-// @param generationID The identifier of the generation process
-func (client *Client) SetFileGenerationProgress(expectedSize int32, localPrefixSize int32, generationID JSONInt64) (*Ok, error) {
+func (client *Client) SetFileGenerationProgress(generationID JSONInt64, expectedSize int32, localPrefixSize int32) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "setFileGenerationProgress",
+		"generation_id":     generationID,
 		"expected_size":     expectedSize,
 		"local_prefix_size": localPrefixSize,
-		"generation_id":     generationID,
 	})
 
 	if err != nil {
@@ -3088,13 +3088,13 @@ func (client *Client) SetFileGenerationProgress(expectedSize int32, localPrefixS
 }
 
 // FinishFileGeneration Finishes the file generation
-// @param error If set, means that file generation has failed and should be terminated
 // @param generationID The identifier of the generation process
-func (client *Client) FinishFileGeneration(error Error, generationID JSONInt64) (*Ok, error) {
+// @param error If set, means that file generation has failed and should be terminated
+func (client *Client) FinishFileGeneration(generationID JSONInt64, error Error) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "finishFileGeneration",
-		"error":         error,
 		"generation_id": generationID,
+		"error":         error,
 	})
 
 	if err != nil {
@@ -3200,13 +3200,13 @@ func (client *Client) JoinChatByInviteLink(inviteLink string) (*Chat, error) {
 }
 
 // CreateCall Creates a new call
-// @param protocol Description of the call protocols supported by the client
 // @param userID Identifier of the user to be called
-func (client *Client) CreateCall(protocol CallProtocol, userID int32) (*CallID, error) {
+// @param protocol Description of the call protocols supported by the client
+func (client *Client) CreateCall(userID int32, protocol CallProtocol) (*CallID, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "createCall",
-		"protocol": protocol,
 		"user_id":  userID,
+		"protocol": protocol,
 	})
 
 	if err != nil {
@@ -3224,13 +3224,13 @@ func (client *Client) CreateCall(protocol CallProtocol, userID int32) (*CallID, 
 }
 
 // AcceptCall Accepts an incoming call
-// @param protocol Description of the call protocols supported by the client
 // @param callID Call identifier
-func (client *Client) AcceptCall(protocol CallProtocol, callID int32) (*Ok, error) {
+// @param protocol Description of the call protocols supported by the client
+func (client *Client) AcceptCall(callID int32, protocol CallProtocol) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "acceptCall",
-		"protocol": protocol,
 		"call_id":  callID,
+		"protocol": protocol,
 	})
 
 	if err != nil {
@@ -3248,15 +3248,15 @@ func (client *Client) AcceptCall(protocol CallProtocol, callID int32) (*Ok, erro
 }
 
 // DiscardCall Discards a call
-// @param isDisconnected True, if the user was disconnected
 // @param callID Call identifier
+// @param isDisconnected True, if the user was disconnected
 // @param duration The call duration, in seconds
 // @param connectionID Identifier of the connection used during the call
-func (client *Client) DiscardCall(isDisconnected bool, callID int32, duration int32, connectionID JSONInt64) (*Ok, error) {
+func (client *Client) DiscardCall(callID int32, isDisconnected bool, duration int32, connectionID JSONInt64) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "discardCall",
-		"is_disconnected": isDisconnected,
 		"call_id":         callID,
+		"is_disconnected": isDisconnected,
 		"duration":        duration,
 		"connection_id":   connectionID,
 	})
@@ -3276,14 +3276,14 @@ func (client *Client) DiscardCall(isDisconnected bool, callID int32, duration in
 }
 
 // SendCallRating Sends a call rating
-// @param rating Call rating; 1-5
 // @param callID Call identifier
+// @param rating Call rating; 1-5
 // @param comment An optional user comment if the rating is less than 5
-func (client *Client) SendCallRating(rating int32, callID int32, comment string) (*Ok, error) {
+func (client *Client) SendCallRating(callID int32, rating int32, comment string) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "sendCallRating",
-		"rating":  rating,
 		"call_id": callID,
+		"rating":  rating,
 		"comment": comment,
 	})
 
@@ -3416,13 +3416,13 @@ func (client *Client) ImportContacts(contacts []Contact) (*ImportedContacts, err
 }
 
 // SearchContacts Searches for the specified query in the first names, last names and usernames of the known user contacts
-// @param limit Maximum number of users to be returned
 // @param query Query to search for; can be empty to return all contacts
-func (client *Client) SearchContacts(limit int32, query string) (*Users, error) {
+// @param limit Maximum number of users to be returned
+func (client *Client) SearchContacts(query string, limit int32) (*Users, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchContacts",
-		"limit": limit,
 		"query": query,
+		"limit": limit,
 	})
 
 	if err != nil {
@@ -3550,13 +3550,13 @@ func (client *Client) GetUserProfilePhotos(userID int32, offset int32, limit int
 }
 
 // GetStickers Returns stickers from the installed sticker sets that correspond to a given emoji. If the emoji is not empty, favorite and recently used stickers may also be returned
-// @param limit Maximum number of stickers to be returned
 // @param emoji String representation of emoji. If empty, returns all known installed stickers
-func (client *Client) GetStickers(limit int32, emoji string) (*Stickers, error) {
+// @param limit Maximum number of stickers to be returned
+func (client *Client) GetStickers(emoji string, limit int32) (*Stickers, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getStickers",
-		"limit": limit,
 		"emoji": emoji,
+		"limit": limit,
 	})
 
 	if err != nil {
@@ -3574,13 +3574,13 @@ func (client *Client) GetStickers(limit int32, emoji string) (*Stickers, error) 
 }
 
 // SearchStickers Searches for stickers from public sticker sets that correspond to a given emoji
-// @param limit Maximum number of stickers to be returned
 // @param emoji String representation of emoji; must be non-empty
-func (client *Client) SearchStickers(limit int32, emoji string) (*Stickers, error) {
+// @param limit Maximum number of stickers to be returned
+func (client *Client) SearchStickers(emoji string, limit int32) (*Stickers, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchStickers",
-		"limit": limit,
 		"emoji": emoji,
+		"limit": limit,
 	})
 
 	if err != nil {
@@ -3621,14 +3621,14 @@ func (client *Client) GetInstalledStickerSets(isMasks bool) (*StickerSets, error
 
 // GetArchivedStickerSets Returns a list of archived sticker sets
 // @param isMasks Pass true to return mask stickers sets; pass false to return ordinary sticker sets
-// @param limit Maximum number of sticker sets to return
 // @param offsetStickerSetID Identifier of the sticker set from which to return the result
-func (client *Client) GetArchivedStickerSets(isMasks bool, limit int32, offsetStickerSetID JSONInt64) (*StickerSets, error) {
+// @param limit Maximum number of sticker sets to return
+func (client *Client) GetArchivedStickerSets(isMasks bool, offsetStickerSetID JSONInt64, limit int32) (*StickerSets, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "getArchivedStickerSets",
 		"is_masks":              isMasks,
-		"limit":                 limit,
 		"offset_sticker_set_id": offsetStickerSetID,
+		"limit":                 limit,
 	})
 
 	if err != nil {
@@ -3733,14 +3733,14 @@ func (client *Client) SearchStickerSet(name string) (*StickerSet, error) {
 
 // SearchInstalledStickerSets Searches for installed sticker sets by looking for specified query in their title and name
 // @param isMasks Pass true to return mask sticker sets; pass false to return ordinary sticker sets
-// @param limit Maximum number of sticker sets to return
 // @param query Query to search for
-func (client *Client) SearchInstalledStickerSets(isMasks bool, limit int32, query string) (*StickerSets, error) {
+// @param limit Maximum number of sticker sets to return
+func (client *Client) SearchInstalledStickerSets(isMasks bool, query string, limit int32) (*StickerSets, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "searchInstalledStickerSets",
 		"is_masks": isMasks,
-		"limit":    limit,
 		"query":    query,
+		"limit":    limit,
 	})
 
 	if err != nil {
@@ -3780,15 +3780,15 @@ func (client *Client) SearchStickerSets(query string) (*StickerSets, error) {
 }
 
 // ChangeStickerSet Installs/uninstalls or activates/archives a sticker set
+// @param setID Identifier of the sticker set
 // @param isInstalled The new value of is_installed
 // @param isArchived The new value of is_archived. A sticker set can't be installed and archived simultaneously
-// @param setID Identifier of the sticker set
-func (client *Client) ChangeStickerSet(isInstalled bool, isArchived bool, setID JSONInt64) (*Ok, error) {
+func (client *Client) ChangeStickerSet(setID JSONInt64, isInstalled bool, isArchived bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "changeStickerSet",
+		"set_id":       setID,
 		"is_installed": isInstalled,
 		"is_archived":  isArchived,
-		"set_id":       setID,
 	})
 
 	if err != nil {
@@ -4114,13 +4114,13 @@ func (client *Client) GetRecentInlineBots() (*Users, error) {
 }
 
 // SearchHashtags Searches for recently used hashtags by their prefix
-// @param limit Maximum number of hashtags to be returned
 // @param prefix Hashtag prefix to search for
-func (client *Client) SearchHashtags(limit int32, prefix string) (*Hashtags, error) {
+// @param limit Maximum number of hashtags to be returned
+func (client *Client) SearchHashtags(prefix string, limit int32) (*Hashtags, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":  "searchHashtags",
-		"limit":  limit,
 		"prefix": prefix,
+		"limit":  limit,
 	})
 
 	if err != nil {
@@ -4182,13 +4182,13 @@ func (client *Client) GetWebPagePreview(text FormattedText) (*WebPage, error) {
 }
 
 // GetWebPageInstantView Returns an instant view version of a web page if available. Returns a 404 error if the web page has no instant view page
-// @param forceFull If true, the full instant view for the web page will be returned
 // @param uRL The web page URL
-func (client *Client) GetWebPageInstantView(forceFull bool, uRL string) (*WebPageInstantView, error) {
+// @param forceFull If true, the full instant view for the web page will be returned
+func (client *Client) GetWebPageInstantView(uRL string, forceFull bool) (*WebPageInstantView, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getWebPageInstantView",
-		"force_full": forceFull,
 		"url":        uRL,
+		"force_full": forceFull,
 	})
 
 	if err != nil {
@@ -4384,15 +4384,15 @@ func (client *Client) SetUsername(username string) (*Ok, error) {
 }
 
 // ChangePhoneNumber Changes the phone number of the user and sends an authentication code to the user's new phone number. On success, returns information about the sent code
+// @param phoneNumber The new phone number of the user in international format
 // @param allowFlashCall Pass true if the code can be sent via flash call to the specified phone number
 // @param isCurrentPhoneNumber Pass true if the phone number is used on the current device. Ignored if allow_flash_call is false
-// @param phoneNumber The new phone number of the user in international format
-func (client *Client) ChangePhoneNumber(allowFlashCall bool, isCurrentPhoneNumber bool, phoneNumber string) (*AuthenticationCodeInfo, error) {
+func (client *Client) ChangePhoneNumber(phoneNumber string, allowFlashCall bool, isCurrentPhoneNumber bool) (*AuthenticationCodeInfo, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                   "changePhoneNumber",
+		"phone_number":            phoneNumber,
 		"allow_flash_call":        allowFlashCall,
 		"is_current_phone_number": isCurrentPhoneNumber,
-		"phone_number":            phoneNumber,
 	})
 
 	if err != nil {
@@ -4576,13 +4576,13 @@ func (client *Client) DisconnectAllWebsites() (*Ok, error) {
 }
 
 // ToggleBasicGroupAdministrators Toggles the "All members are admins" setting in basic groups; requires creator privileges in the group
-// @param everyoneIsAdministrator New value of everyone_is_administrator
 // @param basicGroupID Identifier of the basic group
-func (client *Client) ToggleBasicGroupAdministrators(everyoneIsAdministrator bool, basicGroupID int32) (*Ok, error) {
+// @param everyoneIsAdministrator New value of everyone_is_administrator
+func (client *Client) ToggleBasicGroupAdministrators(basicGroupID int32, everyoneIsAdministrator bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                     "toggleBasicGroupAdministrators",
-		"everyone_is_administrator": everyoneIsAdministrator,
 		"basic_group_id":            basicGroupID,
+		"everyone_is_administrator": everyoneIsAdministrator,
 	})
 
 	if err != nil {
@@ -4648,13 +4648,13 @@ func (client *Client) SetSupergroupStickerSet(supergroupID int32, stickerSetID J
 }
 
 // ToggleSupergroupInvites Toggles whether all members of a supergroup can add new members; requires appropriate administrator rights in the supergroup.
-// @param anyoneCanInvite New value of anyone_can_invite
 // @param supergroupID Identifier of the supergroup
-func (client *Client) ToggleSupergroupInvites(anyoneCanInvite bool, supergroupID int32) (*Ok, error) {
+// @param anyoneCanInvite New value of anyone_can_invite
+func (client *Client) ToggleSupergroupInvites(supergroupID int32, anyoneCanInvite bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "toggleSupergroupInvites",
-		"anyone_can_invite": anyoneCanInvite,
 		"supergroup_id":     supergroupID,
+		"anyone_can_invite": anyoneCanInvite,
 	})
 
 	if err != nil {
@@ -4672,13 +4672,13 @@ func (client *Client) ToggleSupergroupInvites(anyoneCanInvite bool, supergroupID
 }
 
 // ToggleSupergroupSignMessages Toggles sender signatures messages sent in a channel; requires appropriate administrator rights in the channel.
-// @param signMessages New value of sign_messages
 // @param supergroupID Identifier of the channel
-func (client *Client) ToggleSupergroupSignMessages(signMessages bool, supergroupID int32) (*Ok, error) {
+// @param signMessages New value of sign_messages
+func (client *Client) ToggleSupergroupSignMessages(supergroupID int32, signMessages bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "toggleSupergroupSignMessages",
-		"sign_messages": signMessages,
 		"supergroup_id": supergroupID,
+		"sign_messages": signMessages,
 	})
 
 	if err != nil {
@@ -4696,13 +4696,13 @@ func (client *Client) ToggleSupergroupSignMessages(signMessages bool, supergroup
 }
 
 // ToggleSupergroupIsAllHistoryAvailable Toggles whether the message history of a supergroup is available to new members; requires appropriate administrator rights in the supergroup.
-// @param isAllHistoryAvailable The new value of is_all_history_available
 // @param supergroupID The identifier of the supergroup
-func (client *Client) ToggleSupergroupIsAllHistoryAvailable(isAllHistoryAvailable bool, supergroupID int32) (*Ok, error) {
+// @param isAllHistoryAvailable The new value of is_all_history_available
+func (client *Client) ToggleSupergroupIsAllHistoryAvailable(supergroupID int32, isAllHistoryAvailable bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                    "toggleSupergroupIsAllHistoryAvailable",
-		"is_all_history_available": isAllHistoryAvailable,
 		"supergroup_id":            supergroupID,
+		"is_all_history_available": isAllHistoryAvailable,
 	})
 
 	if err != nil {
@@ -4744,15 +4744,15 @@ func (client *Client) SetSupergroupDescription(supergroupID int32, description s
 }
 
 // PinSupergroupMessage Pins a message in a supergroup or channel; requires appropriate administrator rights in the supergroup or channel
-// @param disableNotification True, if there should be no notification about the pinned message
 // @param supergroupID Identifier of the supergroup or channel
 // @param messageID Identifier of the new pinned message
-func (client *Client) PinSupergroupMessage(disableNotification bool, supergroupID int32, messageID int64) (*Ok, error) {
+// @param disableNotification True, if there should be no notification about the pinned message
+func (client *Client) PinSupergroupMessage(supergroupID int32, messageID int64, disableNotification bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":                "pinSupergroupMessage",
-		"disable_notification": disableNotification,
 		"supergroup_id":        supergroupID,
 		"message_id":           messageID,
+		"disable_notification": disableNotification,
 	})
 
 	if err != nil {
@@ -4818,15 +4818,15 @@ func (client *Client) ReportSupergroupSpam(supergroupID int32, userID int32, mes
 }
 
 // GetSupergroupMembers Returns information about members or banned users in a supergroup or channel. Can be used only if SupergroupFullInfo.can_get_members == true; additionally, administrator privileges may be required for some filters
-// @param filter The type of users to return. By default, supergroupMembersRecent
 // @param supergroupID Identifier of the supergroup or channel
+// @param filter The type of users to return. By default, supergroupMembersRecent
 // @param offset Number of users to skip
 // @param limit The maximum number of users be returned; up to 200
-func (client *Client) GetSupergroupMembers(filter SupergroupMembersFilter, supergroupID int32, offset int32, limit int32) (*ChatMembers, error) {
+func (client *Client) GetSupergroupMembers(supergroupID int32, filter SupergroupMembersFilter, offset int32, limit int32) (*ChatMembers, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "getSupergroupMembers",
-		"filter":        filter,
 		"supergroup_id": supergroupID,
+		"filter":        filter,
 		"offset":        offset,
 		"limit":         limit,
 	})
@@ -4890,20 +4890,20 @@ func (client *Client) CloseSecretChat(secretChatID int32) (*Ok, error) {
 }
 
 // GetChatEventLog Returns a list of service actions taken by chat members and administrators in the last 48 hours. Available only in supergroups and channels. Requires administrator rights. Returns results in reverse chronological order (i. e., in order of decreasing event_id)
-// @param filters The types of events to return. By default, all types will be returned
-// @param limit Maximum number of events to return; up to 100
 // @param chatID Chat identifier
-// @param fromEventID Identifier of an event from which to return results. Use 0 to get results from the latest events
 // @param query Search query by which to filter events
+// @param fromEventID Identifier of an event from which to return results. Use 0 to get results from the latest events
+// @param limit Maximum number of events to return; up to 100
+// @param filters The types of events to return. By default, all types will be returned
 // @param userIDs User identifiers by which to filter events. By default, events relating to all users will be returned
-func (client *Client) GetChatEventLog(filters ChatEventLogFilters, limit int32, chatID int64, fromEventID JSONInt64, query string, userIDs []int32) (*ChatEvents, error) {
+func (client *Client) GetChatEventLog(chatID int64, query string, fromEventID JSONInt64, limit int32, filters ChatEventLogFilters, userIDs []int32) (*ChatEvents, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "getChatEventLog",
-		"filters":       filters,
-		"limit":         limit,
 		"chat_id":       chatID,
-		"from_event_id": fromEventID,
 		"query":         query,
+		"from_event_id": fromEventID,
+		"limit":         limit,
+		"filters":       filters,
 		"user_ids":      userIDs,
 	})
 
@@ -4946,17 +4946,17 @@ func (client *Client) GetPaymentForm(chatID int64, messageID int64) (*PaymentFor
 }
 
 // ValidateOrderInfo Validates the order information provided by a user and returns the available shipping options for a flexible invoice
-// @param allowSave True, if the order information can be saved
 // @param chatID Chat identifier of the Invoice message
 // @param messageID Message identifier
 // @param orderInfo The order information, provided by the user
-func (client *Client) ValidateOrderInfo(allowSave bool, chatID int64, messageID int64, orderInfo OrderInfo) (*ValidatedOrderInfo, error) {
+// @param allowSave True, if the order information can be saved
+func (client *Client) ValidateOrderInfo(chatID int64, messageID int64, orderInfo OrderInfo, allowSave bool) (*ValidatedOrderInfo, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "validateOrderInfo",
-		"allow_save": allowSave,
 		"chat_id":    chatID,
 		"message_id": messageID,
 		"order_info": orderInfo,
+		"allow_save": allowSave,
 	})
 
 	if err != nil {
@@ -4974,19 +4974,19 @@ func (client *Client) ValidateOrderInfo(allowSave bool, chatID int64, messageID 
 }
 
 // SendPaymentForm Sends a filled-out payment form to the bot for final verification
-// @param credentials The credentials chosen by user for payment
 // @param chatID Chat identifier of the Invoice message
 // @param messageID Message identifier
 // @param orderInfoID Identifier returned by ValidateOrderInfo, or an empty string
 // @param shippingOptionID Identifier of a chosen shipping option, if applicable
-func (client *Client) SendPaymentForm(credentials InputCredentials, chatID int64, messageID int64, orderInfoID string, shippingOptionID string) (*PaymentResult, error) {
+// @param credentials The credentials chosen by user for payment
+func (client *Client) SendPaymentForm(chatID int64, messageID int64, orderInfoID string, shippingOptionID string, credentials InputCredentials) (*PaymentResult, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":              "sendPaymentForm",
-		"credentials":        credentials,
 		"chat_id":            chatID,
 		"message_id":         messageID,
 		"order_info_id":      orderInfoID,
 		"shipping_option_id": shippingOptionID,
+		"credentials":        credentials,
 	})
 
 	if err != nil {
@@ -5263,13 +5263,13 @@ func (client *Client) GetOption(name string) (OptionValue, error) {
 }
 
 // SetOption Sets the value of an option. (Check the list of available options on https://core.telegram.org/tdlib/options.) Only writable options can be set. Can be called before authorization
-// @param value The new value of the option
 // @param name The name of the option
-func (client *Client) SetOption(value OptionValue, name string) (*Ok, error) {
+// @param value The new value of the option
+func (client *Client) SetOption(name string, value OptionValue) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type": "setOption",
-		"value": value,
 		"name":  name,
+		"value": value,
 	})
 
 	if err != nil {
@@ -5373,13 +5373,13 @@ func (client *Client) GetChatReportSpamState(chatID int64) (*ChatReportSpamState
 }
 
 // ChangeChatReportSpamState Used to let the server know whether a chat is spam or not. Can be used only if ChatReportSpamState.can_report_spam is true. After this request, ChatReportSpamState.can_report_spam becomes false forever
-// @param isSpamChat If true, the chat will be reported as spam; otherwise it will be marked as not spam
 // @param chatID Chat identifier
-func (client *Client) ChangeChatReportSpamState(isSpamChat bool, chatID int64) (*Ok, error) {
+// @param isSpamChat If true, the chat will be reported as spam; otherwise it will be marked as not spam
+func (client *Client) ChangeChatReportSpamState(chatID int64, isSpamChat bool) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "changeChatReportSpamState",
-		"is_spam_chat": isSpamChat,
 		"chat_id":      chatID,
+		"is_spam_chat": isSpamChat,
 	})
 
 	if err != nil {
@@ -5397,14 +5397,14 @@ func (client *Client) ChangeChatReportSpamState(isSpamChat bool, chatID int64) (
 }
 
 // ReportChat Reports a chat to the Telegram moderators. Supported only for supergroups, channels, or private chats with bots, since other chats can't be checked by moderators
-// @param reason The reason for reporting the chat
 // @param chatID Chat identifier
+// @param reason The reason for reporting the chat
 // @param messageIDs Identifiers of reported messages, if any
-func (client *Client) ReportChat(reason ChatReportReason, chatID int64, messageIDs []int64) (*Ok, error) {
+func (client *Client) ReportChat(chatID int64, reason ChatReportReason, messageIDs []int64) (*Ok, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "reportChat",
-		"reason":      reason,
 		"chat_id":     chatID,
+		"reason":      reason,
 		"message_ids": messageIDs,
 	})
 
@@ -5465,25 +5465,25 @@ func (client *Client) GetStorageStatisticsFast() (*StorageStatisticsFast, error)
 }
 
 // OptimizeStorage Optimizes storage usage, i.e. deletes some files and returns new storage usage statistics. Secret thumbnails can't be deleted
+// @param size Limit on the total size of files after deletion. Pass -1 to use the default limit
+// @param tTL Limit on the time that has passed since the last time a file was accessed (or creation time for some filesystems). Pass -1 to use the default limit
 // @param count Limit on the total count of files after deletion. Pass -1 to use the default limit
 // @param immunityDelay The amount of time after the creation of a file during which it can't be deleted, in seconds. Pass -1 to use the default value
-// @param chatLimit Same as in getStorageStatistics. Affects only returned statistics
-// @param tTL Limit on the time that has passed since the last time a file was accessed (or creation time for some filesystems). Pass -1 to use the default limit
-// @param size Limit on the total size of files after deletion. Pass -1 to use the default limit
 // @param fileTypes If not empty, only files with the given type(s) are considered. By default, all types except thumbnails, profile photos, stickers and wallpapers are deleted
-// @param excludeChatIDs If not empty, files from the given chats are excluded. Use 0 as chat identifier to exclude all files not belonging to any chat (e.g., profile photos)
 // @param chatIDs If not empty, only files from the given chats are considered. Use 0 as chat identifier to delete files not belonging to any chat (e.g., profile photos)
-func (client *Client) OptimizeStorage(count int32, immunityDelay int32, chatLimit int32, tTL int32, size int64, fileTypes []FileType, excludeChatIDs []int64, chatIDs []int64) (*StorageStatistics, error) {
+// @param excludeChatIDs If not empty, files from the given chats are excluded. Use 0 as chat identifier to exclude all files not belonging to any chat (e.g., profile photos)
+// @param chatLimit Same as in getStorageStatistics. Affects only returned statistics
+func (client *Client) OptimizeStorage(size int64, tTL int32, count int32, immunityDelay int32, fileTypes []FileType, chatIDs []int64, excludeChatIDs []int64, chatLimit int32) (*StorageStatistics, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":            "optimizeStorage",
+		"size":             size,
+		"ttl":              tTL,
 		"count":            count,
 		"immunity_delay":   immunityDelay,
-		"chat_limit":       chatLimit,
-		"ttl":              tTL,
-		"size":             size,
 		"file_types":       fileTypes,
-		"exclude_chat_ids": excludeChatIDs,
 		"chat_ids":         chatIDs,
+		"exclude_chat_ids": excludeChatIDs,
+		"chat_limit":       chatLimit,
 	})
 
 	if err != nil {
@@ -5611,13 +5611,13 @@ func (client *Client) SetBotUpdatesStatus(pendingUpdateCount int32, errorMessage
 }
 
 // UploadStickerFile Uploads a PNG image with a sticker; for bots only; returns the uploaded file
-// @param pngSticker PNG image with the sticker; must be up to 512 kB in size and fit in 512x512 square
 // @param userID Sticker file owner
-func (client *Client) UploadStickerFile(pngSticker InputFile, userID int32) (*File, error) {
+// @param pngSticker PNG image with the sticker; must be up to 512 kB in size and fit in 512x512 square
+func (client *Client) UploadStickerFile(userID int32, pngSticker InputFile) (*File, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "uploadStickerFile",
-		"png_sticker": pngSticker,
 		"user_id":     userID,
+		"png_sticker": pngSticker,
 	})
 
 	if err != nil {
@@ -5635,18 +5635,18 @@ func (client *Client) UploadStickerFile(pngSticker InputFile, userID int32) (*Fi
 }
 
 // CreateNewStickerSet Creates a new sticker set; for bots only. Returns the newly created sticker set
-// @param isMasks True, if stickers are masks
 // @param userID Sticker set owner
 // @param title Sticker set title; 1-64 characters
 // @param name Sticker set name. Can contain only English letters, digits and underscores. Must end with *"_by_<bot username>"* (*<bot_username>* is case insensitive); 1-64 characters
+// @param isMasks True, if stickers are masks
 // @param stickers List of stickers to be added to the set
-func (client *Client) CreateNewStickerSet(isMasks bool, userID int32, title string, name string, stickers []InputSticker) (*StickerSet, error) {
+func (client *Client) CreateNewStickerSet(userID int32, title string, name string, isMasks bool, stickers []InputSticker) (*StickerSet, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "createNewStickerSet",
-		"is_masks": isMasks,
 		"user_id":  userID,
 		"title":    title,
 		"name":     name,
+		"is_masks": isMasks,
 		"stickers": stickers,
 	})
 
@@ -5665,15 +5665,15 @@ func (client *Client) CreateNewStickerSet(isMasks bool, userID int32, title stri
 }
 
 // AddStickerToSet Adds a new sticker to a set; for bots only. Returns the sticker set
-// @param sticker Sticker to add to the set
 // @param userID Sticker set owner
 // @param name Sticker set name
-func (client *Client) AddStickerToSet(sticker InputSticker, userID int32, name string) (*StickerSet, error) {
+// @param sticker Sticker to add to the set
+func (client *Client) AddStickerToSet(userID int32, name string, sticker InputSticker) (*StickerSet, error) {
 	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "addStickerToSet",
-		"sticker": sticker,
 		"user_id": userID,
 		"name":    name,
+		"sticker": sticker,
 	})
 
 	if err != nil {
