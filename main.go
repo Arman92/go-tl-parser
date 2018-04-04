@@ -53,6 +53,19 @@ type InterfaceInfo struct {
 	Description string `json:"description"`
 }
 
+// EnumInfo ...
+type EnumInfo struct {
+	EnumType string   `json:"enumType"`
+	Items    []string `json:"description"`
+}
+
+var entityDesc string
+var paramDescs map[string]string
+var params map[string]string
+var classInfoes []ClassInfo
+var interfaceInfoes []InterfaceInfo
+var enumInfoes map[string]EnumInfo
+
 func main() {
 
 	var inputFile string
@@ -78,13 +91,9 @@ func main() {
 	}
 	defer f.Close()
 
-	entityDesc := ""
-	var paramDescs map[string]string
-	var params map[string]string
-	var classInfoes []ClassInfo
-	var interfaceInfoes []InterfaceInfo
 	classInfoes = make([]ClassInfo, 0, 10)
 	interfaceInfoes = make([]InterfaceInfo, 0, 1)
+	enumInfoes = make(map[string]EnumInfo)
 
 	paramDescs = make(map[string]string)
 	params = make(map[string]string)
@@ -117,6 +126,7 @@ func main() {
 				Description: entityDesc,
 			}
 			interfaceInfoes = append(interfaceInfoes, interfaceInfo)
+			enumInfoes[interfaceName+"Enum"] = EnumInfo{EnumType: replaceKeyWords(interfaceName) + "Enum"}
 
 		} else if strings.HasPrefix(line, "//@description ") { // Entity description
 			line = line[len("//@description "):]
@@ -206,6 +216,12 @@ func main() {
 			entityDesc = ""
 			paramDescs = make(map[string]string)
 			params = make(map[string]string)
+			enumInfo, ok := enumInfoes[classInfoe.RootName+"Enum"]
+			if ok && !classInfoe.IsFunction {
+				enumInfo.Items = append(enumInfo.Items,
+					replaceKeyWords(strings.ToUpper(classInfoe.Name[0:1])+classInfoe.Name[1:]))
+				enumInfoes[classInfoe.RootName+"Enum"] = enumInfo
+			}
 		}
 	}
 
@@ -220,41 +236,136 @@ func main() {
 	w.Write(jsonBytes)
 
 	gnrtdStructs := fmt.Sprintf("package %s\n\n", generatedPackage)
+	structUnmarshals := ""
+	gnrtdStructs += `
+	
+	import (
+		"encoding/json"
+		"fmt"
+	)
+	
+	`
 	gnrtdMethods := fmt.Sprintf("package %s\n\n", generatedPackage)
 	gnrtdMethods += `
 	
 	import (
+		"encoding/json"
 		"fmt"
-		"github.com/mitchellh/mapstructure"
 	)
 	
 	`
 
-	for _, interfaceInfo := range interfaceInfoes {
-		interfaceInfo.Name = replaceKeyWords(interfaceInfo.Name)
-
-		gnrtdStructs += fmt.Sprintf("// %s %s \ntype %s interface {\nMessageType() string\n}\n\n",
-			interfaceInfo.Name, interfaceInfo.Description, interfaceInfo.Name)
-	}
-
 	gnrtdStructs += "type tdCommon struct {\n" +
 		"Type string `json:\"@type\"`\n" +
-		"Extra string `json:\"extra\"`\n" +
+		"Extra string `json:\"@extra\"`\n" +
 		"}\n\n"
+
+	gnrtdStructs += `
+		// TdMessage is the interface for all messages send and received to/from tdlib
+		type TdMessage interface{
+			MessageType() string
+		}
+`
+
+	for _, enumInfoe := range enumInfoes {
+		gnrtdStructs += fmt.Sprintf(`
+			// %s Alias for abstract %s 'Sub-Classes', used as constant-enum here
+			type %s string
+			`,
+			enumInfoe.EnumType,
+			enumInfoe.EnumType[:len(enumInfoe.EnumType)-len("Enum")],
+			enumInfoe.EnumType)
+
+		consts := ""
+		for _, item := range enumInfoe.Items {
+			consts += item + "Type " + enumInfoe.EnumType + " = \"" +
+				strings.ToLower(item[:1]) + item[1:] + "\"\n"
+
+		}
+		gnrtdStructs += fmt.Sprintf(`
+			// %s enums
+			const (
+				%s
+			)`, enumInfoe.EnumType[:len(enumInfoe.EnumType)-len("Enum")], consts)
+	}
+
+	for _, interfaceInfo := range interfaceInfoes {
+		interfaceInfo.Name = replaceKeyWords(interfaceInfo.Name)
+		typesCases := ""
+
+		gnrtdStructs += fmt.Sprintf("// %s %s \ntype %s interface {\nGet%sEnum() %sEnum\n}\n\n",
+			interfaceInfo.Name, interfaceInfo.Description, interfaceInfo.Name, interfaceInfo.Name, interfaceInfo.Name)
+
+		for _, enumInfoe := range enumInfoes {
+			if enumInfoe.EnumType == interfaceInfo.Name+"Enum" {
+				for _, enumItem := range enumInfoe.Items {
+					typeName := enumItem
+					typeNameCamel := strings.ToLower(typeName[:1]) + typeName[1:]
+					typesCases += fmt.Sprintf(`case %s:
+						var %s %s
+						err := json.Unmarshal(*rawMsg, &%s)
+						return &%s, err
+						
+						`,
+						enumItem+"Type", typeNameCamel, typeName,
+						typeNameCamel, typeNameCamel)
+				}
+				break
+			}
+		}
+
+		structUnmarshals += fmt.Sprintf(`
+				func unmarshal%s(rawMsg *json.RawMessage) (%s, error){
+
+					var objMap map[string]interface{}
+					err := json.Unmarshal(*rawMsg, &objMap)
+					if err != nil {
+						return nil, err
+					}
+
+					switch %sEnum(objMap["@type"].(string)) {
+						%s
+					default:
+						return nil, fmt.Errorf("Error unmarshaling, unknown type:" +  objMap["@type"].(string))
+					}
+				}
+				`, interfaceInfo.Name, interfaceInfo.Name, interfaceInfo.Name,
+			typesCases)
+	}
 
 	for _, classInfoe := range classInfoes {
 		if !classInfoe.IsFunction {
 			structName := strings.ToUpper(classInfoe.Name[:1]) + classInfoe.Name[1:]
 			structName = replaceKeyWords(structName)
+			structNameCamel := strings.ToLower(structName[0:1]) + structName[1:]
 
+			hasInterfaceProps := false
 			propsStr := ""
+			propsStrWithoutInterfaceOnes := ""
+			assignStr := fmt.Sprintf("%s.tdCommon = tempObj.tdCommon\n", structNameCamel)
+			assignInterfacePropsStr := ""
+
 			for i, param := range classInfoe.Properties {
 				propName := govalidator.UnderscoreToCamelCase(param.Name)
 				propName = replaceKeyWords(propName)
 
-				propsStr += fmt.Sprintf("%s %s `json:\"%s\"` // %s", propName, convertDataType(param.Type), param.Name, param.Description)
+				propsStrItem := fmt.Sprintf("%s %s `json:\"%s\"` // %s", propName, convertDataType(param.Type), param.Name, param.Description)
 				if i < len(classInfoe.Properties)-1 {
-					propsStr += "\n"
+					propsStrItem += "\n"
+				}
+
+				propsStr += propsStrItem
+				if !checkIsInterface(param.Type) {
+					propsStrWithoutInterfaceOnes += propsStrItem
+					assignStr += fmt.Sprintf("%s.%s = tempObj.%s\n", structNameCamel, propName, propName)
+				} else {
+					hasInterfaceProps = true
+					assignInterfacePropsStr += fmt.Sprintf(`
+						field%s, _  := 	unmarshal%s(objMap["%s"])
+						%s.%s = field%s
+						`,
+						propName, convertDataType(param.Type), param.Name,
+						structNameCamel, propName, propName)
 				}
 			}
 			gnrtdStructs += fmt.Sprintf("// %s %s \ntype %s struct {\n"+
@@ -263,13 +374,64 @@ func main() {
 				"}\n\n", structName, classInfoe.Description, structName, propsStr)
 
 			gnrtdStructs += fmt.Sprintf("// MessageType return the string telegram-type of %s \nfunc (%s *%s) MessageType() string {\n return \"%s\" }\n\n",
-				structName, strings.ToLower(structName[0:1])+structName[1:], structName, classInfoe.Name)
+				structName, structNameCamel, structName, classInfoe.Name)
+
+			if hasInterfaceProps {
+				gnrtdStructs += fmt.Sprintf(`
+					// UnmarshalJSON unmarshal to json
+					func (%s *%s) UnmarshalJSON(b []byte) error {
+						var objMap map[string]*json.RawMessage
+						err := json.Unmarshal(b, &objMap)
+						if err != nil {
+							return err
+						}
+						tempObj := struct {
+							tdCommon
+							%s
+						}{}
+						err = json.Unmarshal(b, &tempObj)
+						if err != nil {
+							return err
+						}
+
+						%s
+
+						%s	
+						
+						return nil
+					}
+					`, structNameCamel, structName, propsStrWithoutInterfaceOnes,
+					assignStr, assignInterfacePropsStr)
+			}
+			if checkIsInterface(classInfoe.RootName) {
+				rootName := replaceKeyWords(classInfoe.RootName)
+				gnrtdStructs += fmt.Sprintf(`
+					// Get%sEnum return the enum type of this object 
+					func (%s *%s) Get%sEnum() %sEnum {
+						 return %s 
+					}
+
+					`,
+					rootName,
+					strings.ToLower(structName[0:1])+structName[1:],
+					structName, rootName, rootName,
+					structName+"Type")
+			}
+
 		} else {
 			methodName := strings.ToUpper(classInfoe.Name[:1]) + classInfoe.Name[1:]
 			methodName = replaceKeyWords(methodName)
 			returnType := strings.ToUpper(classInfoe.RootName[:1]) + classInfoe.RootName[1:]
 			returnType = replaceKeyWords(returnType)
 			returnTypeCamel := strings.ToLower(returnType[:1]) + returnType[1:]
+			returnIsInterface := checkIsInterface(returnType)
+
+			asterike := "*"
+			ampersign := "&"
+			if returnIsInterface {
+				asterike = ""
+				ampersign = ""
+			}
 
 			paramsStr := ""
 			paramsDesc := ""
@@ -285,8 +447,8 @@ func main() {
 
 			gnrtdMethods += fmt.Sprintf(`
 				// %s %s %s
-				func (client *Client) %s(%s) (*%s, error)`, methodName, classInfoe.Description, paramsDesc, methodName,
-				paramsStr, returnType)
+				func (client *Client) %s(%s) (%s%s, error)`, methodName, classInfoe.Description, paramsDesc, methodName,
+				paramsStr, asterike, returnType)
 
 			paramsStr = ""
 			for i, param := range classInfoe.Properties {
@@ -298,34 +460,82 @@ func main() {
 				}
 			}
 
-			illStr := `fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])`
+			illStr := `fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])`
 			if strings.Contains(paramsStr, returnTypeCamel) {
 				returnTypeCamel = returnTypeCamel + "Dummy"
 			}
-			gnrtdMethods += fmt.Sprintf(` {
-				result, err := client.SendAndCatch(UpdateMsg{
-					"@type":       "%s",
-					%s
-				})
+			if returnIsInterface {
+				enumType := returnType + "Enum"
+				casesStr := ""
 
-				if err != nil {
-					return nil, err
+				for _, enumInfoe := range enumInfoes {
+					if enumInfoe.EnumType == enumType {
+						for _, item := range enumInfoe.Items {
+							casesStr += fmt.Sprintf(`
+								case %s:
+									var %s %s
+									err = json.Unmarshal(result.Raw, &%s)
+									return &%s, err
+									`, item+"Type", returnTypeCamel, item, returnTypeCamel,
+								returnTypeCamel)
+						}
+						break
+					}
 				}
 
-				if result["@type"].(string) == "error" {
-					return nil, %s
-				}
+				gnrtdMethods += fmt.Sprintf(` {
+					result, err := client.SendAndCatch(UpdateData{
+						"@type":       "%s",
+						%s
+					})
+	
+					if err != nil {
+						return nil, err
+					}
+	
+					if result.Data["@type"].(string) == "error" {
+						return nil, %s
+					}
 
-				var %s %s
-				err = mapstructure.Decode(result, &%s)
-				return &%s, err
+					switch %s(result.Data["@type"].(string)) {
+						%s
+					default:
+						return nil, fmt.Errorf("Invalid type")
+					}
+					}
+					
+					`, classInfoe.Name, paramsStr, illStr,
+					enumType, casesStr)
 
-				}
-				
-				`, classInfoe.Name, paramsStr, illStr, returnTypeCamel,
-				returnType, returnTypeCamel, returnTypeCamel)
+			} else {
+				gnrtdMethods += fmt.Sprintf(` {
+					result, err := client.SendAndCatch(UpdateData{
+						"@type":       "%s",
+						%s
+					})
+	
+					if err != nil {
+						return nil, err
+					}
+	
+					if result.Data["@type"].(string) == "error" {
+						return nil, %s
+					}
+	
+					var %s %s
+					err = json.Unmarshal(result.Raw, &%s)
+					return %s%s, err
+	
+					}
+					
+					`, classInfoe.Name, paramsStr, illStr, returnTypeCamel,
+					returnType, returnTypeCamel, ampersign, returnTypeCamel)
+			}
+
 		}
 	}
+
+	gnrtdStructs += "\n\n" + structUnmarshals
 
 	os.Remove(generateDir + "/" + structsFileName)
 	structsFile, err := os.OpenFile(generateDir+"/"+structsFileName, os.O_CREATE|os.O_RDWR, os.ModePerm)
@@ -409,4 +619,14 @@ func convertToArgumentName(input string) string {
 	paramName = strings.Replace(paramName, "type", "typeParam", 1)
 
 	return paramName
+}
+
+func checkIsInterface(input string) bool {
+	for _, interfaceInfo := range interfaceInfoes {
+		if interfaceInfo.Name == input {
+			return true
+		}
+	}
+
+	return false
 }

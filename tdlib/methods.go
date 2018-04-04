@@ -1,13 +1,13 @@
 package tdlib
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
 )
 
 // GetAuthorizationState Returns the current authorization state; this is an offline request. For informational purposes only. Use updateAuthorizationState instead to maintain the current authorization state
-func (client *Client) GetAuthorizationState() (*AuthorizationState, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) GetAuthorizationState() (AuthorizationState, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getAuthorizationState",
 	})
 
@@ -15,20 +15,66 @@ func (client *Client) GetAuthorizationState() (*AuthorizationState, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
-	var authorizationState AuthorizationState
-	err = mapstructure.Decode(result, &authorizationState)
-	return &authorizationState, err
+	switch AuthorizationStateEnum(result.Data["@type"].(string)) {
 
+	case AuthorizationStateWaitTdlibParametersType:
+		var authorizationState AuthorizationStateWaitTdlibParameters
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	case AuthorizationStateWaitEncryptionKeyType:
+		var authorizationState AuthorizationStateWaitEncryptionKey
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	case AuthorizationStateWaitPhoneNumberType:
+		var authorizationState AuthorizationStateWaitPhoneNumber
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	case AuthorizationStateWaitCodeType:
+		var authorizationState AuthorizationStateWaitCode
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	case AuthorizationStateWaitPasswordType:
+		var authorizationState AuthorizationStateWaitPassword
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	case AuthorizationStateReadyType:
+		var authorizationState AuthorizationStateReady
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	case AuthorizationStateLoggingOutType:
+		var authorizationState AuthorizationStateLoggingOut
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	case AuthorizationStateClosingType:
+		var authorizationState AuthorizationStateClosing
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	case AuthorizationStateClosedType:
+		var authorizationState AuthorizationStateClosed
+		err = json.Unmarshal(result.Raw, &authorizationState)
+		return &authorizationState, err
+
+	default:
+		return nil, fmt.Errorf("Invalid type")
+	}
 }
 
 // SetTdlibParameters Sets the parameters for TDLib initialization. Works only when the current authorization state is authorizationStateWaitTdlibParameters
 // @param parameters Parameters
 func (client *Client) SetTdlibParameters(parameters TdlibParameters) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "setTdlibParameters",
 		"parameters": parameters,
 	})
@@ -37,12 +83,12 @@ func (client *Client) SetTdlibParameters(parameters TdlibParameters) (*Ok, error
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -50,7 +96,7 @@ func (client *Client) SetTdlibParameters(parameters TdlibParameters) (*Ok, error
 // CheckDatabaseEncryptionKey Checks the database encryption key for correctness. Works only when the current authorization state is authorizationStateWaitEncryptionKey
 // @param encryptionKey Encryption key to check or set up
 func (client *Client) CheckDatabaseEncryptionKey(encryptionKey []byte) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "checkDatabaseEncryptionKey",
 		"encryption_key": encryptionKey,
 	})
@@ -59,12 +105,12 @@ func (client *Client) CheckDatabaseEncryptionKey(encryptionKey []byte) (*Ok, err
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -74,7 +120,7 @@ func (client *Client) CheckDatabaseEncryptionKey(encryptionKey []byte) (*Ok, err
 // @param allowFlashCall Pass true if the authentication code may be sent via flash call to the specified phone number
 // @param isCurrentPhoneNumber Pass true if the phone number is used on the current device. Ignored if allow_flash_call is false
 func (client *Client) SetAuthenticationPhoneNumber(phoneNumber string, allowFlashCall bool, isCurrentPhoneNumber bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                   "setAuthenticationPhoneNumber",
 		"phone_number":            phoneNumber,
 		"allow_flash_call":        allowFlashCall,
@@ -85,19 +131,19 @@ func (client *Client) SetAuthenticationPhoneNumber(phoneNumber string, allowFlas
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // ResendAuthenticationCode Re-sends an authentication code to the user. Works only when the current authorization state is authorizationStateWaitCode and the next_code_type of the result is not null
 func (client *Client) ResendAuthenticationCode() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "resendAuthenticationCode",
 	})
 
@@ -105,12 +151,12 @@ func (client *Client) ResendAuthenticationCode() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -120,7 +166,7 @@ func (client *Client) ResendAuthenticationCode() (*Ok, error) {
 // @param firstName If the user is not yet registered, the first name of the user; 1-255 characters
 // @param lastName If the user is not yet registered; the last name of the user; optional; 0-255 characters
 func (client *Client) CheckAuthenticationCode(code string, firstName string, lastName string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "checkAuthenticationCode",
 		"code":       code,
 		"first_name": firstName,
@@ -131,12 +177,12 @@ func (client *Client) CheckAuthenticationCode(code string, firstName string, las
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -144,7 +190,7 @@ func (client *Client) CheckAuthenticationCode(code string, firstName string, las
 // CheckAuthenticationPassword Checks the authentication password for correctness. Works only when the current authorization state is authorizationStateWaitPassword
 // @param password The password to check
 func (client *Client) CheckAuthenticationPassword(password string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "checkAuthenticationPassword",
 		"password": password,
 	})
@@ -153,19 +199,19 @@ func (client *Client) CheckAuthenticationPassword(password string) (*Ok, error) 
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // RequestAuthenticationPasswordRecovery Requests to send a password recovery code to an email address that was previously set up. Works only when the current authorization state is authorizationStateWaitPassword
 func (client *Client) RequestAuthenticationPasswordRecovery() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "requestAuthenticationPasswordRecovery",
 	})
 
@@ -173,12 +219,12 @@ func (client *Client) RequestAuthenticationPasswordRecovery() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -186,7 +232,7 @@ func (client *Client) RequestAuthenticationPasswordRecovery() (*Ok, error) {
 // RecoverAuthenticationPassword Recovers the password with a password recovery code sent to an email address that was previously set up. Works only when the current authorization state is authorizationStateWaitPassword
 // @param recoveryCode Recovery code to check
 func (client *Client) RecoverAuthenticationPassword(recoveryCode string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "recoverAuthenticationPassword",
 		"recovery_code": recoveryCode,
 	})
@@ -195,12 +241,12 @@ func (client *Client) RecoverAuthenticationPassword(recoveryCode string) (*Ok, e
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -208,7 +254,7 @@ func (client *Client) RecoverAuthenticationPassword(recoveryCode string) (*Ok, e
 // CheckAuthenticationBotToken Checks the authentication token of a bot; to log in as a bot. Works only when the current authorization state is authorizationStateWaitPhoneNumber. Can be used instead of setAuthenticationPhoneNumber and checkAuthenticationCode to log in
 // @param token The bot token
 func (client *Client) CheckAuthenticationBotToken(token string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "checkAuthenticationBotToken",
 		"token": token,
 	})
@@ -217,19 +263,19 @@ func (client *Client) CheckAuthenticationBotToken(token string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var okDummy Ok
-	err = mapstructure.Decode(result, &okDummy)
+	err = json.Unmarshal(result.Raw, &okDummy)
 	return &okDummy, err
 
 }
 
 // LogOut Closes the TDLib instance after a proper logout. Requires an available network connection. All local data will be destroyed. After the logout completes, updateAuthorizationState with authorizationStateClosed will be sent
 func (client *Client) LogOut() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "logOut",
 	})
 
@@ -237,19 +283,19 @@ func (client *Client) LogOut() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // Close Closes the TDLib instance. All databases will be flushed to disk and properly closed. After the close completes, updateAuthorizationState with authorizationStateClosed will be sent
 func (client *Client) Close() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "close",
 	})
 
@@ -257,19 +303,19 @@ func (client *Client) Close() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // Destroy Closes the TDLib instance, destroying all local data without a proper logout. The current user session will remain in the list of all active sessions. All local data will be destroyed. After the destruction completes updateAuthorizationState with authorizationStateClosed will be sent
 func (client *Client) Destroy() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "destroy",
 	})
 
@@ -277,12 +323,12 @@ func (client *Client) Destroy() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -290,7 +336,7 @@ func (client *Client) Destroy() (*Ok, error) {
 // SetDatabaseEncryptionKey Changes the database encryption key. Usually the encryption key is never changed and is stored in some OS keychain
 // @param newEncryptionKey New encryption key
 func (client *Client) SetDatabaseEncryptionKey(newEncryptionKey []byte) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":              "setDatabaseEncryptionKey",
 		"new_encryption_key": newEncryptionKey,
 	})
@@ -299,19 +345,19 @@ func (client *Client) SetDatabaseEncryptionKey(newEncryptionKey []byte) (*Ok, er
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetPasswordState Returns the current state of 2-step verification
 func (client *Client) GetPasswordState() (*PasswordState, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getPasswordState",
 	})
 
@@ -319,42 +365,42 @@ func (client *Client) GetPasswordState() (*PasswordState, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var passwordState PasswordState
-	err = mapstructure.Decode(result, &passwordState)
+	err = json.Unmarshal(result.Raw, &passwordState)
 	return &passwordState, err
 
 }
 
 // SetPassword Changes the password for the user. If a new recovery email address is specified, then the error EMAIL_UNCONFIRMED is returned and the password change will not be applied until the new recovery email address has been confirmed. The application should periodically call getPasswordState to check whether the new email address has been confirmed
-// @param newRecoveryEmailAddress New recovery email address; may be empty
 // @param oldPassword Previous password of the user
 // @param newPassword New password of the user; may be empty to remove the password
 // @param newHint New password hint; may be empty
 // @param setRecoveryEmailAddress Pass true if the recovery email address should be changed
-func (client *Client) SetPassword(newRecoveryEmailAddress string, oldPassword string, newPassword string, newHint string, setRecoveryEmailAddress bool) (*PasswordState, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
-		"@type": "setPassword",
-		"new_recovery_email_address": newRecoveryEmailAddress,
+// @param newRecoveryEmailAddress New recovery email address; may be empty
+func (client *Client) SetPassword(oldPassword string, newPassword string, newHint string, setRecoveryEmailAddress bool, newRecoveryEmailAddress string) (*PasswordState, error) {
+	result, err := client.SendAndCatch(UpdateData{
+		"@type":                      "setPassword",
 		"old_password":               oldPassword,
 		"new_password":               newPassword,
 		"new_hint":                   newHint,
 		"set_recovery_email_address": setRecoveryEmailAddress,
+		"new_recovery_email_address": newRecoveryEmailAddress,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var passwordState PasswordState
-	err = mapstructure.Decode(result, &passwordState)
+	err = json.Unmarshal(result.Raw, &passwordState)
 	return &passwordState, err
 
 }
@@ -362,7 +408,7 @@ func (client *Client) SetPassword(newRecoveryEmailAddress string, oldPassword st
 // GetRecoveryEmailAddress Returns a recovery email address that was previously set up. This method can be used to verify a password provided by the user
 // @param password The password for the current user
 func (client *Client) GetRecoveryEmailAddress(password string) (*RecoveryEmailAddress, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "getRecoveryEmailAddress",
 		"password": password,
 	})
@@ -371,12 +417,12 @@ func (client *Client) GetRecoveryEmailAddress(password string) (*RecoveryEmailAd
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var recoveryEmailAddress RecoveryEmailAddress
-	err = mapstructure.Decode(result, &recoveryEmailAddress)
+	err = json.Unmarshal(result.Raw, &recoveryEmailAddress)
 	return &recoveryEmailAddress, err
 
 }
@@ -385,7 +431,7 @@ func (client *Client) GetRecoveryEmailAddress(password string) (*RecoveryEmailAd
 // @param password
 // @param newRecoveryEmailAddress
 func (client *Client) SetRecoveryEmailAddress(password string, newRecoveryEmailAddress string) (*PasswordState, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                      "setRecoveryEmailAddress",
 		"password":                   password,
 		"new_recovery_email_address": newRecoveryEmailAddress,
@@ -395,19 +441,19 @@ func (client *Client) SetRecoveryEmailAddress(password string, newRecoveryEmailA
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var passwordState PasswordState
-	err = mapstructure.Decode(result, &passwordState)
+	err = json.Unmarshal(result.Raw, &passwordState)
 	return &passwordState, err
 
 }
 
 // RequestPasswordRecovery Requests to send a password recovery code to an email address that was previously set up
 func (client *Client) RequestPasswordRecovery() (*PasswordRecoveryInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "requestPasswordRecovery",
 	})
 
@@ -415,12 +461,12 @@ func (client *Client) RequestPasswordRecovery() (*PasswordRecoveryInfo, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var passwordRecoveryInfo PasswordRecoveryInfo
-	err = mapstructure.Decode(result, &passwordRecoveryInfo)
+	err = json.Unmarshal(result.Raw, &passwordRecoveryInfo)
 	return &passwordRecoveryInfo, err
 
 }
@@ -428,7 +474,7 @@ func (client *Client) RequestPasswordRecovery() (*PasswordRecoveryInfo, error) {
 // RecoverPassword Recovers the password using a recovery code sent to an email address that was previously set up
 // @param recoveryCode Recovery code to check
 func (client *Client) RecoverPassword(recoveryCode string) (*PasswordState, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "recoverPassword",
 		"recovery_code": recoveryCode,
 	})
@@ -437,43 +483,43 @@ func (client *Client) RecoverPassword(recoveryCode string) (*PasswordState, erro
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var passwordState PasswordState
-	err = mapstructure.Decode(result, &passwordState)
+	err = json.Unmarshal(result.Raw, &passwordState)
 	return &passwordState, err
 
 }
 
 // CreateTemporaryPassword Creates a new temporary password for processing payments
-// @param validFor Time during which the temporary password will be valid, in seconds; should be between 60 and 86400
 // @param password Persistent user password
-func (client *Client) CreateTemporaryPassword(validFor int32, password string) (*TemporaryPasswordState, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param validFor Time during which the temporary password will be valid, in seconds; should be between 60 and 86400
+func (client *Client) CreateTemporaryPassword(password string, validFor int32) (*TemporaryPasswordState, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "createTemporaryPassword",
-		"valid_for": validFor,
 		"password":  password,
+		"valid_for": validFor,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var temporaryPasswordState TemporaryPasswordState
-	err = mapstructure.Decode(result, &temporaryPasswordState)
+	err = json.Unmarshal(result.Raw, &temporaryPasswordState)
 	return &temporaryPasswordState, err
 
 }
 
 // GetTemporaryPasswordState Returns information about the current temporary password
 func (client *Client) GetTemporaryPasswordState() (*TemporaryPasswordState, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getTemporaryPasswordState",
 	})
 
@@ -481,12 +527,12 @@ func (client *Client) GetTemporaryPasswordState() (*TemporaryPasswordState, erro
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var temporaryPasswordState TemporaryPasswordState
-	err = mapstructure.Decode(result, &temporaryPasswordState)
+	err = json.Unmarshal(result.Raw, &temporaryPasswordState)
 	return &temporaryPasswordState, err
 
 }
@@ -495,7 +541,7 @@ func (client *Client) GetTemporaryPasswordState() (*TemporaryPasswordState, erro
 // @param dc Value of the "dc" parameter of the notification
 // @param addr Value of the "addr" parameter of the notification
 func (client *Client) ProcessDcUpdate(dc string, addr string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "processDcUpdate",
 		"dc":    dc,
 		"addr":  addr,
@@ -505,19 +551,19 @@ func (client *Client) ProcessDcUpdate(dc string, addr string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetMe Returns the current user
 func (client *Client) GetMe() (*User, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getMe",
 	})
 
@@ -525,12 +571,12 @@ func (client *Client) GetMe() (*User, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var user User
-	err = mapstructure.Decode(result, &user)
+	err = json.Unmarshal(result.Raw, &user)
 	return &user, err
 
 }
@@ -538,7 +584,7 @@ func (client *Client) GetMe() (*User, error) {
 // GetUser Returns information about a user by their identifier. This is an offline request if the current user is not a bot
 // @param userID User identifier
 func (client *Client) GetUser(userID int32) (*User, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getUser",
 		"user_id": userID,
 	})
@@ -547,12 +593,12 @@ func (client *Client) GetUser(userID int32) (*User, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var userDummy User
-	err = mapstructure.Decode(result, &userDummy)
+	err = json.Unmarshal(result.Raw, &userDummy)
 	return &userDummy, err
 
 }
@@ -560,7 +606,7 @@ func (client *Client) GetUser(userID int32) (*User, error) {
 // GetUserFullInfo Returns full information about a user by their identifier
 // @param userID User identifier
 func (client *Client) GetUserFullInfo(userID int32) (*UserFullInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getUserFullInfo",
 		"user_id": userID,
 	})
@@ -569,12 +615,12 @@ func (client *Client) GetUserFullInfo(userID int32) (*UserFullInfo, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var userFullInfo UserFullInfo
-	err = mapstructure.Decode(result, &userFullInfo)
+	err = json.Unmarshal(result.Raw, &userFullInfo)
 	return &userFullInfo, err
 
 }
@@ -582,7 +628,7 @@ func (client *Client) GetUserFullInfo(userID int32) (*UserFullInfo, error) {
 // GetBasicGroup Returns information about a basic group by its identifier. This is an offline request if the current user is not a bot
 // @param basicGroupID Basic group identifier
 func (client *Client) GetBasicGroup(basicGroupID int32) (*BasicGroup, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getBasicGroup",
 		"basic_group_id": basicGroupID,
 	})
@@ -591,12 +637,12 @@ func (client *Client) GetBasicGroup(basicGroupID int32) (*BasicGroup, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var basicGroupDummy BasicGroup
-	err = mapstructure.Decode(result, &basicGroupDummy)
+	err = json.Unmarshal(result.Raw, &basicGroupDummy)
 	return &basicGroupDummy, err
 
 }
@@ -604,7 +650,7 @@ func (client *Client) GetBasicGroup(basicGroupID int32) (*BasicGroup, error) {
 // GetBasicGroupFullInfo Returns full information about a basic group by its identifier
 // @param basicGroupID Basic group identifier
 func (client *Client) GetBasicGroupFullInfo(basicGroupID int32) (*BasicGroupFullInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getBasicGroupFullInfo",
 		"basic_group_id": basicGroupID,
 	})
@@ -613,12 +659,12 @@ func (client *Client) GetBasicGroupFullInfo(basicGroupID int32) (*BasicGroupFull
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var basicGroupFullInfo BasicGroupFullInfo
-	err = mapstructure.Decode(result, &basicGroupFullInfo)
+	err = json.Unmarshal(result.Raw, &basicGroupFullInfo)
 	return &basicGroupFullInfo, err
 
 }
@@ -626,7 +672,7 @@ func (client *Client) GetBasicGroupFullInfo(basicGroupID int32) (*BasicGroupFull
 // GetSupergroup Returns information about a supergroup or channel by its identifier. This is an offline request if the current user is not a bot
 // @param supergroupID Supergroup or channel identifier
 func (client *Client) GetSupergroup(supergroupID int32) (*Supergroup, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "getSupergroup",
 		"supergroup_id": supergroupID,
 	})
@@ -635,12 +681,12 @@ func (client *Client) GetSupergroup(supergroupID int32) (*Supergroup, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var supergroupDummy Supergroup
-	err = mapstructure.Decode(result, &supergroupDummy)
+	err = json.Unmarshal(result.Raw, &supergroupDummy)
 	return &supergroupDummy, err
 
 }
@@ -648,7 +694,7 @@ func (client *Client) GetSupergroup(supergroupID int32) (*Supergroup, error) {
 // GetSupergroupFullInfo Returns full information about a supergroup or channel by its identifier, cached for up to 1 minute
 // @param supergroupID Supergroup or channel identifier
 func (client *Client) GetSupergroupFullInfo(supergroupID int32) (*SupergroupFullInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "getSupergroupFullInfo",
 		"supergroup_id": supergroupID,
 	})
@@ -657,12 +703,12 @@ func (client *Client) GetSupergroupFullInfo(supergroupID int32) (*SupergroupFull
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var supergroupFullInfo SupergroupFullInfo
-	err = mapstructure.Decode(result, &supergroupFullInfo)
+	err = json.Unmarshal(result.Raw, &supergroupFullInfo)
 	return &supergroupFullInfo, err
 
 }
@@ -670,7 +716,7 @@ func (client *Client) GetSupergroupFullInfo(supergroupID int32) (*SupergroupFull
 // GetSecretChat Returns information about a secret chat by its identifier. This is an offline request
 // @param secretChatID Secret chat identifier
 func (client *Client) GetSecretChat(secretChatID int32) (*SecretChat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getSecretChat",
 		"secret_chat_id": secretChatID,
 	})
@@ -679,12 +725,12 @@ func (client *Client) GetSecretChat(secretChatID int32) (*SecretChat, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var secretChatDummy SecretChat
-	err = mapstructure.Decode(result, &secretChatDummy)
+	err = json.Unmarshal(result.Raw, &secretChatDummy)
 	return &secretChatDummy, err
 
 }
@@ -692,7 +738,7 @@ func (client *Client) GetSecretChat(secretChatID int32) (*SecretChat, error) {
 // GetChat Returns information about a chat by its identifier, this is an offline request if the current user is not a bot
 // @param chatID Chat identifier
 func (client *Client) GetChat(chatID int64) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getChat",
 		"chat_id": chatID,
 	})
@@ -701,12 +747,12 @@ func (client *Client) GetChat(chatID int64) (*Chat, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatDummy Chat
-	err = mapstructure.Decode(result, &chatDummy)
+	err = json.Unmarshal(result.Raw, &chatDummy)
 	return &chatDummy, err
 
 }
@@ -715,7 +761,7 @@ func (client *Client) GetChat(chatID int64) (*Chat, error) {
 // @param chatID Identifier of the chat the message belongs to
 // @param messageID Identifier of the message to get
 func (client *Client) GetMessage(chatID int64, messageID int64) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getMessage",
 		"chat_id":    chatID,
 		"message_id": messageID,
@@ -725,12 +771,12 @@ func (client *Client) GetMessage(chatID int64, messageID int64) (*Message, error
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
@@ -739,7 +785,7 @@ func (client *Client) GetMessage(chatID int64, messageID int64) (*Message, error
 // @param chatID Identifier of the chat the message belongs to
 // @param messageID Identifier of the message reply to which get
 func (client *Client) GetRepliedMessage(chatID int64, messageID int64) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getRepliedMessage",
 		"chat_id":    chatID,
 		"message_id": messageID,
@@ -749,12 +795,12 @@ func (client *Client) GetRepliedMessage(chatID int64, messageID int64) (*Message
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
@@ -762,7 +808,7 @@ func (client *Client) GetRepliedMessage(chatID int64, messageID int64) (*Message
 // GetChatPinnedMessage Returns information about a pinned chat message
 // @param chatID Identifier of the chat the message belongs to
 func (client *Client) GetChatPinnedMessage(chatID int64) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getChatPinnedMessage",
 		"chat_id": chatID,
 	})
@@ -771,36 +817,36 @@ func (client *Client) GetChatPinnedMessage(chatID int64) (*Message, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var message Message
-	err = mapstructure.Decode(result, &message)
+	err = json.Unmarshal(result.Raw, &message)
 	return &message, err
 
 }
 
 // GetMessages Returns information about messages. If a message is not found, returns null on the corresponding position of the result
-// @param messageIDs Identifiers of the messages to get
 // @param chatID Identifier of the chat the messages belong to
-func (client *Client) GetMessages(messageIDs []int64, chatID int64) (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param messageIDs Identifiers of the messages to get
+func (client *Client) GetMessages(chatID int64, messageIDs []int64) (*Messages, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "getMessages",
-		"message_ids": messageIDs,
 		"chat_id":     chatID,
+		"message_ids": messageIDs,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
@@ -808,7 +854,7 @@ func (client *Client) GetMessages(messageIDs []int64, chatID int64) (*Messages, 
 // GetFile Returns information about a file; this is an offline request
 // @param fileID Identifier of the file to get
 func (client *Client) GetFile(fileID int32) (*File, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getFile",
 		"file_id": fileID,
 	})
@@ -817,12 +863,12 @@ func (client *Client) GetFile(fileID int32) (*File, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var fileDummy File
-	err = mapstructure.Decode(result, &fileDummy)
+	err = json.Unmarshal(result.Raw, &fileDummy)
 	return &fileDummy, err
 
 }
@@ -831,7 +877,7 @@ func (client *Client) GetFile(fileID int32) (*File, error) {
 // @param remoteFileID Remote identifier of the file to get
 // @param fileType File type, if known
 func (client *Client) GetRemoteFile(remoteFileID string, fileType FileType) (*File, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getRemoteFile",
 		"remote_file_id": remoteFileID,
 		"file_type":      fileType,
@@ -841,12 +887,12 @@ func (client *Client) GetRemoteFile(remoteFileID string, fileType FileType) (*Fi
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var fileDummy File
-	err = mapstructure.Decode(result, &fileDummy)
+	err = json.Unmarshal(result.Raw, &fileDummy)
 	return &fileDummy, err
 
 }
@@ -856,7 +902,7 @@ func (client *Client) GetRemoteFile(remoteFileID string, fileType FileType) (*Fi
 // @param offsetChatID
 // @param limit The maximum number of chats to be returned. It is possible that fewer chats than the limit are returned even if the end of the list is not reached
 func (client *Client) GetChats(offsetOrder int64, offsetChatID int64, limit int32) (*Chats, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getChats",
 		"offset_order":   offsetOrder,
 		"offset_chat_id": offsetChatID,
@@ -867,12 +913,12 @@ func (client *Client) GetChats(offsetOrder int64, offsetChatID int64, limit int3
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chats Chats
-	err = mapstructure.Decode(result, &chats)
+	err = json.Unmarshal(result.Raw, &chats)
 	return &chats, err
 
 }
@@ -880,7 +926,7 @@ func (client *Client) GetChats(offsetOrder int64, offsetChatID int64, limit int3
 // SearchPublicChat Searches a public chat by its username. Currently only private chats, supergroups and channels can be public. Returns the chat if found; otherwise an error is returned
 // @param username Username to be resolved
 func (client *Client) SearchPublicChat(username string) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "searchPublicChat",
 		"username": username,
 	})
@@ -889,12 +935,12 @@ func (client *Client) SearchPublicChat(username string) (*Chat, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chat Chat
-	err = mapstructure.Decode(result, &chat)
+	err = json.Unmarshal(result.Raw, &chat)
 	return &chat, err
 
 }
@@ -902,7 +948,7 @@ func (client *Client) SearchPublicChat(username string) (*Chat, error) {
 // SearchPublicChats Searches public chats by looking for specified query in their username and title. Currently only private chats, supergroups and channels can be public. Returns a meaningful number of results. Returns nothing if the length of the searched username prefix is less than 5. Excludes private chats with contacts and chats from the chat list from the results
 // @param query Query to search for
 func (client *Client) SearchPublicChats(query string) (*Chats, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchPublicChats",
 		"query": query,
 	})
@@ -911,36 +957,36 @@ func (client *Client) SearchPublicChats(query string) (*Chats, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chats Chats
-	err = mapstructure.Decode(result, &chats)
+	err = json.Unmarshal(result.Raw, &chats)
 	return &chats, err
 
 }
 
 // SearchChats Searches for the specified query in the title and username of already known chats, this is an offline request. Returns chats in the order seen in the chat list
-// @param limit Maximum number of chats to be returned
 // @param query Query to search for. If the query is empty, returns up to 20 recently found chats
-func (client *Client) SearchChats(limit int32, query string) (*Chats, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param limit Maximum number of chats to be returned
+func (client *Client) SearchChats(query string, limit int32) (*Chats, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchChats",
-		"limit": limit,
 		"query": query,
+		"limit": limit,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chats Chats
-	err = mapstructure.Decode(result, &chats)
+	err = json.Unmarshal(result.Raw, &chats)
 	return &chats, err
 
 }
@@ -949,7 +995,7 @@ func (client *Client) SearchChats(limit int32, query string) (*Chats, error) {
 // @param query Query to search for
 // @param limit Maximum number of chats to be returned
 func (client *Client) SearchChatsOnServer(query string, limit int32) (*Chats, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchChatsOnServer",
 		"query": query,
 		"limit": limit,
@@ -959,12 +1005,12 @@ func (client *Client) SearchChatsOnServer(query string, limit int32) (*Chats, er
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chats Chats
-	err = mapstructure.Decode(result, &chats)
+	err = json.Unmarshal(result.Raw, &chats)
 	return &chats, err
 
 }
@@ -973,7 +1019,7 @@ func (client *Client) SearchChatsOnServer(query string, limit int32) (*Chats, er
 // @param category Category of chats to be returned
 // @param limit Maximum number of chats to be returned; up to 30
 func (client *Client) GetTopChats(category TopChatCategory, limit int32) (*Chats, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "getTopChats",
 		"category": category,
 		"limit":    limit,
@@ -983,12 +1029,12 @@ func (client *Client) GetTopChats(category TopChatCategory, limit int32) (*Chats
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chats Chats
-	err = mapstructure.Decode(result, &chats)
+	err = json.Unmarshal(result.Raw, &chats)
 	return &chats, err
 
 }
@@ -997,7 +1043,7 @@ func (client *Client) GetTopChats(category TopChatCategory, limit int32) (*Chats
 // @param category Category of frequently used chats
 // @param chatID Chat identifier
 func (client *Client) RemoveTopChat(category TopChatCategory, chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "removeTopChat",
 		"category": category,
 		"chat_id":  chatID,
@@ -1007,12 +1053,12 @@ func (client *Client) RemoveTopChat(category TopChatCategory, chatID int64) (*Ok
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -1020,7 +1066,7 @@ func (client *Client) RemoveTopChat(category TopChatCategory, chatID int64) (*Ok
 // AddRecentlyFoundChat Adds a chat to the list of recently found chats. The chat is added to the beginning of the list. If the chat is already in the list, it will be removed from the list first
 // @param chatID Identifier of the chat to add
 func (client *Client) AddRecentlyFoundChat(chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "addRecentlyFoundChat",
 		"chat_id": chatID,
 	})
@@ -1029,12 +1075,12 @@ func (client *Client) AddRecentlyFoundChat(chatID int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -1042,7 +1088,7 @@ func (client *Client) AddRecentlyFoundChat(chatID int64) (*Ok, error) {
 // RemoveRecentlyFoundChat Removes a chat from the list of recently found chats
 // @param chatID Identifier of the chat to be removed
 func (client *Client) RemoveRecentlyFoundChat(chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "removeRecentlyFoundChat",
 		"chat_id": chatID,
 	})
@@ -1051,19 +1097,19 @@ func (client *Client) RemoveRecentlyFoundChat(chatID int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // ClearRecentlyFoundChats Clears the list of recently found chats
 func (client *Client) ClearRecentlyFoundChats() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "clearRecentlyFoundChats",
 	})
 
@@ -1071,12 +1117,12 @@ func (client *Client) ClearRecentlyFoundChats() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -1084,8 +1130,8 @@ func (client *Client) ClearRecentlyFoundChats() (*Ok, error) {
 // CheckChatUsername Checks whether a username can be set for a chat
 // @param chatID Chat identifier; should be identifier of a supergroup chat, or a channel chat, or a private chat with self, or zero if chat is being created
 // @param username Username to be checked
-func (client *Client) CheckChatUsername(chatID int64, username string) (*CheckChatUsernameResult, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) CheckChatUsername(chatID int64, username string) (CheckChatUsernameResult, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "checkChatUsername",
 		"chat_id":  chatID,
 		"username": username,
@@ -1095,19 +1141,45 @@ func (client *Client) CheckChatUsername(chatID int64, username string) (*CheckCh
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
-	var checkChatUsernameResult CheckChatUsernameResult
-	err = mapstructure.Decode(result, &checkChatUsernameResult)
-	return &checkChatUsernameResult, err
+	switch CheckChatUsernameResultEnum(result.Data["@type"].(string)) {
 
+	case CheckChatUsernameResultOkType:
+		var checkChatUsernameResult CheckChatUsernameResultOk
+		err = json.Unmarshal(result.Raw, &checkChatUsernameResult)
+		return &checkChatUsernameResult, err
+
+	case CheckChatUsernameResultUsernameInvalidType:
+		var checkChatUsernameResult CheckChatUsernameResultUsernameInvalid
+		err = json.Unmarshal(result.Raw, &checkChatUsernameResult)
+		return &checkChatUsernameResult, err
+
+	case CheckChatUsernameResultUsernameOccupiedType:
+		var checkChatUsernameResult CheckChatUsernameResultUsernameOccupied
+		err = json.Unmarshal(result.Raw, &checkChatUsernameResult)
+		return &checkChatUsernameResult, err
+
+	case CheckChatUsernameResultPublicChatsTooMuchType:
+		var checkChatUsernameResult CheckChatUsernameResultPublicChatsTooMuch
+		err = json.Unmarshal(result.Raw, &checkChatUsernameResult)
+		return &checkChatUsernameResult, err
+
+	case CheckChatUsernameResultPublicGroupsUnavailableType:
+		var checkChatUsernameResult CheckChatUsernameResultPublicGroupsUnavailable
+		err = json.Unmarshal(result.Raw, &checkChatUsernameResult)
+		return &checkChatUsernameResult, err
+
+	default:
+		return nil, fmt.Errorf("Invalid type")
+	}
 }
 
 // GetCreatedPublicChats Returns a list of public chats created by the user
 func (client *Client) GetCreatedPublicChats() (*Chats, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getCreatedPublicChats",
 	})
 
@@ -1115,12 +1187,12 @@ func (client *Client) GetCreatedPublicChats() (*Chats, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chats Chats
-	err = mapstructure.Decode(result, &chats)
+	err = json.Unmarshal(result.Raw, &chats)
 	return &chats, err
 
 }
@@ -1130,7 +1202,7 @@ func (client *Client) GetCreatedPublicChats() (*Chats, error) {
 // @param offsetChatID Chat identifier starting from which to return chats; use 0 for the first request
 // @param limit Maximum number of chats to be returned; up to 100
 func (client *Client) GetGroupsInCommon(userID int32, offsetChatID int64, limit int32) (*Chats, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "getGroupsInCommon",
 		"user_id":        userID,
 		"offset_chat_id": offsetChatID,
@@ -1141,42 +1213,42 @@ func (client *Client) GetGroupsInCommon(userID int32, offsetChatID int64, limit 
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chats Chats
-	err = mapstructure.Decode(result, &chats)
+	err = json.Unmarshal(result.Raw, &chats)
 	return &chats, err
 
 }
 
 // GetChatHistory Returns messages in a chat. The messages are returned in a reverse chronological order (i.e., in order of decreasing message_id).
+// @param chatID Chat identifier
 // @param fromMessageID Identifier of the message starting from which history must be fetched; use 0 to get results from the beginning (i.e., from oldest to newest)
 // @param offset Specify 0 to get results from exactly the from_message_id or a negative offset to get the specified message and some newer messages
 // @param limit The maximum number of messages to be returned; must be positive and can't be greater than 100. If the offset is negative, the limit must be greater than -offset. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
 // @param onlyLocal If true, returns only messages that are available locally without sending network requests
-// @param chatID Chat identifier
-func (client *Client) GetChatHistory(fromMessageID int64, offset int32, limit int32, onlyLocal bool, chatID int64) (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) GetChatHistory(chatID int64, fromMessageID int64, offset int32, limit int32, onlyLocal bool) (*Messages, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "getChatHistory",
+		"chat_id":         chatID,
 		"from_message_id": fromMessageID,
 		"offset":          offset,
 		"limit":           limit,
 		"only_local":      onlyLocal,
-		"chat_id":         chatID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
@@ -1185,7 +1257,7 @@ func (client *Client) GetChatHistory(fromMessageID int64, offset int32, limit in
 // @param chatID Chat identifier
 // @param removeFromChatList Pass true if the chat should be removed from the chats list
 func (client *Client) DeleteChatHistory(chatID int64, removeFromChatList bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "deleteChatHistory",
 		"chat_id":               chatID,
 		"remove_from_chat_list": removeFromChatList,
@@ -1195,46 +1267,46 @@ func (client *Client) DeleteChatHistory(chatID int64, removeFromChatList bool) (
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // SearchChatMessages Searches for messages with given words in the chat. Returns the results in reverse chronological order, i.e. in order of decreasing message_id. Cannot be used in secret chats with a non-empty query
-// @param fromMessageID Identifier of the message starting from which history must be fetched; use 0 to get results from the beginning
-// @param offset Specify 0 to get results from exactly the from_message_id or a negative offset to get the specified message and some newer messages
-// @param limit The maximum number of messages to be returned; must be positive and can't be greater than 100. If the offset is negative, the limit must be greater than -offset. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
 // @param filter Filter for message content in the search results
 // @param chatID Identifier of the chat in which to search messages
 // @param query Query to search for
 // @param senderUserID If not 0, only messages sent by the specified user will be returned. Not supported in secret chats
-func (client *Client) SearchChatMessages(fromMessageID int64, offset int32, limit int32, filter SearchMessagesFilter, chatID int64, query string, senderUserID int32) (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param fromMessageID Identifier of the message starting from which history must be fetched; use 0 to get results from the beginning
+// @param offset Specify 0 to get results from exactly the from_message_id or a negative offset to get the specified message and some newer messages
+// @param limit The maximum number of messages to be returned; must be positive and can't be greater than 100. If the offset is negative, the limit must be greater than -offset. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
+func (client *Client) SearchChatMessages(filter SearchMessagesFilter, chatID int64, query string, senderUserID int32, fromMessageID int64, offset int32, limit int32) (*Messages, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "searchChatMessages",
-		"from_message_id": fromMessageID,
-		"offset":          offset,
-		"limit":           limit,
 		"filter":          filter,
 		"chat_id":         chatID,
 		"query":           query,
 		"sender_user_id":  senderUserID,
+		"from_message_id": fromMessageID,
+		"offset":          offset,
+		"limit":           limit,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
@@ -1246,7 +1318,7 @@ func (client *Client) SearchChatMessages(fromMessageID int64, offset int32, limi
 // @param offsetMessageID The message identifier of the last found message, or 0 for the first request
 // @param limit The maximum number of messages to be returned, up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
 func (client *Client) SearchMessages(query string, offsetDate int32, offsetChatID int64, offsetMessageID int64, limit int32) (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "searchMessages",
 		"query":             query,
 		"offset_date":       offsetDate,
@@ -1259,12 +1331,12 @@ func (client *Client) SearchMessages(query string, offsetDate int32, offsetChatI
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
@@ -1276,7 +1348,7 @@ func (client *Client) SearchMessages(query string, offsetDate int32, offsetChatI
 // @param fromSearchID The identifier from the result of a previous request, use 0 to get results from the beginning
 // @param limit Maximum number of messages to be returned; up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
 func (client *Client) SearchSecretMessages(filter SearchMessagesFilter, chatID int64, query string, fromSearchID int64, limit int32) (*FoundMessages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "searchSecretMessages",
 		"filter":         filter,
 		"chat_id":        chatID,
@@ -1289,38 +1361,38 @@ func (client *Client) SearchSecretMessages(filter SearchMessagesFilter, chatID i
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var foundMessages FoundMessages
-	err = mapstructure.Decode(result, &foundMessages)
+	err = json.Unmarshal(result.Raw, &foundMessages)
 	return &foundMessages, err
 
 }
 
 // SearchCallMessages Searches for call messages. Returns the results in reverse chronological order (i. e., in order of decreasing message_id). For optimal performance the number of returned messages is chosen by the library
+// @param fromMessageID Identifier of the message from which to search; use 0 to get results from the beginning
 // @param limit The maximum number of messages to be returned; up to 100. Fewer messages may be returned than specified by the limit, even if the end of the message history has not been reached
 // @param onlyMissed If true, returns only messages with missed calls
-// @param fromMessageID Identifier of the message from which to search; use 0 to get results from the beginning
-func (client *Client) SearchCallMessages(limit int32, onlyMissed bool, fromMessageID int64) (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) SearchCallMessages(fromMessageID int64, limit int32, onlyMissed bool) (*Messages, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "searchCallMessages",
+		"from_message_id": fromMessageID,
 		"limit":           limit,
 		"only_missed":     onlyMissed,
-		"from_message_id": fromMessageID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
@@ -1329,7 +1401,7 @@ func (client *Client) SearchCallMessages(limit int32, onlyMissed bool, fromMessa
 // @param chatID Chat identifier
 // @param limit Maximum number of messages to be returned
 func (client *Client) SearchChatRecentLocationMessages(chatID int64, limit int32) (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "searchChatRecentLocationMessages",
 		"chat_id": chatID,
 		"limit":   limit,
@@ -1339,19 +1411,19 @@ func (client *Client) SearchChatRecentLocationMessages(chatID int64, limit int32
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
 
 // GetActiveLiveLocationMessages Returns all active live locations that should be updated by the client. The list is persistent across application restarts only if the message database is used
 func (client *Client) GetActiveLiveLocationMessages() (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getActiveLiveLocationMessages",
 	})
 
@@ -1359,12 +1431,12 @@ func (client *Client) GetActiveLiveLocationMessages() (*Messages, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
@@ -1373,7 +1445,7 @@ func (client *Client) GetActiveLiveLocationMessages() (*Messages, error) {
 // @param chatID Chat identifier
 // @param date Point in time (Unix timestamp) relative to which to search for messages
 func (client *Client) GetChatMessageByDate(chatID int64, date int32) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getChatMessageByDate",
 		"chat_id": chatID,
 		"date":    date,
@@ -1383,100 +1455,100 @@ func (client *Client) GetChatMessageByDate(chatID int64, date int32) (*Message, 
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var message Message
-	err = mapstructure.Decode(result, &message)
+	err = json.Unmarshal(result.Raw, &message)
 	return &message, err
 
 }
 
 // GetPublicMessageLink Returns a public HTTPS link to a message. Available only for messages in public supergroups and channels
-// @param forAlbum Pass true if a link for a whole media album should be returned
 // @param chatID Identifier of the chat to which the message belongs
 // @param messageID Identifier of the message
-func (client *Client) GetPublicMessageLink(forAlbum bool, chatID int64, messageID int64) (*PublicMessageLink, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param forAlbum Pass true if a link for a whole media album should be returned
+func (client *Client) GetPublicMessageLink(chatID int64, messageID int64, forAlbum bool) (*PublicMessageLink, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getPublicMessageLink",
-		"for_album":  forAlbum,
 		"chat_id":    chatID,
 		"message_id": messageID,
+		"for_album":  forAlbum,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var publicMessageLink PublicMessageLink
-	err = mapstructure.Decode(result, &publicMessageLink)
+	err = json.Unmarshal(result.Raw, &publicMessageLink)
 	return &publicMessageLink, err
 
 }
 
 // SendMessage Sends a message. Returns the sent message
+// @param fromBackground Pass true if the message is sent from the background
 // @param replyMarkup Markup for replying to the message; for bots only
 // @param inputMessageContent The content of the message to be sent
 // @param chatID Target chat
 // @param replyToMessageID Identifier of the message to reply to or 0
 // @param disableNotification Pass true to disable notification for the message. Not supported in secret chats
-// @param fromBackground Pass true if the message is sent from the background
-func (client *Client) SendMessage(replyMarkup ReplyMarkup, inputMessageContent InputMessageContent, chatID int64, replyToMessageID int64, disableNotification bool, fromBackground bool) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) SendMessage(fromBackground bool, replyMarkup ReplyMarkup, inputMessageContent InputMessageContent, chatID int64, replyToMessageID int64, disableNotification bool) (*Message, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "sendMessage",
+		"from_background":       fromBackground,
 		"reply_markup":          replyMarkup,
 		"input_message_content": inputMessageContent,
 		"chat_id":               chatID,
 		"reply_to_message_id":   replyToMessageID,
 		"disable_notification":  disableNotification,
-		"from_background":       fromBackground,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
 
 // SendMessageAlbum Sends messages grouped together into an album. Currently only photo and video messages can be grouped into an album. Returns sent messages
+// @param disableNotification Pass true to disable notification for the messages. Not supported in secret chats
 // @param fromBackground Pass true if the messages are sent from the background
 // @param inputMessageContents Contents of messages to be sent
 // @param chatID Target chat
 // @param replyToMessageID Identifier of a message to reply to or 0
-// @param disableNotification Pass true to disable notification for the messages. Not supported in secret chats
-func (client *Client) SendMessageAlbum(fromBackground bool, inputMessageContents []InputMessageContent, chatID int64, replyToMessageID int64, disableNotification bool) (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) SendMessageAlbum(disableNotification bool, fromBackground bool, inputMessageContents []InputMessageContent, chatID int64, replyToMessageID int64) (*Messages, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                  "sendMessageAlbum",
+		"disable_notification":   disableNotification,
 		"from_background":        fromBackground,
 		"input_message_contents": inputMessageContents,
 		"chat_id":                chatID,
 		"reply_to_message_id":    replyToMessageID,
-		"disable_notification":   disableNotification,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
@@ -1486,7 +1558,7 @@ func (client *Client) SendMessageAlbum(fromBackground bool, inputMessageContents
 // @param chatID Identifier of the target chat
 // @param parameter A hidden parameter sent to the bot for deep linking purposes (https://api.telegram.org/bots#deep-linking)
 func (client *Client) SendBotStartMessage(botUserID int32, chatID int64, parameter string) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "sendBotStartMessage",
 		"bot_user_id": botUserID,
 		"chat_id":     chatID,
@@ -1497,100 +1569,100 @@ func (client *Client) SendBotStartMessage(botUserID int32, chatID int64, paramet
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var message Message
-	err = mapstructure.Decode(result, &message)
+	err = json.Unmarshal(result.Raw, &message)
 	return &message, err
 
 }
 
 // SendInlineQueryResultMessage Sends the result of an inline query as a message. Returns the sent message. Always clears a chat draft message
-// @param chatID Target chat
-// @param replyToMessageID Identifier of a message to reply to or 0
 // @param disableNotification Pass true to disable notification for the message. Not supported in secret chats
 // @param fromBackground Pass true if the message is sent from background
 // @param queryID Identifier of the inline query
 // @param resultID Identifier of the inline result
-func (client *Client) SendInlineQueryResultMessage(chatID int64, replyToMessageID int64, disableNotification bool, fromBackground bool, queryID int64, resultID string) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param chatID Target chat
+// @param replyToMessageID Identifier of a message to reply to or 0
+func (client *Client) SendInlineQueryResultMessage(disableNotification bool, fromBackground bool, queryID int64, resultID string, chatID int64, replyToMessageID int64) (*Message, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                "sendInlineQueryResultMessage",
-		"chat_id":              chatID,
-		"reply_to_message_id":  replyToMessageID,
 		"disable_notification": disableNotification,
 		"from_background":      fromBackground,
 		"query_id":             queryID,
 		"result_id":            resultID,
+		"chat_id":              chatID,
+		"reply_to_message_id":  replyToMessageID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
 
 // ForwardMessages Forwards previously sent messages. Returns the forwarded messages in the same order as the message identifiers passed in message_ids. If a message can't be forwarded, null will be returned instead of the message
+// @param fromChatID Identifier of the chat from which to forward messages
+// @param messageIDs Identifiers of the messages to forward
 // @param disableNotification Pass true to disable notification for the message, doesn't work if messages are forwarded to a secret chat
 // @param fromBackground Pass true if the message is sent from the background
 // @param asAlbum True, if the messages should be grouped into an album after forwarding. For this to work, no more than 10 messages may be forwarded, and all of them must be photo or video messages
 // @param chatID Identifier of the chat to which to forward messages
-// @param fromChatID Identifier of the chat from which to forward messages
-// @param messageIDs Identifiers of the messages to forward
-func (client *Client) ForwardMessages(disableNotification bool, fromBackground bool, asAlbum bool, chatID int64, fromChatID int64, messageIDs []int64) (*Messages, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) ForwardMessages(fromChatID int64, messageIDs []int64, disableNotification bool, fromBackground bool, asAlbum bool, chatID int64) (*Messages, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                "forwardMessages",
+		"from_chat_id":         fromChatID,
+		"message_ids":          messageIDs,
 		"disable_notification": disableNotification,
 		"from_background":      fromBackground,
 		"as_album":             asAlbum,
 		"chat_id":              chatID,
-		"from_chat_id":         fromChatID,
-		"message_ids":          messageIDs,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messages Messages
-	err = mapstructure.Decode(result, &messages)
+	err = json.Unmarshal(result.Raw, &messages)
 	return &messages, err
 
 }
 
 // SendChatSetTTLMessage Changes the current TTL setting (sets a new self-destruct timer) in a secret chat and sends the corresponding message
-// @param tTL New TTL value, in seconds
 // @param chatID Chat identifier
-func (client *Client) SendChatSetTTLMessage(tTL int32, chatID int64) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param tTL New TTL value, in seconds
+func (client *Client) SendChatSetTTLMessage(chatID int64, tTL int32) (*Message, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "sendChatSetTtlMessage",
-		"ttl":     tTL,
 		"chat_id": chatID,
+		"ttl":     tTL,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var message Message
-	err = mapstructure.Decode(result, &message)
+	err = json.Unmarshal(result.Raw, &message)
 	return &message, err
 
 }
@@ -1598,7 +1670,7 @@ func (client *Client) SendChatSetTTLMessage(tTL int32, chatID int64) (*Message, 
 // SendChatScreenshotTakenNotification Sends a notification about a screenshot taken in a chat. Supported only in private and secret chats
 // @param chatID Chat identifier
 func (client *Client) SendChatScreenshotTakenNotification(chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "sendChatScreenshotTakenNotification",
 		"chat_id": chatID,
 	})
@@ -1607,12 +1679,12 @@ func (client *Client) SendChatScreenshotTakenNotification(chatID int64) (*Ok, er
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -1622,7 +1694,7 @@ func (client *Client) SendChatScreenshotTakenNotification(chatID int64) (*Ok, er
 // @param messageIDs Identifiers of the messages to be deleted
 // @param revoke Pass true to try to delete outgoing messages for all chat members (may fail if messages are too old). Always true for supergroups, channels and secret chats
 func (client *Client) DeleteMessages(chatID int64, messageIDs []int64, revoke bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "deleteMessages",
 		"chat_id":     chatID,
 		"message_ids": messageIDs,
@@ -1633,36 +1705,36 @@ func (client *Client) DeleteMessages(chatID int64, messageIDs []int64, revoke bo
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var okDummy Ok
-	err = mapstructure.Decode(result, &okDummy)
+	err = json.Unmarshal(result.Raw, &okDummy)
 	return &okDummy, err
 
 }
 
 // DeleteChatMessagesFromUser Deletes all messages sent by the specified user to a chat. Supported only in supergroups; requires can_delete_messages administrator privileges
-// @param chatID Chat identifier
 // @param userID User identifier
-func (client *Client) DeleteChatMessagesFromUser(chatID int64, userID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param chatID Chat identifier
+func (client *Client) DeleteChatMessagesFromUser(userID int32, chatID int64) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "deleteChatMessagesFromUser",
-		"chat_id": chatID,
 		"user_id": userID,
+		"chat_id": chatID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -1673,7 +1745,7 @@ func (client *Client) DeleteChatMessagesFromUser(chatID int64, userID int32) (*O
 // @param replyMarkup The new message reply markup; for bots only
 // @param inputMessageContent New text content of the message. Should be of type InputMessageText
 func (client *Client) EditMessageText(chatID int64, messageID int64, replyMarkup ReplyMarkup, inputMessageContent InputMessageContent) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "editMessageText",
 		"chat_id":               chatID,
 		"message_id":            messageID,
@@ -1685,12 +1757,12 @@ func (client *Client) EditMessageText(chatID int64, messageID int64, replyMarkup
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
@@ -1701,7 +1773,7 @@ func (client *Client) EditMessageText(chatID int64, messageID int64, replyMarkup
 // @param replyMarkup Tew message reply markup; for bots only
 // @param location New location content of the message; may be null. Pass null to stop sharing the live location
 func (client *Client) EditMessageLiveLocation(chatID int64, messageID int64, replyMarkup ReplyMarkup, location Location) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "editMessageLiveLocation",
 		"chat_id":      chatID,
 		"message_id":   messageID,
@@ -1713,12 +1785,12 @@ func (client *Client) EditMessageLiveLocation(chatID int64, messageID int64, rep
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
@@ -1729,7 +1801,7 @@ func (client *Client) EditMessageLiveLocation(chatID int64, messageID int64, rep
 // @param replyMarkup The new message reply markup; for bots only
 // @param caption New message content caption; 0-200 characters
 func (client *Client) EditMessageCaption(chatID int64, messageID int64, replyMarkup ReplyMarkup, caption FormattedText) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "editMessageCaption",
 		"chat_id":      chatID,
 		"message_id":   messageID,
@@ -1741,12 +1813,12 @@ func (client *Client) EditMessageCaption(chatID int64, messageID int64, replyMar
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
@@ -1756,7 +1828,7 @@ func (client *Client) EditMessageCaption(chatID int64, messageID int64, replyMar
 // @param messageID Identifier of the message
 // @param replyMarkup New message reply markup
 func (client *Client) EditMessageReplyMarkup(chatID int64, messageID int64, replyMarkup ReplyMarkup) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "editMessageReplyMarkup",
 		"chat_id":      chatID,
 		"message_id":   messageID,
@@ -1767,12 +1839,12 @@ func (client *Client) EditMessageReplyMarkup(chatID int64, messageID int64, repl
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
@@ -1782,7 +1854,7 @@ func (client *Client) EditMessageReplyMarkup(chatID int64, messageID int64, repl
 // @param replyMarkup New message reply markup
 // @param inputMessageContent New text content of the message. Should be of type InputMessageText
 func (client *Client) EditInlineMessageText(inlineMessageID string, replyMarkup ReplyMarkup, inputMessageContent InputMessageContent) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "editInlineMessageText",
 		"inline_message_id":     inlineMessageID,
 		"reply_markup":          replyMarkup,
@@ -1793,12 +1865,12 @@ func (client *Client) EditInlineMessageText(inlineMessageID string, replyMarkup 
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -1808,7 +1880,7 @@ func (client *Client) EditInlineMessageText(inlineMessageID string, replyMarkup 
 // @param replyMarkup New message reply markup
 // @param location New location content of the message; may be null. Pass null to stop sharing the live location
 func (client *Client) EditInlineMessageLiveLocation(inlineMessageID string, replyMarkup ReplyMarkup, location Location) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "editInlineMessageLiveLocation",
 		"inline_message_id": inlineMessageID,
 		"reply_markup":      replyMarkup,
@@ -1819,38 +1891,38 @@ func (client *Client) EditInlineMessageLiveLocation(inlineMessageID string, repl
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // EditInlineMessageCaption Edits the caption of an inline message sent via a bot; for bots only
+// @param caption New message content caption; 0-200 characters
 // @param inlineMessageID Inline message identifier
 // @param replyMarkup New message reply markup
-// @param caption New message content caption; 0-200 characters
-func (client *Client) EditInlineMessageCaption(inlineMessageID string, replyMarkup ReplyMarkup, caption FormattedText) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) EditInlineMessageCaption(caption FormattedText, inlineMessageID string, replyMarkup ReplyMarkup) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "editInlineMessageCaption",
+		"caption":           caption,
 		"inline_message_id": inlineMessageID,
 		"reply_markup":      replyMarkup,
-		"caption":           caption,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -1859,7 +1931,7 @@ func (client *Client) EditInlineMessageCaption(inlineMessageID string, replyMark
 // @param inlineMessageID Inline message identifier
 // @param replyMarkup New message reply markup
 func (client *Client) EditInlineMessageReplyMarkup(inlineMessageID string, replyMarkup ReplyMarkup) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "editInlineMessageReplyMarkup",
 		"inline_message_id": inlineMessageID,
 		"reply_markup":      replyMarkup,
@@ -1869,12 +1941,12 @@ func (client *Client) EditInlineMessageReplyMarkup(inlineMessageID string, reply
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -1882,7 +1954,7 @@ func (client *Client) EditInlineMessageReplyMarkup(inlineMessageID string, reply
 // GetTextEntities Returns all entities (mentions, hashtags, cashtags, bot commands, URLs, and email addresses) contained in the text. This is an offline method. Can be called before authorization. Can be called synchronously
 // @param text The text in which to look for entites
 func (client *Client) GetTextEntities(text string) (*TextEntities, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getTextEntities",
 		"text":  text,
 	})
@@ -1891,12 +1963,12 @@ func (client *Client) GetTextEntities(text string) (*TextEntities, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var textEntities TextEntities
-	err = mapstructure.Decode(result, &textEntities)
+	err = json.Unmarshal(result.Raw, &textEntities)
 	return &textEntities, err
 
 }
@@ -1905,7 +1977,7 @@ func (client *Client) GetTextEntities(text string) (*TextEntities, error) {
 // @param text The text which should be parsed
 // @param parseMode Text parse mode
 func (client *Client) ParseTextEntities(text string, parseMode TextParseMode) (*FormattedText, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "parseTextEntities",
 		"text":       text,
 		"parse_mode": parseMode,
@@ -1915,12 +1987,12 @@ func (client *Client) ParseTextEntities(text string, parseMode TextParseMode) (*
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var formattedText FormattedText
-	err = mapstructure.Decode(result, &formattedText)
+	err = json.Unmarshal(result.Raw, &formattedText)
 	return &formattedText, err
 
 }
@@ -1928,7 +2000,7 @@ func (client *Client) ParseTextEntities(text string, parseMode TextParseMode) (*
 // GetFileMimeType Returns the MIME type of a file, guessed by its extension. Returns an empty string on failure. This is an offline method. Can be called before authorization. Can be called synchronously
 // @param fileName The name of the file or path to the file
 func (client *Client) GetFileMimeType(fileName string) (*Text, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "getFileMimeType",
 		"file_name": fileName,
 	})
@@ -1937,12 +2009,12 @@ func (client *Client) GetFileMimeType(fileName string) (*Text, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var text Text
-	err = mapstructure.Decode(result, &text)
+	err = json.Unmarshal(result.Raw, &text)
 	return &text, err
 
 }
@@ -1950,7 +2022,7 @@ func (client *Client) GetFileMimeType(fileName string) (*Text, error) {
 // GetFileExtension Returns the extension of a file, guessed by its MIME type. Returns an empty string on failure. This is an offline method. Can be called before authorization. Can be called synchronously
 // @param mimeType The MIME type of the file
 func (client *Client) GetFileExtension(mimeType string) (*Text, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "getFileExtension",
 		"mime_type": mimeType,
 	})
@@ -1959,12 +2031,12 @@ func (client *Client) GetFileExtension(mimeType string) (*Text, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var text Text
-	err = mapstructure.Decode(result, &text)
+	err = json.Unmarshal(result.Raw, &text)
 	return &text, err
 
 }
@@ -1976,7 +2048,7 @@ func (client *Client) GetFileExtension(mimeType string) (*Text, error) {
 // @param query Text of the query
 // @param offset Offset of the first entry to return
 func (client *Client) GetInlineQueryResults(botUserID int32, chatID int64, userLocation Location, query string, offset string) (*InlineQueryResults, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "getInlineQueryResults",
 		"bot_user_id":   botUserID,
 		"chat_id":       chatID,
@@ -1989,46 +2061,46 @@ func (client *Client) GetInlineQueryResults(botUserID int32, chatID int64, userL
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var inlineQueryResults InlineQueryResults
-	err = mapstructure.Decode(result, &inlineQueryResults)
+	err = json.Unmarshal(result.Raw, &inlineQueryResults)
 	return &inlineQueryResults, err
 
 }
 
 // AnswerInlineQuery Sets the result of an inline query; for bots only
+// @param inlineQueryID Identifier of the inline query
 // @param isPersonal True, if the result of the query can be cached for the specified user
 // @param results The results of the query
 // @param cacheTime Allowed time to cache the results of the query, in seconds
 // @param nextOffset Offset for the next inline query; pass an empty string if there are no more results
 // @param switchPmText If non-empty, this text should be shown on the button that opens a private chat with the bot and sends a start message to the bot with the parameter switch_pm_parameter
 // @param switchPmParameter The parameter for the bot start message
-// @param inlineQueryID Identifier of the inline query
-func (client *Client) AnswerInlineQuery(isPersonal bool, results []InputInlineQueryResult, cacheTime int32, nextOffset string, switchPmText string, switchPmParameter string, inlineQueryID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) AnswerInlineQuery(inlineQueryID int64, isPersonal bool, results []InputInlineQueryResult, cacheTime int32, nextOffset string, switchPmText string, switchPmParameter string) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":               "answerInlineQuery",
+		"inline_query_id":     inlineQueryID,
 		"is_personal":         isPersonal,
 		"results":             results,
 		"cache_time":          cacheTime,
 		"next_offset":         nextOffset,
 		"switch_pm_text":      switchPmText,
 		"switch_pm_parameter": switchPmParameter,
-		"inline_query_id":     inlineQueryID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2038,7 +2110,7 @@ func (client *Client) AnswerInlineQuery(isPersonal bool, results []InputInlineQu
 // @param messageID Identifier of the message from which the query originated
 // @param payload Query payload
 func (client *Client) GetCallbackQueryAnswer(chatID int64, messageID int64, payload CallbackQueryPayload) (*CallbackQueryAnswer, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getCallbackQueryAnswer",
 		"chat_id":    chatID,
 		"message_id": messageID,
@@ -2049,68 +2121,68 @@ func (client *Client) GetCallbackQueryAnswer(chatID int64, messageID int64, payl
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var callbackQueryAnswer CallbackQueryAnswer
-	err = mapstructure.Decode(result, &callbackQueryAnswer)
+	err = json.Unmarshal(result.Raw, &callbackQueryAnswer)
 	return &callbackQueryAnswer, err
 
 }
 
 // AnswerCallbackQuery Sets the result of a callback query; for bots only
+// @param callbackQueryID Identifier of the callback query
+// @param text Text of the answer
 // @param showAlert If true, an alert should be shown to the user instead of a toast notification
 // @param uRL URL to be opened
 // @param cacheTime Time during which the result of the query can be cached, in seconds
-// @param callbackQueryID Identifier of the callback query
-// @param text Text of the answer
-func (client *Client) AnswerCallbackQuery(showAlert bool, uRL string, cacheTime int32, callbackQueryID int64, text string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) AnswerCallbackQuery(callbackQueryID int64, text string, showAlert bool, uRL string, cacheTime int32) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "answerCallbackQuery",
+		"callback_query_id": callbackQueryID,
+		"text":              text,
 		"show_alert":        showAlert,
 		"url":               uRL,
 		"cache_time":        cacheTime,
-		"callback_query_id": callbackQueryID,
-		"text":              text,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // AnswerShippingQuery Sets the result of a shipping query; for bots only
-// @param shippingQueryID Identifier of the shipping query
 // @param shippingOptions Available shipping options
 // @param errorMessage An error message, empty on success
-func (client *Client) AnswerShippingQuery(shippingQueryID int64, shippingOptions []ShippingOption, errorMessage string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param shippingQueryID Identifier of the shipping query
+func (client *Client) AnswerShippingQuery(shippingOptions []ShippingOption, errorMessage string, shippingQueryID int64) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "answerShippingQuery",
-		"shipping_query_id": shippingQueryID,
 		"shipping_options":  shippingOptions,
 		"error_message":     errorMessage,
+		"shipping_query_id": shippingQueryID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2119,7 +2191,7 @@ func (client *Client) AnswerShippingQuery(shippingQueryID int64, shippingOptions
 // @param errorMessage An error message, empty on success
 // @param preCheckoutQueryID Identifier of the pre-checkout query
 func (client *Client) AnswerPreCheckoutQuery(errorMessage string, preCheckoutQueryID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "answerPreCheckoutQuery",
 		"error_message":         errorMessage,
 		"pre_checkout_query_id": preCheckoutQueryID,
@@ -2129,74 +2201,74 @@ func (client *Client) AnswerPreCheckoutQuery(errorMessage string, preCheckoutQue
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // SetGameScore Updates the game score of the specified user in the game; for bots only
-// @param chatID The chat to which the message with the game
-// @param messageID Identifier of the message
 // @param editMessage True, if the message should be edited
 // @param userID User identifier
 // @param score The new score
 // @param force Pass true to update the score even if it decreases. If the score is 0, the user will be deleted from the high score table
-func (client *Client) SetGameScore(chatID int64, messageID int64, editMessage bool, userID int32, score int32, force bool) (*Message, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param chatID The chat to which the message with the game
+// @param messageID Identifier of the message
+func (client *Client) SetGameScore(editMessage bool, userID int32, score int32, force bool, chatID int64, messageID int64) (*Message, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "setGameScore",
-		"chat_id":      chatID,
-		"message_id":   messageID,
 		"edit_message": editMessage,
 		"user_id":      userID,
 		"score":        score,
 		"force":        force,
+		"chat_id":      chatID,
+		"message_id":   messageID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var messageDummy Message
-	err = mapstructure.Decode(result, &messageDummy)
+	err = json.Unmarshal(result.Raw, &messageDummy)
 	return &messageDummy, err
 
 }
 
 // SetInlineGameScore Updates the game score of the specified user in a game; for bots only
+// @param force Pass true to update the score even if it decreases. If the score is 0, the user will be deleted from the high score table
 // @param inlineMessageID Inline message identifier
 // @param editMessage True, if the message should be edited
 // @param userID User identifier
 // @param score The new score
-// @param force Pass true to update the score even if it decreases. If the score is 0, the user will be deleted from the high score table
-func (client *Client) SetInlineGameScore(inlineMessageID string, editMessage bool, userID int32, score int32, force bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) SetInlineGameScore(force bool, inlineMessageID string, editMessage bool, userID int32, score int32) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "setInlineGameScore",
+		"force":             force,
 		"inline_message_id": inlineMessageID,
 		"edit_message":      editMessage,
 		"user_id":           userID,
 		"score":             score,
-		"force":             force,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2206,7 +2278,7 @@ func (client *Client) SetInlineGameScore(inlineMessageID string, editMessage boo
 // @param chatID The chat that contains the message with the game
 // @param messageID Identifier of the message
 func (client *Client) GetGameHighScores(userID int32, chatID int64, messageID int64) (*GameHighScores, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getGameHighScores",
 		"user_id":    userID,
 		"chat_id":    chatID,
@@ -2217,12 +2289,12 @@ func (client *Client) GetGameHighScores(userID int32, chatID int64, messageID in
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var gameHighScores GameHighScores
-	err = mapstructure.Decode(result, &gameHighScores)
+	err = json.Unmarshal(result.Raw, &gameHighScores)
 	return &gameHighScores, err
 
 }
@@ -2231,7 +2303,7 @@ func (client *Client) GetGameHighScores(userID int32, chatID int64, messageID in
 // @param inlineMessageID Inline message identifier
 // @param userID User identifier
 func (client *Client) GetInlineGameHighScores(inlineMessageID string, userID int32) (*GameHighScores, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "getInlineGameHighScores",
 		"inline_message_id": inlineMessageID,
 		"user_id":           userID,
@@ -2241,12 +2313,12 @@ func (client *Client) GetInlineGameHighScores(inlineMessageID string, userID int
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var gameHighScores GameHighScores
-	err = mapstructure.Decode(result, &gameHighScores)
+	err = json.Unmarshal(result.Raw, &gameHighScores)
 	return &gameHighScores, err
 
 }
@@ -2255,7 +2327,7 @@ func (client *Client) GetInlineGameHighScores(inlineMessageID string, userID int
 // @param chatID Chat identifier
 // @param messageID The message identifier of the used keyboard
 func (client *Client) DeleteChatReplyMarkup(chatID int64, messageID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "deleteChatReplyMarkup",
 		"chat_id":    chatID,
 		"message_id": messageID,
@@ -2265,12 +2337,12 @@ func (client *Client) DeleteChatReplyMarkup(chatID int64, messageID int64) (*Ok,
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2279,7 +2351,7 @@ func (client *Client) DeleteChatReplyMarkup(chatID int64, messageID int64) (*Ok,
 // @param chatID Chat identifier
 // @param action The action description
 func (client *Client) SendChatAction(chatID int64, action ChatAction) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "sendChatAction",
 		"chat_id": chatID,
 		"action":  action,
@@ -2289,12 +2361,12 @@ func (client *Client) SendChatAction(chatID int64, action ChatAction) (*Ok, erro
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2302,7 +2374,7 @@ func (client *Client) SendChatAction(chatID int64, action ChatAction) (*Ok, erro
 // OpenChat This method should be called if the chat is opened by the user. Many useful activities depend on the chat being opened or closed (e.g., in supergroups and channels all updates are received only for opened chats)
 // @param chatID Chat identifier
 func (client *Client) OpenChat(chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "openChat",
 		"chat_id": chatID,
 	})
@@ -2311,12 +2383,12 @@ func (client *Client) OpenChat(chatID int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2324,7 +2396,7 @@ func (client *Client) OpenChat(chatID int64) (*Ok, error) {
 // CloseChat This method should be called if the chat is closed by the user. Many useful activities depend on the chat being opened or closed
 // @param chatID Chat identifier
 func (client *Client) CloseChat(chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "closeChat",
 		"chat_id": chatID,
 	})
@@ -2333,12 +2405,12 @@ func (client *Client) CloseChat(chatID int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2348,7 +2420,7 @@ func (client *Client) CloseChat(chatID int64) (*Ok, error) {
 // @param messageIDs The identifiers of the messages being viewed
 // @param forceRead True, if messages in closed chats should be marked as read
 func (client *Client) ViewMessages(chatID int64, messageIDs []int64, forceRead bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "viewMessages",
 		"chat_id":     chatID,
 		"message_ids": messageIDs,
@@ -2359,12 +2431,12 @@ func (client *Client) ViewMessages(chatID int64, messageIDs []int64, forceRead b
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2373,7 +2445,7 @@ func (client *Client) ViewMessages(chatID int64, messageIDs []int64, forceRead b
 // @param messageID Identifier of the message with the opened content
 // @param chatID Chat identifier of the message
 func (client *Client) OpenMessageContent(messageID int64, chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "openMessageContent",
 		"message_id": messageID,
 		"chat_id":    chatID,
@@ -2383,12 +2455,12 @@ func (client *Client) OpenMessageContent(messageID int64, chatID int64) (*Ok, er
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2396,7 +2468,7 @@ func (client *Client) OpenMessageContent(messageID int64, chatID int64) (*Ok, er
 // ReadAllChatMentions Marks all mentions in a chat as read
 // @param chatID Chat identifier
 func (client *Client) ReadAllChatMentions(chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "readAllChatMentions",
 		"chat_id": chatID,
 	})
@@ -2405,12 +2477,12 @@ func (client *Client) ReadAllChatMentions(chatID int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2419,7 +2491,7 @@ func (client *Client) ReadAllChatMentions(chatID int64) (*Ok, error) {
 // @param userID User identifier
 // @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
 func (client *Client) CreatePrivateChat(userID int32, force bool) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "createPrivateChat",
 		"user_id": userID,
 		"force":   force,
@@ -2429,12 +2501,12 @@ func (client *Client) CreatePrivateChat(userID int32, force bool) (*Chat, error)
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chat Chat
-	err = mapstructure.Decode(result, &chat)
+	err = json.Unmarshal(result.Raw, &chat)
 	return &chat, err
 
 }
@@ -2443,7 +2515,7 @@ func (client *Client) CreatePrivateChat(userID int32, force bool) (*Chat, error)
 // @param basicGroupID Basic group identifier
 // @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
 func (client *Client) CreateBasicGroupChat(basicGroupID int32, force bool) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "createBasicGroupChat",
 		"basic_group_id": basicGroupID,
 		"force":          force,
@@ -2453,12 +2525,12 @@ func (client *Client) CreateBasicGroupChat(basicGroupID int32, force bool) (*Cha
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chat Chat
-	err = mapstructure.Decode(result, &chat)
+	err = json.Unmarshal(result.Raw, &chat)
 	return &chat, err
 
 }
@@ -2467,7 +2539,7 @@ func (client *Client) CreateBasicGroupChat(basicGroupID int32, force bool) (*Cha
 // @param supergroupID Supergroup or channel identifier
 // @param force If true, the chat will be created without network request. In this case all information about the chat except its type, title and photo can be incorrect
 func (client *Client) CreateSupergroupChat(supergroupID int32, force bool) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "createSupergroupChat",
 		"supergroup_id": supergroupID,
 		"force":         force,
@@ -2477,12 +2549,12 @@ func (client *Client) CreateSupergroupChat(supergroupID int32, force bool) (*Cha
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chat Chat
-	err = mapstructure.Decode(result, &chat)
+	err = json.Unmarshal(result.Raw, &chat)
 	return &chat, err
 
 }
@@ -2490,7 +2562,7 @@ func (client *Client) CreateSupergroupChat(supergroupID int32, force bool) (*Cha
 // CreateSecretChat Returns an existing chat corresponding to a known secret chat
 // @param secretChatID Secret chat identifier
 func (client *Client) CreateSecretChat(secretChatID int32) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "createSecretChat",
 		"secret_chat_id": secretChatID,
 	})
@@ -2499,36 +2571,36 @@ func (client *Client) CreateSecretChat(secretChatID int32) (*Chat, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatDummy Chat
-	err = mapstructure.Decode(result, &chatDummy)
+	err = json.Unmarshal(result.Raw, &chatDummy)
 	return &chatDummy, err
 
 }
 
 // CreateNewBasicGroupChat Creates a new basic group and sends a corresponding messageBasicGroupChatCreate. Returns the newly created chat
-// @param title Title of the new basic group; 1-255 characters
 // @param userIDs Identifiers of users to be added to the basic group
-func (client *Client) CreateNewBasicGroupChat(title string, userIDs []int32) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param title Title of the new basic group; 1-255 characters
+func (client *Client) CreateNewBasicGroupChat(userIDs []int32, title string) (*Chat, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "createNewBasicGroupChat",
-		"title":    title,
 		"user_ids": userIDs,
+		"title":    title,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chat Chat
-	err = mapstructure.Decode(result, &chat)
+	err = json.Unmarshal(result.Raw, &chat)
 	return &chat, err
 
 }
@@ -2538,7 +2610,7 @@ func (client *Client) CreateNewBasicGroupChat(title string, userIDs []int32) (*C
 // @param isChannel True, if a channel chat should be created
 // @param description
 func (client *Client) CreateNewSupergroupChat(title string, isChannel bool, description string) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "createNewSupergroupChat",
 		"title":       title,
 		"is_channel":  isChannel,
@@ -2549,12 +2621,12 @@ func (client *Client) CreateNewSupergroupChat(title string, isChannel bool, desc
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chat Chat
-	err = mapstructure.Decode(result, &chat)
+	err = json.Unmarshal(result.Raw, &chat)
 	return &chat, err
 
 }
@@ -2562,7 +2634,7 @@ func (client *Client) CreateNewSupergroupChat(title string, isChannel bool, desc
 // CreateNewSecretChat Creates a new secret chat. Returns the newly created chat
 // @param userID Identifier of the target user
 func (client *Client) CreateNewSecretChat(userID int32) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "createNewSecretChat",
 		"user_id": userID,
 	})
@@ -2571,12 +2643,12 @@ func (client *Client) CreateNewSecretChat(userID int32) (*Chat, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chat Chat
-	err = mapstructure.Decode(result, &chat)
+	err = json.Unmarshal(result.Raw, &chat)
 	return &chat, err
 
 }
@@ -2584,7 +2656,7 @@ func (client *Client) CreateNewSecretChat(userID int32) (*Chat, error) {
 // UpgradeBasicGroupChatToSupergroupChat Creates a new supergroup from an existing basic group and sends a corresponding messageChatUpgradeTo and messageChatUpgradeFrom. Deactivates the original basic group
 // @param chatID Identifier of the chat to upgrade
 func (client *Client) UpgradeBasicGroupChatToSupergroupChat(chatID int64) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "upgradeBasicGroupChatToSupergroupChat",
 		"chat_id": chatID,
 	})
@@ -2593,12 +2665,12 @@ func (client *Client) UpgradeBasicGroupChatToSupergroupChat(chatID int64) (*Chat
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatDummy Chat
-	err = mapstructure.Decode(result, &chatDummy)
+	err = json.Unmarshal(result.Raw, &chatDummy)
 	return &chatDummy, err
 
 }
@@ -2607,7 +2679,7 @@ func (client *Client) UpgradeBasicGroupChatToSupergroupChat(chatID int64) (*Chat
 // @param chatID Chat identifier
 // @param title New title of the chat; 1-255 characters
 func (client *Client) SetChatTitle(chatID int64, title string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "setChatTitle",
 		"chat_id": chatID,
 		"title":   title,
@@ -2617,12 +2689,12 @@ func (client *Client) SetChatTitle(chatID int64, title string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2631,7 +2703,7 @@ func (client *Client) SetChatTitle(chatID int64, title string) (*Ok, error) {
 // @param chatID Chat identifier
 // @param photo New chat photo. You can use a zero InputFileId to delete the chat photo. Files that are accessible only by HTTP URL are not acceptable
 func (client *Client) SetChatPhoto(chatID int64, photo InputFile) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "setChatPhoto",
 		"chat_id": chatID,
 		"photo":   photo,
@@ -2641,12 +2713,12 @@ func (client *Client) SetChatPhoto(chatID int64, photo InputFile) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2655,7 +2727,7 @@ func (client *Client) SetChatPhoto(chatID int64, photo InputFile) (*Ok, error) {
 // @param chatID Chat identifier
 // @param draftMessage New draft message; may be null
 func (client *Client) SetChatDraftMessage(chatID int64, draftMessage DraftMessage) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "setChatDraftMessage",
 		"chat_id":       chatID,
 		"draft_message": draftMessage,
@@ -2665,12 +2737,12 @@ func (client *Client) SetChatDraftMessage(chatID int64, draftMessage DraftMessag
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2679,7 +2751,7 @@ func (client *Client) SetChatDraftMessage(chatID int64, draftMessage DraftMessag
 // @param chatID Chat identifier
 // @param isPinned New value of is_pinned
 func (client *Client) ToggleChatIsPinned(chatID int64, isPinned bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "toggleChatIsPinned",
 		"chat_id":   chatID,
 		"is_pinned": isPinned,
@@ -2689,36 +2761,36 @@ func (client *Client) ToggleChatIsPinned(chatID int64, isPinned bool) (*Ok, erro
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // SetChatClientData Changes client data associated with a chat
-// @param clientData New value of client_data
 // @param chatID Chat identifier
-func (client *Client) SetChatClientData(clientData string, chatID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param clientData New value of client_data
+func (client *Client) SetChatClientData(chatID int64, clientData string) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "setChatClientData",
-		"client_data": clientData,
 		"chat_id":     chatID,
+		"client_data": clientData,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2728,7 +2800,7 @@ func (client *Client) SetChatClientData(clientData string, chatID int64) (*Ok, e
 // @param userID Identifier of the user
 // @param forwardLimit The number of earlier messages from the chat to be forwarded to the new member; up to 300. Ignored for supergroups and channels
 func (client *Client) AddChatMember(chatID int64, userID int32, forwardLimit int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "addChatMember",
 		"chat_id":       chatID,
 		"user_id":       userID,
@@ -2739,12 +2811,12 @@ func (client *Client) AddChatMember(chatID int64, userID int32, forwardLimit int
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2753,7 +2825,7 @@ func (client *Client) AddChatMember(chatID int64, userID int32, forwardLimit int
 // @param chatID Chat identifier
 // @param userIDs Identifiers of the users to be added to the chat
 func (client *Client) AddChatMembers(chatID int64, userIDs []int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "addChatMembers",
 		"chat_id":  chatID,
 		"user_ids": userIDs,
@@ -2763,12 +2835,12 @@ func (client *Client) AddChatMembers(chatID int64, userIDs []int32) (*Ok, error)
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2778,7 +2850,7 @@ func (client *Client) AddChatMembers(chatID int64, userIDs []int32) (*Ok, error)
 // @param userID User identifier
 // @param status The new status of the member in the chat
 func (client *Client) SetChatMemberStatus(chatID int64, userID int32, status ChatMemberStatus) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "setChatMemberStatus",
 		"chat_id": chatID,
 		"user_id": userID,
@@ -2789,36 +2861,36 @@ func (client *Client) SetChatMemberStatus(chatID int64, userID int32, status Cha
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetChatMember Returns information about a single member of a chat
-// @param chatID Chat identifier
 // @param userID User identifier
-func (client *Client) GetChatMember(chatID int64, userID int32) (*ChatMember, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param chatID Chat identifier
+func (client *Client) GetChatMember(userID int32, chatID int64) (*ChatMember, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getChatMember",
-		"chat_id": chatID,
 		"user_id": userID,
+		"chat_id": chatID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatMember ChatMember
-	err = mapstructure.Decode(result, &chatMember)
+	err = json.Unmarshal(result.Raw, &chatMember)
 	return &chatMember, err
 
 }
@@ -2828,7 +2900,7 @@ func (client *Client) GetChatMember(chatID int64, userID int32) (*ChatMember, er
 // @param query Query to search for
 // @param limit The maximum number of users to be returned
 func (client *Client) SearchChatMembers(chatID int64, query string, limit int32) (*ChatMembers, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "searchChatMembers",
 		"chat_id": chatID,
 		"query":   query,
@@ -2839,12 +2911,12 @@ func (client *Client) SearchChatMembers(chatID int64, query string, limit int32)
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatMembers ChatMembers
-	err = mapstructure.Decode(result, &chatMembers)
+	err = json.Unmarshal(result.Raw, &chatMembers)
 	return &chatMembers, err
 
 }
@@ -2852,7 +2924,7 @@ func (client *Client) SearchChatMembers(chatID int64, query string, limit int32)
 // GetChatAdministrators Returns a list of users who are administrators of the chat
 // @param chatID Chat identifier
 func (client *Client) GetChatAdministrators(chatID int64) (*Users, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getChatAdministrators",
 		"chat_id": chatID,
 	})
@@ -2861,12 +2933,12 @@ func (client *Client) GetChatAdministrators(chatID int64) (*Users, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var users Users
-	err = mapstructure.Decode(result, &users)
+	err = json.Unmarshal(result.Raw, &users)
 	return &users, err
 
 }
@@ -2874,7 +2946,7 @@ func (client *Client) GetChatAdministrators(chatID int64) (*Users, error) {
 // SetPinnedChats Changes the order of pinned chats
 // @param chatIDs The new list of pinned chats
 func (client *Client) SetPinnedChats(chatIDs []int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "setPinnedChats",
 		"chat_ids": chatIDs,
 	})
@@ -2883,12 +2955,12 @@ func (client *Client) SetPinnedChats(chatIDs []int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2897,7 +2969,7 @@ func (client *Client) SetPinnedChats(chatIDs []int64) (*Ok, error) {
 // @param fileID Identifier of the file to download
 // @param priority Priority of the download (1-32). The higher the priority, the earlier the file will be downloaded. If the priorities of two files are equal, then the last one for which downloadFile was called will be downloaded first
 func (client *Client) DownloadFile(fileID int32, priority int32) (*File, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "downloadFile",
 		"file_id":  fileID,
 		"priority": priority,
@@ -2907,36 +2979,36 @@ func (client *Client) DownloadFile(fileID int32, priority int32) (*File, error) 
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var fileDummy File
-	err = mapstructure.Decode(result, &fileDummy)
+	err = json.Unmarshal(result.Raw, &fileDummy)
 	return &fileDummy, err
 
 }
 
 // CancelDownloadFile Stops the downloading of a file. If a file has already been downloaded, does nothing
-// @param onlyIfPending Pass true to stop downloading only if it hasn't been started, i.e. request hasn't been sent to server
 // @param fileID Identifier of a file to stop downloading
-func (client *Client) CancelDownloadFile(onlyIfPending bool, fileID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param onlyIfPending Pass true to stop downloading only if it hasn't been started, i.e. request hasn't been sent to server
+func (client *Client) CancelDownloadFile(fileID int32, onlyIfPending bool) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "cancelDownloadFile",
-		"only_if_pending": onlyIfPending,
 		"file_id":         fileID,
+		"only_if_pending": onlyIfPending,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2946,7 +3018,7 @@ func (client *Client) CancelDownloadFile(onlyIfPending bool, fileID int32) (*Ok,
 // @param fileType File type
 // @param priority Priority of the upload (1-32). The higher the priority, the earlier the file will be uploaded. If the priorities of two files are equal, then the first one for which uploadFile was called will be uploaded first
 func (client *Client) UploadFile(file InputFile, fileType FileType, priority int32) (*File, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "uploadFile",
 		"file":      file,
 		"file_type": fileType,
@@ -2957,12 +3029,12 @@ func (client *Client) UploadFile(file InputFile, fileType FileType, priority int
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var fileDummy File
-	err = mapstructure.Decode(result, &fileDummy)
+	err = json.Unmarshal(result.Raw, &fileDummy)
 	return &fileDummy, err
 
 }
@@ -2970,7 +3042,7 @@ func (client *Client) UploadFile(file InputFile, fileType FileType, priority int
 // CancelUploadFile Stops the uploading of a file. Supported only for files uploaded by using uploadFile. For other files the behavior is undefined
 // @param fileID Identifier of the file to stop uploading
 func (client *Client) CancelUploadFile(fileID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "cancelUploadFile",
 		"file_id": fileID,
 	})
@@ -2979,12 +3051,12 @@ func (client *Client) CancelUploadFile(fileID int32) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -2994,7 +3066,7 @@ func (client *Client) CancelUploadFile(fileID int32) (*Ok, error) {
 // @param expectedSize Expected size of the generated file, in bytes; 0 if unknown
 // @param localPrefixSize The number of bytes already generated
 func (client *Client) SetFileGenerationProgress(generationID int64, expectedSize int32, localPrefixSize int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "setFileGenerationProgress",
 		"generation_id":     generationID,
 		"expected_size":     expectedSize,
@@ -3005,12 +3077,12 @@ func (client *Client) SetFileGenerationProgress(generationID int64, expectedSize
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3019,7 +3091,7 @@ func (client *Client) SetFileGenerationProgress(generationID int64, expectedSize
 // @param generationID The identifier of the generation process
 // @param error If set, means that file generation has failed and should be terminated
 func (client *Client) FinishFileGeneration(generationID int64, error Error) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "finishFileGeneration",
 		"generation_id": generationID,
 		"error":         error,
@@ -3029,12 +3101,12 @@ func (client *Client) FinishFileGeneration(generationID int64, error Error) (*Ok
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3042,7 +3114,7 @@ func (client *Client) FinishFileGeneration(generationID int64, error Error) (*Ok
 // DeleteFile Deletes a file from the TDLib file cache
 // @param fileID Identifier of the file to delete
 func (client *Client) DeleteFile(fileID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "deleteFile",
 		"file_id": fileID,
 	})
@@ -3051,12 +3123,12 @@ func (client *Client) DeleteFile(fileID int32) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3064,7 +3136,7 @@ func (client *Client) DeleteFile(fileID int32) (*Ok, error) {
 // GenerateChatInviteLink Generates a new invite link for a chat; the previously generated link is revoked. Available for basic groups, supergroups, and channels. In basic groups this can be called only by the group's creator; in supergroups and channels this requires appropriate administrator rights
 // @param chatID Chat identifier
 func (client *Client) GenerateChatInviteLink(chatID int64) (*ChatInviteLink, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "generateChatInviteLink",
 		"chat_id": chatID,
 	})
@@ -3073,12 +3145,12 @@ func (client *Client) GenerateChatInviteLink(chatID int64) (*ChatInviteLink, err
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatInviteLink ChatInviteLink
-	err = mapstructure.Decode(result, &chatInviteLink)
+	err = json.Unmarshal(result.Raw, &chatInviteLink)
 	return &chatInviteLink, err
 
 }
@@ -3086,7 +3158,7 @@ func (client *Client) GenerateChatInviteLink(chatID int64) (*ChatInviteLink, err
 // CheckChatInviteLink Checks the validity of an invite link for a chat and returns information about the corresponding chat
 // @param inviteLink Invite link to be checked; should begin with "https://t.me/joinchat/", "https://telegram.me/joinchat/", or "https://telegram.dog/joinchat/"
 func (client *Client) CheckChatInviteLink(inviteLink string) (*ChatInviteLinkInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "checkChatInviteLink",
 		"invite_link": inviteLink,
 	})
@@ -3095,12 +3167,12 @@ func (client *Client) CheckChatInviteLink(inviteLink string) (*ChatInviteLinkInf
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatInviteLinkInfo ChatInviteLinkInfo
-	err = mapstructure.Decode(result, &chatInviteLinkInfo)
+	err = json.Unmarshal(result.Raw, &chatInviteLinkInfo)
 	return &chatInviteLinkInfo, err
 
 }
@@ -3108,7 +3180,7 @@ func (client *Client) CheckChatInviteLink(inviteLink string) (*ChatInviteLinkInf
 // JoinChatByInviteLink Uses an invite link to add the current user to the chat if possible. The new member will not be added until the chat state has been synchronized with the server
 // @param inviteLink Invite link to import; should begin with "https://t.me/joinchat/", "https://telegram.me/joinchat/", or "https://telegram.dog/joinchat/"
 func (client *Client) JoinChatByInviteLink(inviteLink string) (*Chat, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "joinChatByInviteLink",
 		"invite_link": inviteLink,
 	})
@@ -3117,36 +3189,36 @@ func (client *Client) JoinChatByInviteLink(inviteLink string) (*Chat, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chat Chat
-	err = mapstructure.Decode(result, &chat)
+	err = json.Unmarshal(result.Raw, &chat)
 	return &chat, err
 
 }
 
 // CreateCall Creates a new call
-// @param userID Identifier of the user to be called
 // @param protocol Description of the call protocols supported by the client
-func (client *Client) CreateCall(userID int32, protocol CallProtocol) (*CallID, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param userID Identifier of the user to be called
+func (client *Client) CreateCall(protocol CallProtocol, userID int32) (*CallID, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "createCall",
-		"user_id":  userID,
 		"protocol": protocol,
+		"user_id":  userID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var callID CallID
-	err = mapstructure.Decode(result, &callID)
+	err = json.Unmarshal(result.Raw, &callID)
 	return &callID, err
 
 }
@@ -3155,7 +3227,7 @@ func (client *Client) CreateCall(userID int32, protocol CallProtocol) (*CallID, 
 // @param callID Call identifier
 // @param protocol Description of the call protocols supported by the client
 func (client *Client) AcceptCall(callID int32, protocol CallProtocol) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "acceptCall",
 		"call_id":  callID,
 		"protocol": protocol,
@@ -3165,40 +3237,40 @@ func (client *Client) AcceptCall(callID int32, protocol CallProtocol) (*Ok, erro
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // DiscardCall Discards a call
+// @param isDisconnected True, if the user was disconnected
 // @param duration The call duration, in seconds
 // @param connectionID Identifier of the connection used during the call
 // @param callID Call identifier
-// @param isDisconnected True, if the user was disconnected
-func (client *Client) DiscardCall(duration int32, connectionID int64, callID int32, isDisconnected bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) DiscardCall(isDisconnected bool, duration int32, connectionID int64, callID int32) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "discardCall",
+		"is_disconnected": isDisconnected,
 		"duration":        duration,
 		"connection_id":   connectionID,
 		"call_id":         callID,
-		"is_disconnected": isDisconnected,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3208,7 +3280,7 @@ func (client *Client) DiscardCall(duration int32, connectionID int64, callID int
 // @param rating Call rating; 1-5
 // @param comment An optional user comment if the rating is less than 5
 func (client *Client) SendCallRating(callID int32, rating int32, comment string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "sendCallRating",
 		"call_id": callID,
 		"rating":  rating,
@@ -3219,12 +3291,12 @@ func (client *Client) SendCallRating(callID int32, rating int32, comment string)
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3233,7 +3305,7 @@ func (client *Client) SendCallRating(callID int32, rating int32, comment string)
 // @param callID Call identifier
 // @param debugInformation Debug information in application-specific format
 func (client *Client) SendCallDebugInformation(callID int32, debugInformation string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "sendCallDebugInformation",
 		"call_id":           callID,
 		"debug_information": debugInformation,
@@ -3243,12 +3315,12 @@ func (client *Client) SendCallDebugInformation(callID int32, debugInformation st
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3256,7 +3328,7 @@ func (client *Client) SendCallDebugInformation(callID int32, debugInformation st
 // BlockUser Adds a user to the blacklist
 // @param userID User identifier
 func (client *Client) BlockUser(userID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "blockUser",
 		"user_id": userID,
 	})
@@ -3265,12 +3337,12 @@ func (client *Client) BlockUser(userID int32) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3278,7 +3350,7 @@ func (client *Client) BlockUser(userID int32) (*Ok, error) {
 // UnblockUser Removes a user from the blacklist
 // @param userID User identifier
 func (client *Client) UnblockUser(userID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "unblockUser",
 		"user_id": userID,
 	})
@@ -3287,36 +3359,36 @@ func (client *Client) UnblockUser(userID int32) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetBlockedUsers Returns users that were blocked by the current user
-// @param offset Number of users to skip in the result; must be non-negative
 // @param limit Maximum number of users to return; up to 100
-func (client *Client) GetBlockedUsers(offset int32, limit int32) (*Users, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param offset Number of users to skip in the result; must be non-negative
+func (client *Client) GetBlockedUsers(limit int32, offset int32) (*Users, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":  "getBlockedUsers",
-		"offset": offset,
 		"limit":  limit,
+		"offset": offset,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var users Users
-	err = mapstructure.Decode(result, &users)
+	err = json.Unmarshal(result.Raw, &users)
 	return &users, err
 
 }
@@ -3324,7 +3396,7 @@ func (client *Client) GetBlockedUsers(offset int32, limit int32) (*Users, error)
 // ImportContacts Adds new contacts or edits existing contacts; contacts' user identifiers are ignored
 // @param contacts The list of contacts to import or edit
 func (client *Client) ImportContacts(contacts []Contact) (*ImportedContacts, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "importContacts",
 		"contacts": contacts,
 	})
@@ -3333,12 +3405,12 @@ func (client *Client) ImportContacts(contacts []Contact) (*ImportedContacts, err
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var importedContacts ImportedContacts
-	err = mapstructure.Decode(result, &importedContacts)
+	err = json.Unmarshal(result.Raw, &importedContacts)
 	return &importedContacts, err
 
 }
@@ -3347,7 +3419,7 @@ func (client *Client) ImportContacts(contacts []Contact) (*ImportedContacts, err
 // @param query Query to search for; can be empty to return all contacts
 // @param limit Maximum number of users to be returned
 func (client *Client) SearchContacts(query string, limit int32) (*Users, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchContacts",
 		"query": query,
 		"limit": limit,
@@ -3357,12 +3429,12 @@ func (client *Client) SearchContacts(query string, limit int32) (*Users, error) 
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var users Users
-	err = mapstructure.Decode(result, &users)
+	err = json.Unmarshal(result.Raw, &users)
 	return &users, err
 
 }
@@ -3370,7 +3442,7 @@ func (client *Client) SearchContacts(query string, limit int32) (*Users, error) 
 // RemoveContacts Removes users from the contacts list
 // @param userIDs Identifiers of users to be deleted
 func (client *Client) RemoveContacts(userIDs []int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "removeContacts",
 		"user_ids": userIDs,
 	})
@@ -3379,19 +3451,19 @@ func (client *Client) RemoveContacts(userIDs []int32) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetImportedContactCount Returns the total number of imported contacts
 func (client *Client) GetImportedContactCount() (*Count, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getImportedContactCount",
 	})
 
@@ -3399,12 +3471,12 @@ func (client *Client) GetImportedContactCount() (*Count, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var count Count
-	err = mapstructure.Decode(result, &count)
+	err = json.Unmarshal(result.Raw, &count)
 	return &count, err
 
 }
@@ -3412,7 +3484,7 @@ func (client *Client) GetImportedContactCount() (*Count, error) {
 // ChangeImportedContacts Changes imported contacts using the list of current user contacts saved on the device. Imports newly added contacts and, if at least the file database is enabled, deletes recently deleted contacts.
 // @param contacts
 func (client *Client) ChangeImportedContacts(contacts []Contact) (*ImportedContacts, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "changeImportedContacts",
 		"contacts": contacts,
 	})
@@ -3421,19 +3493,19 @@ func (client *Client) ChangeImportedContacts(contacts []Contact) (*ImportedConta
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var importedContacts ImportedContacts
-	err = mapstructure.Decode(result, &importedContacts)
+	err = json.Unmarshal(result.Raw, &importedContacts)
 	return &importedContacts, err
 
 }
 
 // ClearImportedContacts Clears all imported contacts
 func (client *Client) ClearImportedContacts() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "clearImportedContacts",
 	})
 
@@ -3441,12 +3513,12 @@ func (client *Client) ClearImportedContacts() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3456,7 +3528,7 @@ func (client *Client) ClearImportedContacts() (*Ok, error) {
 // @param offset The number of photos to skip; must be non-negative
 // @param limit Maximum number of photos to be returned; up to 100
 func (client *Client) GetUserProfilePhotos(userID int32, offset int32, limit int32) (*UserProfilePhotos, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getUserProfilePhotos",
 		"user_id": userID,
 		"offset":  offset,
@@ -3467,12 +3539,12 @@ func (client *Client) GetUserProfilePhotos(userID int32, offset int32, limit int
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var userProfilePhotos UserProfilePhotos
-	err = mapstructure.Decode(result, &userProfilePhotos)
+	err = json.Unmarshal(result.Raw, &userProfilePhotos)
 	return &userProfilePhotos, err
 
 }
@@ -3481,7 +3553,7 @@ func (client *Client) GetUserProfilePhotos(userID int32, offset int32, limit int
 // @param emoji String representation of emoji. If empty, returns all known installed stickers
 // @param limit Maximum number of stickers to be returned
 func (client *Client) GetStickers(emoji string, limit int32) (*Stickers, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getStickers",
 		"emoji": emoji,
 		"limit": limit,
@@ -3491,36 +3563,36 @@ func (client *Client) GetStickers(emoji string, limit int32) (*Stickers, error) 
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickers Stickers
-	err = mapstructure.Decode(result, &stickers)
+	err = json.Unmarshal(result.Raw, &stickers)
 	return &stickers, err
 
 }
 
 // SearchStickers Searches for stickers from public sticker sets that correspond to a given emoji
-// @param limit Maximum number of stickers to be returned
 // @param emoji String representation of emoji; must be non-empty
-func (client *Client) SearchStickers(limit int32, emoji string) (*Stickers, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param limit Maximum number of stickers to be returned
+func (client *Client) SearchStickers(emoji string, limit int32) (*Stickers, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchStickers",
-		"limit": limit,
 		"emoji": emoji,
+		"limit": limit,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickers Stickers
-	err = mapstructure.Decode(result, &stickers)
+	err = json.Unmarshal(result.Raw, &stickers)
 	return &stickers, err
 
 }
@@ -3528,7 +3600,7 @@ func (client *Client) SearchStickers(limit int32, emoji string) (*Stickers, erro
 // GetInstalledStickerSets Returns a list of installed sticker sets
 // @param isMasks Pass true to return mask sticker sets; pass false to return ordinary sticker sets
 func (client *Client) GetInstalledStickerSets(isMasks bool) (*StickerSets, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "getInstalledStickerSets",
 		"is_masks": isMasks,
 	})
@@ -3537,45 +3609,45 @@ func (client *Client) GetInstalledStickerSets(isMasks bool) (*StickerSets, error
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSets StickerSets
-	err = mapstructure.Decode(result, &stickerSets)
+	err = json.Unmarshal(result.Raw, &stickerSets)
 	return &stickerSets, err
 
 }
 
 // GetArchivedStickerSets Returns a list of archived sticker sets
+// @param isMasks Pass true to return mask stickers sets; pass false to return ordinary sticker sets
 // @param offsetStickerSetID Identifier of the sticker set from which to return the result
 // @param limit Maximum number of sticker sets to return
-// @param isMasks Pass true to return mask stickers sets; pass false to return ordinary sticker sets
-func (client *Client) GetArchivedStickerSets(offsetStickerSetID int64, limit int32, isMasks bool) (*StickerSets, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) GetArchivedStickerSets(isMasks bool, offsetStickerSetID int64, limit int32) (*StickerSets, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "getArchivedStickerSets",
+		"is_masks":              isMasks,
 		"offset_sticker_set_id": offsetStickerSetID,
 		"limit":                 limit,
-		"is_masks":              isMasks,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSets StickerSets
-	err = mapstructure.Decode(result, &stickerSets)
+	err = json.Unmarshal(result.Raw, &stickerSets)
 	return &stickerSets, err
 
 }
 
 // GetTrendingStickerSets Returns a list of trending sticker sets
 func (client *Client) GetTrendingStickerSets() (*StickerSets, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getTrendingStickerSets",
 	})
 
@@ -3583,12 +3655,12 @@ func (client *Client) GetTrendingStickerSets() (*StickerSets, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSets StickerSets
-	err = mapstructure.Decode(result, &stickerSets)
+	err = json.Unmarshal(result.Raw, &stickerSets)
 	return &stickerSets, err
 
 }
@@ -3596,7 +3668,7 @@ func (client *Client) GetTrendingStickerSets() (*StickerSets, error) {
 // GetAttachedStickerSets Returns a list of sticker sets attached to a file. Currently only photos and videos can have attached sticker sets
 // @param fileID File identifier
 func (client *Client) GetAttachedStickerSets(fileID int32) (*StickerSets, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getAttachedStickerSets",
 		"file_id": fileID,
 	})
@@ -3605,12 +3677,12 @@ func (client *Client) GetAttachedStickerSets(fileID int32) (*StickerSets, error)
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSets StickerSets
-	err = mapstructure.Decode(result, &stickerSets)
+	err = json.Unmarshal(result.Raw, &stickerSets)
 	return &stickerSets, err
 
 }
@@ -3618,7 +3690,7 @@ func (client *Client) GetAttachedStickerSets(fileID int32) (*StickerSets, error)
 // GetStickerSet Returns information about a sticker set by its identifier
 // @param setID Identifier of the sticker set
 func (client *Client) GetStickerSet(setID int64) (*StickerSet, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":  "getStickerSet",
 		"set_id": setID,
 	})
@@ -3627,12 +3699,12 @@ func (client *Client) GetStickerSet(setID int64) (*StickerSet, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSet StickerSet
-	err = mapstructure.Decode(result, &stickerSet)
+	err = json.Unmarshal(result.Raw, &stickerSet)
 	return &stickerSet, err
 
 }
@@ -3640,7 +3712,7 @@ func (client *Client) GetStickerSet(setID int64) (*StickerSet, error) {
 // SearchStickerSet Searches for a sticker set by its name
 // @param name Name of the sticker set
 func (client *Client) SearchStickerSet(name string) (*StickerSet, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchStickerSet",
 		"name":  name,
 	})
@@ -3649,12 +3721,12 @@ func (client *Client) SearchStickerSet(name string) (*StickerSet, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSet StickerSet
-	err = mapstructure.Decode(result, &stickerSet)
+	err = json.Unmarshal(result.Raw, &stickerSet)
 	return &stickerSet, err
 
 }
@@ -3664,7 +3736,7 @@ func (client *Client) SearchStickerSet(name string) (*StickerSet, error) {
 // @param query Query to search for
 // @param limit Maximum number of sticker sets to return
 func (client *Client) SearchInstalledStickerSets(isMasks bool, query string, limit int32) (*StickerSets, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "searchInstalledStickerSets",
 		"is_masks": isMasks,
 		"query":    query,
@@ -3675,12 +3747,12 @@ func (client *Client) SearchInstalledStickerSets(isMasks bool, query string, lim
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSets StickerSets
-	err = mapstructure.Decode(result, &stickerSets)
+	err = json.Unmarshal(result.Raw, &stickerSets)
 	return &stickerSets, err
 
 }
@@ -3688,7 +3760,7 @@ func (client *Client) SearchInstalledStickerSets(isMasks bool, query string, lim
 // SearchStickerSets Searches for ordinary sticker sets by looking for specified query in their title and name. Excludes installed sticker sets from the results
 // @param query Query to search for
 func (client *Client) SearchStickerSets(query string) (*StickerSets, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "searchStickerSets",
 		"query": query,
 	})
@@ -3697,38 +3769,38 @@ func (client *Client) SearchStickerSets(query string) (*StickerSets, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSets StickerSets
-	err = mapstructure.Decode(result, &stickerSets)
+	err = json.Unmarshal(result.Raw, &stickerSets)
 	return &stickerSets, err
 
 }
 
 // ChangeStickerSet Installs/uninstalls or activates/archives a sticker set
-// @param setID Identifier of the sticker set
 // @param isInstalled The new value of is_installed
 // @param isArchived The new value of is_archived. A sticker set can't be installed and archived simultaneously
-func (client *Client) ChangeStickerSet(setID int64, isInstalled bool, isArchived bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param setID Identifier of the sticker set
+func (client *Client) ChangeStickerSet(isInstalled bool, isArchived bool, setID int64) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "changeStickerSet",
-		"set_id":       setID,
 		"is_installed": isInstalled,
 		"is_archived":  isArchived,
+		"set_id":       setID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3736,7 +3808,7 @@ func (client *Client) ChangeStickerSet(setID int64, isInstalled bool, isArchived
 // ViewTrendingStickerSets Informs the server that some trending sticker sets have been viewed by the user
 // @param stickerSetIDs Identifiers of viewed trending sticker sets
 func (client *Client) ViewTrendingStickerSets(stickerSetIDs []int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "viewTrendingStickerSets",
 		"sticker_set_ids": stickerSetIDs,
 	})
@@ -3745,12 +3817,12 @@ func (client *Client) ViewTrendingStickerSets(stickerSetIDs []int64) (*Ok, error
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3759,7 +3831,7 @@ func (client *Client) ViewTrendingStickerSets(stickerSetIDs []int64) (*Ok, error
 // @param isMasks Pass true to change the order of mask sticker sets; pass false to change the order of ordinary sticker sets
 // @param stickerSetIDs Identifiers of installed sticker sets in the new correct order
 func (client *Client) ReorderInstalledStickerSets(isMasks bool, stickerSetIDs []int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "reorderInstalledStickerSets",
 		"is_masks":        isMasks,
 		"sticker_set_ids": stickerSetIDs,
@@ -3769,12 +3841,12 @@ func (client *Client) ReorderInstalledStickerSets(isMasks bool, stickerSetIDs []
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3782,7 +3854,7 @@ func (client *Client) ReorderInstalledStickerSets(isMasks bool, stickerSetIDs []
 // GetRecentStickers Returns a list of recently used stickers
 // @param isAttached Pass true to return stickers and masks that were recently attached to photos or video files; pass false to return recently sent stickers
 func (client *Client) GetRecentStickers(isAttached bool) (*Stickers, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "getRecentStickers",
 		"is_attached": isAttached,
 	})
@@ -3791,12 +3863,12 @@ func (client *Client) GetRecentStickers(isAttached bool) (*Stickers, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickers Stickers
-	err = mapstructure.Decode(result, &stickers)
+	err = json.Unmarshal(result.Raw, &stickers)
 	return &stickers, err
 
 }
@@ -3805,7 +3877,7 @@ func (client *Client) GetRecentStickers(isAttached bool) (*Stickers, error) {
 // @param isAttached Pass true to add the sticker to the list of stickers recently attached to photo or video files; pass false to add the sticker to the list of recently sent stickers
 // @param sticker Sticker file to add
 func (client *Client) AddRecentSticker(isAttached bool, sticker InputFile) (*Stickers, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "addRecentSticker",
 		"is_attached": isAttached,
 		"sticker":     sticker,
@@ -3815,12 +3887,12 @@ func (client *Client) AddRecentSticker(isAttached bool, sticker InputFile) (*Sti
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickers Stickers
-	err = mapstructure.Decode(result, &stickers)
+	err = json.Unmarshal(result.Raw, &stickers)
 	return &stickers, err
 
 }
@@ -3829,7 +3901,7 @@ func (client *Client) AddRecentSticker(isAttached bool, sticker InputFile) (*Sti
 // @param isAttached Pass true to remove the sticker from the list of stickers recently attached to photo or video files; pass false to remove the sticker from the list of recently sent stickers
 // @param sticker Sticker file to delete
 func (client *Client) RemoveRecentSticker(isAttached bool, sticker InputFile) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "removeRecentSticker",
 		"is_attached": isAttached,
 		"sticker":     sticker,
@@ -3839,12 +3911,12 @@ func (client *Client) RemoveRecentSticker(isAttached bool, sticker InputFile) (*
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3852,7 +3924,7 @@ func (client *Client) RemoveRecentSticker(isAttached bool, sticker InputFile) (*
 // ClearRecentStickers Clears the list of recently used stickers
 // @param isAttached Pass true to clear the list of stickers recently attached to photo or video files; pass false to clear the list of recently sent stickers
 func (client *Client) ClearRecentStickers(isAttached bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "clearRecentStickers",
 		"is_attached": isAttached,
 	})
@@ -3861,19 +3933,19 @@ func (client *Client) ClearRecentStickers(isAttached bool) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetFavoriteStickers Returns favorite stickers
 func (client *Client) GetFavoriteStickers() (*Stickers, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getFavoriteStickers",
 	})
 
@@ -3881,12 +3953,12 @@ func (client *Client) GetFavoriteStickers() (*Stickers, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickers Stickers
-	err = mapstructure.Decode(result, &stickers)
+	err = json.Unmarshal(result.Raw, &stickers)
 	return &stickers, err
 
 }
@@ -3894,7 +3966,7 @@ func (client *Client) GetFavoriteStickers() (*Stickers, error) {
 // AddFavoriteSticker Adds a new sticker to the list of favorite stickers. The new sticker is added to the top of the list. If the sticker was already in the list, it is removed from the list first. Only stickers belonging to a sticker set can be added to this list
 // @param sticker Sticker file to add
 func (client *Client) AddFavoriteSticker(sticker InputFile) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "addFavoriteSticker",
 		"sticker": sticker,
 	})
@@ -3903,12 +3975,12 @@ func (client *Client) AddFavoriteSticker(sticker InputFile) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3916,7 +3988,7 @@ func (client *Client) AddFavoriteSticker(sticker InputFile) (*Ok, error) {
 // RemoveFavoriteSticker Removes a sticker from the list of favorite stickers
 // @param sticker Sticker file to delete from the list
 func (client *Client) RemoveFavoriteSticker(sticker InputFile) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "removeFavoriteSticker",
 		"sticker": sticker,
 	})
@@ -3925,12 +3997,12 @@ func (client *Client) RemoveFavoriteSticker(sticker InputFile) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -3938,7 +4010,7 @@ func (client *Client) RemoveFavoriteSticker(sticker InputFile) (*Ok, error) {
 // GetStickerEmojis Returns emoji corresponding to a sticker
 // @param sticker Sticker file identifier
 func (client *Client) GetStickerEmojis(sticker InputFile) (*StickerEmojis, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getStickerEmojis",
 		"sticker": sticker,
 	})
@@ -3947,19 +4019,19 @@ func (client *Client) GetStickerEmojis(sticker InputFile) (*StickerEmojis, error
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerEmojis StickerEmojis
-	err = mapstructure.Decode(result, &stickerEmojis)
+	err = json.Unmarshal(result.Raw, &stickerEmojis)
 	return &stickerEmojis, err
 
 }
 
 // GetSavedAnimations Returns saved animations
 func (client *Client) GetSavedAnimations() (*Animations, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getSavedAnimations",
 	})
 
@@ -3967,12 +4039,12 @@ func (client *Client) GetSavedAnimations() (*Animations, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var animations Animations
-	err = mapstructure.Decode(result, &animations)
+	err = json.Unmarshal(result.Raw, &animations)
 	return &animations, err
 
 }
@@ -3980,7 +4052,7 @@ func (client *Client) GetSavedAnimations() (*Animations, error) {
 // AddSavedAnimation Manually adds a new animation to the list of saved animations. The new animation is added to the beginning of the list. If the animation was already in the list, it is removed first. Only non-secret video animations with MIME type "video/mp4" can be added to the list
 // @param animation The animation file to be added. Only animations known to the server (i.e. successfully sent via a message) can be added to the list
 func (client *Client) AddSavedAnimation(animation InputFile) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "addSavedAnimation",
 		"animation": animation,
 	})
@@ -3989,12 +4061,12 @@ func (client *Client) AddSavedAnimation(animation InputFile) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4002,7 +4074,7 @@ func (client *Client) AddSavedAnimation(animation InputFile) (*Ok, error) {
 // RemoveSavedAnimation Removes an animation from the list of saved animations
 // @param animation Animation file to be removed
 func (client *Client) RemoveSavedAnimation(animation InputFile) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":     "removeSavedAnimation",
 		"animation": animation,
 	})
@@ -4011,19 +4083,19 @@ func (client *Client) RemoveSavedAnimation(animation InputFile) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetRecentInlineBots Returns up to 20 recently used inline bots in the order of their last usage
 func (client *Client) GetRecentInlineBots() (*Users, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getRecentInlineBots",
 	})
 
@@ -4031,36 +4103,36 @@ func (client *Client) GetRecentInlineBots() (*Users, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var users Users
-	err = mapstructure.Decode(result, &users)
+	err = json.Unmarshal(result.Raw, &users)
 	return &users, err
 
 }
 
 // SearchHashtags Searches for recently used hashtags by their prefix
-// @param prefix Hashtag prefix to search for
 // @param limit Maximum number of hashtags to be returned
-func (client *Client) SearchHashtags(prefix string, limit int32) (*Hashtags, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param prefix Hashtag prefix to search for
+func (client *Client) SearchHashtags(limit int32, prefix string) (*Hashtags, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":  "searchHashtags",
-		"prefix": prefix,
 		"limit":  limit,
+		"prefix": prefix,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var hashtags Hashtags
-	err = mapstructure.Decode(result, &hashtags)
+	err = json.Unmarshal(result.Raw, &hashtags)
 	return &hashtags, err
 
 }
@@ -4068,7 +4140,7 @@ func (client *Client) SearchHashtags(prefix string, limit int32) (*Hashtags, err
 // RemoveRecentHashtag Removes a hashtag from the list of recently used hashtags
 // @param hashtag Hashtag to delete
 func (client *Client) RemoveRecentHashtag(hashtag string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "removeRecentHashtag",
 		"hashtag": hashtag,
 	})
@@ -4077,12 +4149,12 @@ func (client *Client) RemoveRecentHashtag(hashtag string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4090,7 +4162,7 @@ func (client *Client) RemoveRecentHashtag(hashtag string) (*Ok, error) {
 // GetWebPagePreview Returns a web page preview by the text of the message. Do not call this function too often. Returns a 404 error if the web page has no preview
 // @param text Message text with formatting
 func (client *Client) GetWebPagePreview(text FormattedText) (*WebPage, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getWebPagePreview",
 		"text":  text,
 	})
@@ -4099,36 +4171,36 @@ func (client *Client) GetWebPagePreview(text FormattedText) (*WebPage, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var webPage WebPage
-	err = mapstructure.Decode(result, &webPage)
+	err = json.Unmarshal(result.Raw, &webPage)
 	return &webPage, err
 
 }
 
 // GetWebPageInstantView Returns an instant view version of a web page if available. Returns a 404 error if the web page has no instant view page
-// @param forceFull If true, the full instant view for the web page will be returned
 // @param uRL The web page URL
-func (client *Client) GetWebPageInstantView(forceFull bool, uRL string) (*WebPageInstantView, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param forceFull If true, the full instant view for the web page will be returned
+func (client *Client) GetWebPageInstantView(uRL string, forceFull bool) (*WebPageInstantView, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getWebPageInstantView",
-		"force_full": forceFull,
 		"url":        uRL,
+		"force_full": forceFull,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var webPageInstantView WebPageInstantView
-	err = mapstructure.Decode(result, &webPageInstantView)
+	err = json.Unmarshal(result.Raw, &webPageInstantView)
 	return &webPageInstantView, err
 
 }
@@ -4136,7 +4208,7 @@ func (client *Client) GetWebPageInstantView(forceFull bool, uRL string) (*WebPag
 // GetNotificationSettings Returns the notification settings for a given scope
 // @param scope Scope for which to return the notification settings information
 func (client *Client) GetNotificationSettings(scope NotificationSettingsScope) (*NotificationSettings, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getNotificationSettings",
 		"scope": scope,
 	})
@@ -4145,12 +4217,12 @@ func (client *Client) GetNotificationSettings(scope NotificationSettingsScope) (
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var notificationSettings NotificationSettings
-	err = mapstructure.Decode(result, &notificationSettings)
+	err = json.Unmarshal(result.Raw, &notificationSettings)
 	return &notificationSettings, err
 
 }
@@ -4159,7 +4231,7 @@ func (client *Client) GetNotificationSettings(scope NotificationSettingsScope) (
 // @param scope Scope for which to change the notification settings
 // @param notificationSettings The new notification settings for the given scope
 func (client *Client) SetNotificationSettings(scope NotificationSettingsScope, notificationSettings NotificationSettings) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                 "setNotificationSettings",
 		"scope":                 scope,
 		"notification_settings": notificationSettings,
@@ -4169,19 +4241,19 @@ func (client *Client) SetNotificationSettings(scope NotificationSettingsScope, n
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // ResetAllNotificationSettings Resets all notification settings to their default values. By default, the only muted chats are supergroups, the sound is set to "default" and message previews are shown
 func (client *Client) ResetAllNotificationSettings() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "resetAllNotificationSettings",
 	})
 
@@ -4189,12 +4261,12 @@ func (client *Client) ResetAllNotificationSettings() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4202,7 +4274,7 @@ func (client *Client) ResetAllNotificationSettings() (*Ok, error) {
 // SetProfilePhoto Uploads a new profile photo for the current user. If something changes, updateUser will be sent
 // @param photo Profile photo to set. inputFileId and inputFileRemote may still be unsupported
 func (client *Client) SetProfilePhoto(photo InputFile) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "setProfilePhoto",
 		"photo": photo,
 	})
@@ -4211,12 +4283,12 @@ func (client *Client) SetProfilePhoto(photo InputFile) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4224,7 +4296,7 @@ func (client *Client) SetProfilePhoto(photo InputFile) (*Ok, error) {
 // DeleteProfilePhoto Deletes a profile photo. If something changes, updateUser will be sent
 // @param profilePhotoID Identifier of the profile photo to delete
 func (client *Client) DeleteProfilePhoto(profilePhotoID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":            "deleteProfilePhoto",
 		"profile_photo_id": profilePhotoID,
 	})
@@ -4233,12 +4305,12 @@ func (client *Client) DeleteProfilePhoto(profilePhotoID int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4247,7 +4319,7 @@ func (client *Client) DeleteProfilePhoto(profilePhotoID int64) (*Ok, error) {
 // @param firstName The new value of the first name for the user; 1-255 characters
 // @param lastName The new value of the optional last name for the user; 0-255 characters
 func (client *Client) SetName(firstName string, lastName string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "setName",
 		"first_name": firstName,
 		"last_name":  lastName,
@@ -4257,12 +4329,12 @@ func (client *Client) SetName(firstName string, lastName string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4270,7 +4342,7 @@ func (client *Client) SetName(firstName string, lastName string) (*Ok, error) {
 // SetBio Changes the bio of the current user
 // @param bio The new value of the user bio; 0-70 characters without line feeds
 func (client *Client) SetBio(bio string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "setBio",
 		"bio":   bio,
 	})
@@ -4279,12 +4351,12 @@ func (client *Client) SetBio(bio string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4292,7 +4364,7 @@ func (client *Client) SetBio(bio string) (*Ok, error) {
 // SetUsername Changes the username of the current user. If something changes, updateUser will be sent
 // @param username The new value of the username. Use an empty string to remove the username
 func (client *Client) SetUsername(username string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "setUsername",
 		"username": username,
 	})
@@ -4301,12 +4373,12 @@ func (client *Client) SetUsername(username string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4316,7 +4388,7 @@ func (client *Client) SetUsername(username string) (*Ok, error) {
 // @param phoneNumber The new phone number of the user in international format
 // @param allowFlashCall Pass true if the code can be sent via flash call to the specified phone number
 func (client *Client) ChangePhoneNumber(isCurrentPhoneNumber bool, phoneNumber string, allowFlashCall bool) (*AuthenticationCodeInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                   "changePhoneNumber",
 		"is_current_phone_number": isCurrentPhoneNumber,
 		"phone_number":            phoneNumber,
@@ -4327,19 +4399,19 @@ func (client *Client) ChangePhoneNumber(isCurrentPhoneNumber bool, phoneNumber s
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var authenticationCodeInfo AuthenticationCodeInfo
-	err = mapstructure.Decode(result, &authenticationCodeInfo)
+	err = json.Unmarshal(result.Raw, &authenticationCodeInfo)
 	return &authenticationCodeInfo, err
 
 }
 
 // ResendChangePhoneNumberCode Re-sends the authentication code sent to confirm a new phone number for the user. Works only if the previously received authenticationCodeInfo next_code_type was not null
 func (client *Client) ResendChangePhoneNumberCode() (*AuthenticationCodeInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "resendChangePhoneNumberCode",
 	})
 
@@ -4347,12 +4419,12 @@ func (client *Client) ResendChangePhoneNumberCode() (*AuthenticationCodeInfo, er
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var authenticationCodeInfo AuthenticationCodeInfo
-	err = mapstructure.Decode(result, &authenticationCodeInfo)
+	err = json.Unmarshal(result.Raw, &authenticationCodeInfo)
 	return &authenticationCodeInfo, err
 
 }
@@ -4360,7 +4432,7 @@ func (client *Client) ResendChangePhoneNumberCode() (*AuthenticationCodeInfo, er
 // CheckChangePhoneNumberCode Checks the authentication code sent to confirm a new phone number of the user
 // @param code Verification code received by SMS, phone call or flash call
 func (client *Client) CheckChangePhoneNumberCode(code string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "checkChangePhoneNumberCode",
 		"code":  code,
 	})
@@ -4369,19 +4441,19 @@ func (client *Client) CheckChangePhoneNumberCode(code string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetActiveSessions Returns all active sessions of the current user
 func (client *Client) GetActiveSessions() (*Sessions, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getActiveSessions",
 	})
 
@@ -4389,12 +4461,12 @@ func (client *Client) GetActiveSessions() (*Sessions, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var sessions Sessions
-	err = mapstructure.Decode(result, &sessions)
+	err = json.Unmarshal(result.Raw, &sessions)
 	return &sessions, err
 
 }
@@ -4402,7 +4474,7 @@ func (client *Client) GetActiveSessions() (*Sessions, error) {
 // TerminateSession Terminates a session of the current user
 // @param sessionID Session identifier
 func (client *Client) TerminateSession(sessionID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "terminateSession",
 		"session_id": sessionID,
 	})
@@ -4411,19 +4483,19 @@ func (client *Client) TerminateSession(sessionID int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // TerminateAllOtherSessions Terminates all other sessions of the current user
 func (client *Client) TerminateAllOtherSessions() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "terminateAllOtherSessions",
 	})
 
@@ -4431,19 +4503,19 @@ func (client *Client) TerminateAllOtherSessions() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetConnectedWebsites Returns all website where the current user used Telegram to log in
 func (client *Client) GetConnectedWebsites() (*ConnectedWebsites, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getConnectedWebsites",
 	})
 
@@ -4451,12 +4523,12 @@ func (client *Client) GetConnectedWebsites() (*ConnectedWebsites, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var connectedWebsites ConnectedWebsites
-	err = mapstructure.Decode(result, &connectedWebsites)
+	err = json.Unmarshal(result.Raw, &connectedWebsites)
 	return &connectedWebsites, err
 
 }
@@ -4464,7 +4536,7 @@ func (client *Client) GetConnectedWebsites() (*ConnectedWebsites, error) {
 // DisconnectWebsite Disconnects website from the current user's Telegram account
 // @param websiteID Website identifier
 func (client *Client) DisconnectWebsite(websiteID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "disconnectWebsite",
 		"website_id": websiteID,
 	})
@@ -4473,19 +4545,19 @@ func (client *Client) DisconnectWebsite(websiteID int64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // DisconnectAllWebsites Disconnects all websites from the current user's Telegram account
 func (client *Client) DisconnectAllWebsites() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "disconnectAllWebsites",
 	})
 
@@ -4493,36 +4565,36 @@ func (client *Client) DisconnectAllWebsites() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // ToggleBasicGroupAdministrators Toggles the "All members are admins" setting in basic groups; requires creator privileges in the group
-// @param everyoneIsAdministrator New value of everyone_is_administrator
 // @param basicGroupID Identifier of the basic group
-func (client *Client) ToggleBasicGroupAdministrators(everyoneIsAdministrator bool, basicGroupID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param everyoneIsAdministrator New value of everyone_is_administrator
+func (client *Client) ToggleBasicGroupAdministrators(basicGroupID int32, everyoneIsAdministrator bool) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                     "toggleBasicGroupAdministrators",
-		"everyone_is_administrator": everyoneIsAdministrator,
 		"basic_group_id":            basicGroupID,
+		"everyone_is_administrator": everyoneIsAdministrator,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4531,7 +4603,7 @@ func (client *Client) ToggleBasicGroupAdministrators(everyoneIsAdministrator boo
 // @param supergroupID Identifier of the supergroup or channel
 // @param username New value of the username. Use an empty string to remove the username
 func (client *Client) SetSupergroupUsername(supergroupID int32, username string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "setSupergroupUsername",
 		"supergroup_id": supergroupID,
 		"username":      username,
@@ -4541,12 +4613,12 @@ func (client *Client) SetSupergroupUsername(supergroupID int32, username string)
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4555,7 +4627,7 @@ func (client *Client) SetSupergroupUsername(supergroupID int32, username string)
 // @param supergroupID Identifier of the supergroup
 // @param stickerSetID New value of the supergroup sticker set identifier. Use 0 to remove the supergroup sticker set
 func (client *Client) SetSupergroupStickerSet(supergroupID int32, stickerSetID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "setSupergroupStickerSet",
 		"supergroup_id":  supergroupID,
 		"sticker_set_id": stickerSetID,
@@ -4565,12 +4637,12 @@ func (client *Client) SetSupergroupStickerSet(supergroupID int32, stickerSetID i
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4579,7 +4651,7 @@ func (client *Client) SetSupergroupStickerSet(supergroupID int32, stickerSetID i
 // @param supergroupID Identifier of the supergroup
 // @param anyoneCanInvite New value of anyone_can_invite
 func (client *Client) ToggleSupergroupInvites(supergroupID int32, anyoneCanInvite bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":             "toggleSupergroupInvites",
 		"supergroup_id":     supergroupID,
 		"anyone_can_invite": anyoneCanInvite,
@@ -4589,12 +4661,12 @@ func (client *Client) ToggleSupergroupInvites(supergroupID int32, anyoneCanInvit
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4603,7 +4675,7 @@ func (client *Client) ToggleSupergroupInvites(supergroupID int32, anyoneCanInvit
 // @param supergroupID Identifier of the channel
 // @param signMessages New value of sign_messages
 func (client *Client) ToggleSupergroupSignMessages(supergroupID int32, signMessages bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "toggleSupergroupSignMessages",
 		"supergroup_id": supergroupID,
 		"sign_messages": signMessages,
@@ -4613,36 +4685,36 @@ func (client *Client) ToggleSupergroupSignMessages(supergroupID int32, signMessa
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // ToggleSupergroupIsAllHistoryAvailable Toggles whether the message history of a supergroup is available to new members; requires appropriate administrator rights in the supergroup.
-// @param isAllHistoryAvailable The new value of is_all_history_available
 // @param supergroupID The identifier of the supergroup
-func (client *Client) ToggleSupergroupIsAllHistoryAvailable(isAllHistoryAvailable bool, supergroupID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param isAllHistoryAvailable The new value of is_all_history_available
+func (client *Client) ToggleSupergroupIsAllHistoryAvailable(supergroupID int32, isAllHistoryAvailable bool) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                    "toggleSupergroupIsAllHistoryAvailable",
-		"is_all_history_available": isAllHistoryAvailable,
 		"supergroup_id":            supergroupID,
+		"is_all_history_available": isAllHistoryAvailable,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4651,7 +4723,7 @@ func (client *Client) ToggleSupergroupIsAllHistoryAvailable(isAllHistoryAvailabl
 // @param supergroupID Identifier of the supergroup or channel
 // @param description
 func (client *Client) SetSupergroupDescription(supergroupID int32, description string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "setSupergroupDescription",
 		"supergroup_id": supergroupID,
 		"description":   description,
@@ -4661,12 +4733,12 @@ func (client *Client) SetSupergroupDescription(supergroupID int32, description s
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4676,7 +4748,7 @@ func (client *Client) SetSupergroupDescription(supergroupID int32, description s
 // @param messageID Identifier of the new pinned message
 // @param disableNotification True, if there should be no notification about the pinned message
 func (client *Client) PinSupergroupMessage(supergroupID int32, messageID int64, disableNotification bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                "pinSupergroupMessage",
 		"supergroup_id":        supergroupID,
 		"message_id":           messageID,
@@ -4687,12 +4759,12 @@ func (client *Client) PinSupergroupMessage(supergroupID int32, messageID int64, 
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4700,7 +4772,7 @@ func (client *Client) PinSupergroupMessage(supergroupID int32, messageID int64, 
 // UnpinSupergroupMessage Removes the pinned message from a supergroup or channel; requires appropriate administrator rights in the supergroup or channel
 // @param supergroupID Identifier of the supergroup or channel
 func (client *Client) UnpinSupergroupMessage(supergroupID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "unpinSupergroupMessage",
 		"supergroup_id": supergroupID,
 	})
@@ -4709,12 +4781,12 @@ func (client *Client) UnpinSupergroupMessage(supergroupID int32) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4724,7 +4796,7 @@ func (client *Client) UnpinSupergroupMessage(supergroupID int32) (*Ok, error) {
 // @param userID User identifier
 // @param messageIDs Identifiers of messages sent in the supergroup by the user. This list must be non-empty
 func (client *Client) ReportSupergroupSpam(supergroupID int32, userID int32, messageIDs []int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "reportSupergroupSpam",
 		"supergroup_id": supergroupID,
 		"user_id":       userID,
@@ -4735,40 +4807,40 @@ func (client *Client) ReportSupergroupSpam(supergroupID int32, userID int32, mes
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetSupergroupMembers Returns information about members or banned users in a supergroup or channel. Can be used only if SupergroupFullInfo.can_get_members == true; additionally, administrator privileges may be required for some filters
-// @param supergroupID Identifier of the supergroup or channel
-// @param filter The type of users to return. By default, supergroupMembersRecent
 // @param offset Number of users to skip
 // @param limit The maximum number of users be returned; up to 200
-func (client *Client) GetSupergroupMembers(supergroupID int32, filter SupergroupMembersFilter, offset int32, limit int32) (*ChatMembers, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param supergroupID Identifier of the supergroup or channel
+// @param filter The type of users to return. By default, supergroupMembersRecent
+func (client *Client) GetSupergroupMembers(offset int32, limit int32, supergroupID int32, filter SupergroupMembersFilter) (*ChatMembers, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "getSupergroupMembers",
-		"supergroup_id": supergroupID,
-		"filter":        filter,
 		"offset":        offset,
 		"limit":         limit,
+		"supergroup_id": supergroupID,
+		"filter":        filter,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatMembers ChatMembers
-	err = mapstructure.Decode(result, &chatMembers)
+	err = json.Unmarshal(result.Raw, &chatMembers)
 	return &chatMembers, err
 
 }
@@ -4776,7 +4848,7 @@ func (client *Client) GetSupergroupMembers(supergroupID int32, filter Supergroup
 // DeleteSupergroup Deletes a supergroup or channel along with all messages in the corresponding chat. This will release the supergroup or channel username and remove all members; requires creator privileges in the supergroup or channel. Chats with more than 1000 members can't be deleted using this method
 // @param supergroupID Identifier of the supergroup or channel
 func (client *Client) DeleteSupergroup(supergroupID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "deleteSupergroup",
 		"supergroup_id": supergroupID,
 	})
@@ -4785,12 +4857,12 @@ func (client *Client) DeleteSupergroup(supergroupID int32) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -4798,7 +4870,7 @@ func (client *Client) DeleteSupergroup(supergroupID int32) (*Ok, error) {
 // CloseSecretChat Closes a secret chat, effectively transfering its state to secretChatStateClosed
 // @param secretChatID Secret chat identifier
 func (client *Client) CloseSecretChat(secretChatID int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "closeSecretChat",
 		"secret_chat_id": secretChatID,
 	})
@@ -4807,44 +4879,44 @@ func (client *Client) CloseSecretChat(secretChatID int32) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetChatEventLog Returns a list of service actions taken by chat members and administrators in the last 48 hours. Available only in supergroups and channels. Requires administrator rights. Returns results in reverse chronological order (i. e., in order of decreasing event_id)
+// @param userIDs User identifiers by which to filter events. By default, events relating to all users will be returned
+// @param chatID Chat identifier
 // @param query Search query by which to filter events
 // @param fromEventID Identifier of an event from which to return results. Use 0 to get results from the latest events
 // @param limit Maximum number of events to return; up to 100
 // @param filters The types of events to return. By default, all types will be returned
-// @param userIDs User identifiers by which to filter events. By default, events relating to all users will be returned
-// @param chatID Chat identifier
-func (client *Client) GetChatEventLog(query string, fromEventID int64, limit int32, filters ChatEventLogFilters, userIDs []int32, chatID int64) (*ChatEvents, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) GetChatEventLog(userIDs []int32, chatID int64, query string, fromEventID int64, limit int32, filters ChatEventLogFilters) (*ChatEvents, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":         "getChatEventLog",
+		"user_ids":      userIDs,
+		"chat_id":       chatID,
 		"query":         query,
 		"from_event_id": fromEventID,
 		"limit":         limit,
 		"filters":       filters,
-		"user_ids":      userIDs,
-		"chat_id":       chatID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatEvents ChatEvents
-	err = mapstructure.Decode(result, &chatEvents)
+	err = json.Unmarshal(result.Raw, &chatEvents)
 	return &chatEvents, err
 
 }
@@ -4853,7 +4925,7 @@ func (client *Client) GetChatEventLog(query string, fromEventID int64, limit int
 // @param chatID Chat identifier of the Invoice message
 // @param messageID Message identifier
 func (client *Client) GetPaymentForm(chatID int64, messageID int64) (*PaymentForm, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getPaymentForm",
 		"chat_id":    chatID,
 		"message_id": messageID,
@@ -4863,12 +4935,12 @@ func (client *Client) GetPaymentForm(chatID int64, messageID int64) (*PaymentFor
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var paymentForm PaymentForm
-	err = mapstructure.Decode(result, &paymentForm)
+	err = json.Unmarshal(result.Raw, &paymentForm)
 	return &paymentForm, err
 
 }
@@ -4879,7 +4951,7 @@ func (client *Client) GetPaymentForm(chatID int64, messageID int64) (*PaymentFor
 // @param orderInfo The order information, provided by the user
 // @param allowSave True, if the order information can be saved
 func (client *Client) ValidateOrderInfo(chatID int64, messageID int64, orderInfo OrderInfo, allowSave bool) (*ValidatedOrderInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "validateOrderInfo",
 		"chat_id":    chatID,
 		"message_id": messageID,
@@ -4891,12 +4963,12 @@ func (client *Client) ValidateOrderInfo(chatID int64, messageID int64, orderInfo
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var validatedOrderInfo ValidatedOrderInfo
-	err = mapstructure.Decode(result, &validatedOrderInfo)
+	err = json.Unmarshal(result.Raw, &validatedOrderInfo)
 	return &validatedOrderInfo, err
 
 }
@@ -4908,7 +4980,7 @@ func (client *Client) ValidateOrderInfo(chatID int64, messageID int64, orderInfo
 // @param shippingOptionID Identifier of a chosen shipping option, if applicable
 // @param credentials The credentials chosen by user for payment
 func (client *Client) SendPaymentForm(chatID int64, messageID int64, orderInfoID string, shippingOptionID string, credentials InputCredentials) (*PaymentResult, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":              "sendPaymentForm",
 		"chat_id":            chatID,
 		"message_id":         messageID,
@@ -4921,43 +4993,43 @@ func (client *Client) SendPaymentForm(chatID int64, messageID int64, orderInfoID
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var paymentResult PaymentResult
-	err = mapstructure.Decode(result, &paymentResult)
+	err = json.Unmarshal(result.Raw, &paymentResult)
 	return &paymentResult, err
 
 }
 
 // GetPaymentReceipt Returns information about a successful payment
-// @param chatID Chat identifier of the PaymentSuccessful message
 // @param messageID Message identifier
-func (client *Client) GetPaymentReceipt(chatID int64, messageID int64) (*PaymentReceipt, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param chatID Chat identifier of the PaymentSuccessful message
+func (client *Client) GetPaymentReceipt(messageID int64, chatID int64) (*PaymentReceipt, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getPaymentReceipt",
-		"chat_id":    chatID,
 		"message_id": messageID,
+		"chat_id":    chatID,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var paymentReceipt PaymentReceipt
-	err = mapstructure.Decode(result, &paymentReceipt)
+	err = json.Unmarshal(result.Raw, &paymentReceipt)
 	return &paymentReceipt, err
 
 }
 
 // GetSavedOrderInfo Returns saved order info, if any
 func (client *Client) GetSavedOrderInfo() (*OrderInfo, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getSavedOrderInfo",
 	})
 
@@ -4965,19 +5037,19 @@ func (client *Client) GetSavedOrderInfo() (*OrderInfo, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var orderInfo OrderInfo
-	err = mapstructure.Decode(result, &orderInfo)
+	err = json.Unmarshal(result.Raw, &orderInfo)
 	return &orderInfo, err
 
 }
 
 // DeleteSavedOrderInfo Deletes saved order info
 func (client *Client) DeleteSavedOrderInfo() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "deleteSavedOrderInfo",
 	})
 
@@ -4985,19 +5057,19 @@ func (client *Client) DeleteSavedOrderInfo() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // DeleteSavedCredentials Deletes saved credentials for all payment provider bots
 func (client *Client) DeleteSavedCredentials() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "deleteSavedCredentials",
 	})
 
@@ -5005,19 +5077,19 @@ func (client *Client) DeleteSavedCredentials() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetSupportUser Returns a user that can be contacted to get support
 func (client *Client) GetSupportUser() (*User, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getSupportUser",
 	})
 
@@ -5025,19 +5097,19 @@ func (client *Client) GetSupportUser() (*User, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var user User
-	err = mapstructure.Decode(result, &user)
+	err = json.Unmarshal(result.Raw, &user)
 	return &user, err
 
 }
 
 // GetWallpapers Returns background wallpapers
 func (client *Client) GetWallpapers() (*Wallpapers, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getWallpapers",
 	})
 
@@ -5045,12 +5117,12 @@ func (client *Client) GetWallpapers() (*Wallpapers, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var wallpapers Wallpapers
-	err = mapstructure.Decode(result, &wallpapers)
+	err = json.Unmarshal(result.Raw, &wallpapers)
 	return &wallpapers, err
 
 }
@@ -5059,7 +5131,7 @@ func (client *Client) GetWallpapers() (*Wallpapers, error) {
 // @param deviceToken Device token
 // @param otherUserIDs List of at most 100 user identifiers of other users currently using the client
 func (client *Client) RegisterDevice(deviceToken DeviceToken, otherUserIDs []int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":          "registerDevice",
 		"device_token":   deviceToken,
 		"other_user_ids": otherUserIDs,
@@ -5069,12 +5141,12 @@ func (client *Client) RegisterDevice(deviceToken DeviceToken, otherUserIDs []int
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var okDummy Ok
-	err = mapstructure.Decode(result, &okDummy)
+	err = json.Unmarshal(result.Raw, &okDummy)
 	return &okDummy, err
 
 }
@@ -5082,7 +5154,7 @@ func (client *Client) RegisterDevice(deviceToken DeviceToken, otherUserIDs []int
 // GetRecentlyVisitedTMeURLs Returns t.me URLs recently visited by a newly registered user
 // @param referrer Google Play referrer to identify the user
 func (client *Client) GetRecentlyVisitedTMeURLs(referrer string) (*TMeURLs, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "getRecentlyVisitedTMeUrls",
 		"referrer": referrer,
 	})
@@ -5091,36 +5163,36 @@ func (client *Client) GetRecentlyVisitedTMeURLs(referrer string) (*TMeURLs, erro
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var tMeURLs TMeURLs
-	err = mapstructure.Decode(result, &tMeURLs)
+	err = json.Unmarshal(result.Raw, &tMeURLs)
 	return &tMeURLs, err
 
 }
 
 // SetUserPrivacySettingRules Changes user privacy settings
-// @param rules The new privacy rules
 // @param setting The privacy setting
-func (client *Client) SetUserPrivacySettingRules(rules UserPrivacySettingRules, setting UserPrivacySetting) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param rules The new privacy rules
+func (client *Client) SetUserPrivacySettingRules(setting UserPrivacySetting, rules UserPrivacySettingRules) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "setUserPrivacySettingRules",
-		"rules":   rules,
 		"setting": setting,
+		"rules":   rules,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5128,7 +5200,7 @@ func (client *Client) SetUserPrivacySettingRules(rules UserPrivacySettingRules, 
 // GetUserPrivacySettingRules Returns the current privacy settings
 // @param setting The privacy setting
 func (client *Client) GetUserPrivacySettingRules(setting UserPrivacySetting) (*UserPrivacySettingRules, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getUserPrivacySettingRules",
 		"setting": setting,
 	})
@@ -5137,20 +5209,20 @@ func (client *Client) GetUserPrivacySettingRules(setting UserPrivacySetting) (*U
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var userPrivacySettingRules UserPrivacySettingRules
-	err = mapstructure.Decode(result, &userPrivacySettingRules)
+	err = json.Unmarshal(result.Raw, &userPrivacySettingRules)
 	return &userPrivacySettingRules, err
 
 }
 
 // GetOption Returns the value of an option by its name. (Check the list of available options on https://core.telegram.org/tdlib/options.) Can be called before authorization
 // @param name The name of the option
-func (client *Client) GetOption(name string) (*OptionValue, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) GetOption(name string) (OptionValue, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getOption",
 		"name":  name,
 	})
@@ -5159,36 +5231,57 @@ func (client *Client) GetOption(name string) (*OptionValue, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
-	var optionValue OptionValue
-	err = mapstructure.Decode(result, &optionValue)
-	return &optionValue, err
+	switch OptionValueEnum(result.Data["@type"].(string)) {
 
+	case OptionValueBooleanType:
+		var optionValue OptionValueBoolean
+		err = json.Unmarshal(result.Raw, &optionValue)
+		return &optionValue, err
+
+	case OptionValueEmptyType:
+		var optionValue OptionValueEmpty
+		err = json.Unmarshal(result.Raw, &optionValue)
+		return &optionValue, err
+
+	case OptionValueIntegerType:
+		var optionValue OptionValueInteger
+		err = json.Unmarshal(result.Raw, &optionValue)
+		return &optionValue, err
+
+	case OptionValueStringType:
+		var optionValue OptionValueString
+		err = json.Unmarshal(result.Raw, &optionValue)
+		return &optionValue, err
+
+	default:
+		return nil, fmt.Errorf("Invalid type")
+	}
 }
 
 // SetOption Sets the value of an option. (Check the list of available options on https://core.telegram.org/tdlib/options.) Only writable options can be set. Can be called before authorization
-// @param value The new value of the option
 // @param name The name of the option
-func (client *Client) SetOption(value OptionValue, name string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param value The new value of the option
+func (client *Client) SetOption(name string, value OptionValue) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "setOption",
-		"value": value,
 		"name":  name,
+		"value": value,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5196,7 +5289,7 @@ func (client *Client) SetOption(value OptionValue, name string) (*Ok, error) {
 // SetAccountTTL Changes the period of inactivity after which the account of the current user will automatically be deleted
 // @param tTL New account TTL
 func (client *Client) SetAccountTTL(tTL AccountTTL) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "setAccountTtl",
 		"ttl":   tTL,
 	})
@@ -5205,19 +5298,19 @@ func (client *Client) SetAccountTTL(tTL AccountTTL) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetAccountTTL Returns the period of inactivity after which the account of the current user will automatically be deleted
 func (client *Client) GetAccountTTL() (*AccountTTL, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getAccountTtl",
 	})
 
@@ -5225,12 +5318,12 @@ func (client *Client) GetAccountTTL() (*AccountTTL, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var accountTTL AccountTTL
-	err = mapstructure.Decode(result, &accountTTL)
+	err = json.Unmarshal(result.Raw, &accountTTL)
 	return &accountTTL, err
 
 }
@@ -5238,7 +5331,7 @@ func (client *Client) GetAccountTTL() (*AccountTTL, error) {
 // DeleteAccount Deletes the account of the current user, deleting all information associated with the user from the server. The phone number of the account can be used to create a new account
 // @param reason The reason why the account was deleted; optional
 func (client *Client) DeleteAccount(reason string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":  "deleteAccount",
 		"reason": reason,
 	})
@@ -5247,12 +5340,12 @@ func (client *Client) DeleteAccount(reason string) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5260,7 +5353,7 @@ func (client *Client) DeleteAccount(reason string) (*Ok, error) {
 // GetChatReportSpamState Returns information on whether the current chat can be reported as spam
 // @param chatID Chat identifier
 func (client *Client) GetChatReportSpamState(chatID int64) (*ChatReportSpamState, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "getChatReportSpamState",
 		"chat_id": chatID,
 	})
@@ -5269,12 +5362,12 @@ func (client *Client) GetChatReportSpamState(chatID int64) (*ChatReportSpamState
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var chatReportSpamState ChatReportSpamState
-	err = mapstructure.Decode(result, &chatReportSpamState)
+	err = json.Unmarshal(result.Raw, &chatReportSpamState)
 	return &chatReportSpamState, err
 
 }
@@ -5283,7 +5376,7 @@ func (client *Client) GetChatReportSpamState(chatID int64) (*ChatReportSpamState
 // @param chatID Chat identifier
 // @param isSpamChat If true, the chat will be reported as spam; otherwise it will be marked as not spam
 func (client *Client) ChangeChatReportSpamState(chatID int64, isSpamChat bool) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "changeChatReportSpamState",
 		"chat_id":      chatID,
 		"is_spam_chat": isSpamChat,
@@ -5293,12 +5386,12 @@ func (client *Client) ChangeChatReportSpamState(chatID int64, isSpamChat bool) (
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5308,7 +5401,7 @@ func (client *Client) ChangeChatReportSpamState(chatID int64, isSpamChat bool) (
 // @param reason The reason for reporting the chat
 // @param messageIDs Identifiers of reported messages, if any
 func (client *Client) ReportChat(chatID int64, reason ChatReportReason, messageIDs []int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "reportChat",
 		"chat_id":     chatID,
 		"reason":      reason,
@@ -5319,12 +5412,12 @@ func (client *Client) ReportChat(chatID int64, reason ChatReportReason, messageI
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5332,7 +5425,7 @@ func (client *Client) ReportChat(chatID int64, reason ChatReportReason, messageI
 // GetStorageStatistics Returns storage usage statistics
 // @param chatLimit Maximum number of chats with the largest storage usage for which separate statistics should be returned. All other chats will be grouped in entries with chat_id == 0. If the chat info database is not used, the chat_limit is ignored and is always set to 0
 func (client *Client) GetStorageStatistics(chatLimit int32) (*StorageStatistics, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "getStorageStatistics",
 		"chat_limit": chatLimit,
 	})
@@ -5341,19 +5434,19 @@ func (client *Client) GetStorageStatistics(chatLimit int32) (*StorageStatistics,
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var storageStatistics StorageStatistics
-	err = mapstructure.Decode(result, &storageStatistics)
+	err = json.Unmarshal(result.Raw, &storageStatistics)
 	return &storageStatistics, err
 
 }
 
 // GetStorageStatisticsFast Quickly returns approximate storage usage statistics
 func (client *Client) GetStorageStatisticsFast() (*StorageStatisticsFast, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getStorageStatisticsFast",
 	})
 
@@ -5361,48 +5454,48 @@ func (client *Client) GetStorageStatisticsFast() (*StorageStatisticsFast, error)
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var storageStatisticsFast StorageStatisticsFast
-	err = mapstructure.Decode(result, &storageStatisticsFast)
+	err = json.Unmarshal(result.Raw, &storageStatisticsFast)
 	return &storageStatisticsFast, err
 
 }
 
 // OptimizeStorage Optimizes storage usage, i.e. deletes some files and returns new storage usage statistics. Secret thumbnails can't be deleted
-// @param excludeChatIDs If not empty, files from the given chats are excluded. Use 0 as chat identifier to exclude all files not belonging to any chat (e.g., profile photos)
-// @param chatLimit Same as in getStorageStatistics. Affects only returned statistics
-// @param size Limit on the total size of files after deletion. Pass -1 to use the default limit
-// @param tTL Limit on the time that has passed since the last time a file was accessed (or creation time for some filesystems). Pass -1 to use the default limit
 // @param count Limit on the total count of files after deletion. Pass -1 to use the default limit
 // @param immunityDelay The amount of time after the creation of a file during which it can't be deleted, in seconds. Pass -1 to use the default value
 // @param fileTypes If not empty, only files with the given type(s) are considered. By default, all types except thumbnails, profile photos, stickers and wallpapers are deleted
 // @param chatIDs If not empty, only files from the given chats are considered. Use 0 as chat identifier to delete files not belonging to any chat (e.g., profile photos)
-func (client *Client) OptimizeStorage(excludeChatIDs []int64, chatLimit int32, size int64, tTL int32, count int32, immunityDelay int32, fileTypes []FileType, chatIDs []int64) (*StorageStatistics, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param excludeChatIDs If not empty, files from the given chats are excluded. Use 0 as chat identifier to exclude all files not belonging to any chat (e.g., profile photos)
+// @param chatLimit Same as in getStorageStatistics. Affects only returned statistics
+// @param size Limit on the total size of files after deletion. Pass -1 to use the default limit
+// @param tTL Limit on the time that has passed since the last time a file was accessed (or creation time for some filesystems). Pass -1 to use the default limit
+func (client *Client) OptimizeStorage(count int32, immunityDelay int32, fileTypes []FileType, chatIDs []int64, excludeChatIDs []int64, chatLimit int32, size int64, tTL int32) (*StorageStatistics, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":            "optimizeStorage",
-		"exclude_chat_ids": excludeChatIDs,
-		"chat_limit":       chatLimit,
-		"size":             size,
-		"ttl":              tTL,
 		"count":            count,
 		"immunity_delay":   immunityDelay,
 		"file_types":       fileTypes,
 		"chat_ids":         chatIDs,
+		"exclude_chat_ids": excludeChatIDs,
+		"chat_limit":       chatLimit,
+		"size":             size,
+		"ttl":              tTL,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var storageStatistics StorageStatistics
-	err = mapstructure.Decode(result, &storageStatistics)
+	err = json.Unmarshal(result.Raw, &storageStatistics)
 	return &storageStatistics, err
 
 }
@@ -5410,7 +5503,7 @@ func (client *Client) OptimizeStorage(excludeChatIDs []int64, chatLimit int32, s
 // SetNetworkType Sets the current network type. Can be called before authorization. Calling this method forces all network connections to reopen, mitigating the delay in switching between different networks, so it should be called whenever the network is changed, even if the network type remains the same.
 // @param typeParam
 func (client *Client) SetNetworkType(typeParam NetworkType) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "setNetworkType",
 		"type":  typeParam,
 	})
@@ -5419,12 +5512,12 @@ func (client *Client) SetNetworkType(typeParam NetworkType) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5432,7 +5525,7 @@ func (client *Client) SetNetworkType(typeParam NetworkType) (*Ok, error) {
 // GetNetworkStatistics Returns network data usage statistics. Can be called before authorization
 // @param onlyCurrent If true, returns only data for the current library launch
 func (client *Client) GetNetworkStatistics(onlyCurrent bool) (*NetworkStatistics, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":        "getNetworkStatistics",
 		"only_current": onlyCurrent,
 	})
@@ -5441,12 +5534,12 @@ func (client *Client) GetNetworkStatistics(onlyCurrent bool) (*NetworkStatistics
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var networkStatistics NetworkStatistics
-	err = mapstructure.Decode(result, &networkStatistics)
+	err = json.Unmarshal(result.Raw, &networkStatistics)
 	return &networkStatistics, err
 
 }
@@ -5454,7 +5547,7 @@ func (client *Client) GetNetworkStatistics(onlyCurrent bool) (*NetworkStatistics
 // AddNetworkStatistics Adds the specified data to data usage statistics. Can be called before authorization
 // @param entry The network statistics entry with the data to be added to statistics
 func (client *Client) AddNetworkStatistics(entry NetworkStatisticsEntry) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "addNetworkStatistics",
 		"entry": entry,
 	})
@@ -5463,19 +5556,19 @@ func (client *Client) AddNetworkStatistics(entry NetworkStatisticsEntry) (*Ok, e
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // ResetNetworkStatistics Resets all network data usage statistics to zero. Can be called before authorization
 func (client *Client) ResetNetworkStatistics() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "resetNetworkStatistics",
 	})
 
@@ -5483,12 +5576,12 @@ func (client *Client) ResetNetworkStatistics() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5497,7 +5590,7 @@ func (client *Client) ResetNetworkStatistics() (*Ok, error) {
 // @param pendingUpdateCount The number of pending updates
 // @param errorMessage The last error message
 func (client *Client) SetBotUpdatesStatus(pendingUpdateCount int32, errorMessage string) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":                "setBotUpdatesStatus",
 		"pending_update_count": pendingUpdateCount,
 		"error_message":        errorMessage,
@@ -5507,92 +5600,92 @@ func (client *Client) SetBotUpdatesStatus(pendingUpdateCount int32, errorMessage
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // UploadStickerFile Uploads a PNG image with a sticker; for bots only; returns the uploaded file
-// @param pngSticker PNG image with the sticker; must be up to 512 kB in size and fit in 512x512 square
 // @param userID Sticker file owner
-func (client *Client) UploadStickerFile(pngSticker InputFile, userID int32) (*File, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param pngSticker PNG image with the sticker; must be up to 512 kB in size and fit in 512x512 square
+func (client *Client) UploadStickerFile(userID int32, pngSticker InputFile) (*File, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":       "uploadStickerFile",
-		"png_sticker": pngSticker,
 		"user_id":     userID,
+		"png_sticker": pngSticker,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var file File
-	err = mapstructure.Decode(result, &file)
+	err = json.Unmarshal(result.Raw, &file)
 	return &file, err
 
 }
 
 // CreateNewStickerSet Creates a new sticker set; for bots only. Returns the newly created sticker set
-// @param userID Sticker set owner
-// @param title Sticker set title; 1-64 characters
 // @param name Sticker set name. Can contain only English letters, digits and underscores. Must end with *"_by_<bot username>"* (*<bot_username>* is case insensitive); 1-64 characters
 // @param isMasks True, if stickers are masks
 // @param stickers List of stickers to be added to the set
-func (client *Client) CreateNewStickerSet(userID int32, title string, name string, isMasks bool, stickers []InputSticker) (*StickerSet, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param userID Sticker set owner
+// @param title Sticker set title; 1-64 characters
+func (client *Client) CreateNewStickerSet(name string, isMasks bool, stickers []InputSticker, userID int32, title string) (*StickerSet, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "createNewStickerSet",
-		"user_id":  userID,
-		"title":    title,
 		"name":     name,
 		"is_masks": isMasks,
 		"stickers": stickers,
+		"user_id":  userID,
+		"title":    title,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSet StickerSet
-	err = mapstructure.Decode(result, &stickerSet)
+	err = json.Unmarshal(result.Raw, &stickerSet)
 	return &stickerSet, err
 
 }
 
 // AddStickerToSet Adds a new sticker to a set; for bots only. Returns the sticker set
+// @param name Sticker set name
 // @param sticker Sticker to add to the set
 // @param userID Sticker set owner
-// @param name Sticker set name
-func (client *Client) AddStickerToSet(sticker InputSticker, userID int32, name string) (*StickerSet, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) AddStickerToSet(name string, sticker InputSticker, userID int32) (*StickerSet, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "addStickerToSet",
+		"name":    name,
 		"sticker": sticker,
 		"user_id": userID,
-		"name":    name,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var stickerSet StickerSet
-	err = mapstructure.Decode(result, &stickerSet)
+	err = json.Unmarshal(result.Raw, &stickerSet)
 	return &stickerSet, err
 
 }
@@ -5601,7 +5694,7 @@ func (client *Client) AddStickerToSet(sticker InputSticker, userID int32, name s
 // @param sticker Sticker
 // @param position New position of the sticker in the set, zero-based
 func (client *Client) SetStickerPositionInSet(sticker InputFile, position int32) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":    "setStickerPositionInSet",
 		"sticker":  sticker,
 		"position": position,
@@ -5611,12 +5704,12 @@ func (client *Client) SetStickerPositionInSet(sticker InputFile, position int32)
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5624,7 +5717,7 @@ func (client *Client) SetStickerPositionInSet(sticker InputFile, position int32)
 // RemoveStickerFromSet Removes a sticker from the set to which it belongs; for bots only. The sticker set must have been created by the bot
 // @param sticker Sticker
 func (client *Client) RemoveStickerFromSet(sticker InputFile) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "removeStickerFromSet",
 		"sticker": sticker,
 	})
@@ -5633,60 +5726,60 @@ func (client *Client) RemoveStickerFromSet(sticker InputFile) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // SendCustomRequest Sends a custom request; for bots only
-// @param parameters JSON-serialized method parameters
 // @param method The method name
-func (client *Client) SendCustomRequest(parameters string, method string) (*CustomRequestResult, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param parameters JSON-serialized method parameters
+func (client *Client) SendCustomRequest(method string, parameters string) (*CustomRequestResult, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":      "sendCustomRequest",
-		"parameters": parameters,
 		"method":     method,
+		"parameters": parameters,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var customRequestResult CustomRequestResult
-	err = mapstructure.Decode(result, &customRequestResult)
+	err = json.Unmarshal(result.Raw, &customRequestResult)
 	return &customRequestResult, err
 
 }
 
 // AnswerCustomQuery Answers a custom query; for bots only
-// @param data JSON-serialized answer to the query
 // @param customQueryID Identifier of a custom query
-func (client *Client) AnswerCustomQuery(data string, customQueryID int64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+// @param data JSON-serialized answer to the query
+func (client *Client) AnswerCustomQuery(customQueryID int64, data string) (*Ok, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":           "answerCustomQuery",
-		"data":            data,
 		"custom_query_id": customQueryID,
+		"data":            data,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5694,7 +5787,7 @@ func (client *Client) AnswerCustomQuery(data string, customQueryID int64) (*Ok, 
 // SetAlarm Succeeds after a specified amount of time has passed. Can be called before authorization
 // @param seconds Number of seconds before the function returns
 func (client *Client) SetAlarm(seconds float64) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type":   "setAlarm",
 		"seconds": seconds,
 	})
@@ -5703,19 +5796,19 @@ func (client *Client) SetAlarm(seconds float64) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetCountryCode Uses current user IP to found his country. Returns two-letter ISO 3166-1 alpha-2 country code. Can be called before authorization
 func (client *Client) GetCountryCode() (*Text, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getCountryCode",
 	})
 
@@ -5723,19 +5816,19 @@ func (client *Client) GetCountryCode() (*Text, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var text Text
-	err = mapstructure.Decode(result, &text)
+	err = json.Unmarshal(result.Raw, &text)
 	return &text, err
 
 }
 
 // GetInviteText Returns the default text for invitation messages to be used as a placeholder when the current user invites friends to Telegram
 func (client *Client) GetInviteText() (*Text, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getInviteText",
 	})
 
@@ -5743,19 +5836,19 @@ func (client *Client) GetInviteText() (*Text, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var text Text
-	err = mapstructure.Decode(result, &text)
+	err = json.Unmarshal(result.Raw, &text)
 	return &text, err
 
 }
 
 // GetTermsOfService Returns the terms of service. Can be called before authorization
 func (client *Client) GetTermsOfService() (*Text, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getTermsOfService",
 	})
 
@@ -5763,12 +5856,12 @@ func (client *Client) GetTermsOfService() (*Text, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var text Text
-	err = mapstructure.Decode(result, &text)
+	err = json.Unmarshal(result.Raw, &text)
 	return &text, err
 
 }
@@ -5776,7 +5869,7 @@ func (client *Client) GetTermsOfService() (*Text, error) {
 // SetProxy Sets the proxy server for network requests. Can be called before authorization
 // @param proxy Proxy server to use. Specify null to remove the proxy server
 func (client *Client) SetProxy(proxy Proxy) (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "setProxy",
 		"proxy": proxy,
 	})
@@ -5785,19 +5878,19 @@ func (client *Client) SetProxy(proxy Proxy) (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // GetProxy Returns the proxy that is currently set up. Can be called before authorization
-func (client *Client) GetProxy() (*Proxy, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) GetProxy() (Proxy, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "getProxy",
 	})
 
@@ -5805,19 +5898,30 @@ func (client *Client) GetProxy() (*Proxy, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
-	var proxy Proxy
-	err = mapstructure.Decode(result, &proxy)
-	return &proxy, err
+	switch ProxyEnum(result.Data["@type"].(string)) {
 
+	case ProxyEmptyType:
+		var proxy ProxyEmpty
+		err = json.Unmarshal(result.Raw, &proxy)
+		return &proxy, err
+
+	case ProxySocks5Type:
+		var proxy ProxySocks5
+		err = json.Unmarshal(result.Raw, &proxy)
+		return &proxy, err
+
+	default:
+		return nil, fmt.Errorf("Invalid type")
+	}
 }
 
 // TestCallEmpty Does nothing; for testing only
 func (client *Client) TestCallEmpty() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testCallEmpty",
 	})
 
@@ -5825,12 +5929,12 @@ func (client *Client) TestCallEmpty() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
@@ -5838,7 +5942,7 @@ func (client *Client) TestCallEmpty() (*Ok, error) {
 // TestCallString Returns the received string; for testing only
 // @param x String to return
 func (client *Client) TestCallString(x string) (*TestString, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testCallString",
 		"x":     x,
 	})
@@ -5847,12 +5951,12 @@ func (client *Client) TestCallString(x string) (*TestString, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var testString TestString
-	err = mapstructure.Decode(result, &testString)
+	err = json.Unmarshal(result.Raw, &testString)
 	return &testString, err
 
 }
@@ -5860,7 +5964,7 @@ func (client *Client) TestCallString(x string) (*TestString, error) {
 // TestCallBytes Returns the received bytes; for testing only
 // @param x Bytes to return
 func (client *Client) TestCallBytes(x []byte) (*TestBytes, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testCallBytes",
 		"x":     x,
 	})
@@ -5869,12 +5973,12 @@ func (client *Client) TestCallBytes(x []byte) (*TestBytes, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var testBytes TestBytes
-	err = mapstructure.Decode(result, &testBytes)
+	err = json.Unmarshal(result.Raw, &testBytes)
 	return &testBytes, err
 
 }
@@ -5882,7 +5986,7 @@ func (client *Client) TestCallBytes(x []byte) (*TestBytes, error) {
 // TestCallVectorInt Returns the received vector of numbers; for testing only
 // @param x Vector of numbers to return
 func (client *Client) TestCallVectorInt(x []int32) (*TestVectorInt, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testCallVectorInt",
 		"x":     x,
 	})
@@ -5891,12 +5995,12 @@ func (client *Client) TestCallVectorInt(x []int32) (*TestVectorInt, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var testVectorInt TestVectorInt
-	err = mapstructure.Decode(result, &testVectorInt)
+	err = json.Unmarshal(result.Raw, &testVectorInt)
 	return &testVectorInt, err
 
 }
@@ -5904,7 +6008,7 @@ func (client *Client) TestCallVectorInt(x []int32) (*TestVectorInt, error) {
 // TestCallVectorIntObject Returns the received vector of objects containing a number; for testing only
 // @param x Vector of objects to return
 func (client *Client) TestCallVectorIntObject(x []TestInt) (*TestVectorIntObject, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testCallVectorIntObject",
 		"x":     x,
 	})
@@ -5913,12 +6017,12 @@ func (client *Client) TestCallVectorIntObject(x []TestInt) (*TestVectorIntObject
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var testVectorIntObject TestVectorIntObject
-	err = mapstructure.Decode(result, &testVectorIntObject)
+	err = json.Unmarshal(result.Raw, &testVectorIntObject)
 	return &testVectorIntObject, err
 
 }
@@ -5926,7 +6030,7 @@ func (client *Client) TestCallVectorIntObject(x []TestInt) (*TestVectorIntObject
 // TestCallVectorString For testing only request. Returns the received vector of strings; for testing only
 // @param x Vector of strings to return
 func (client *Client) TestCallVectorString(x []string) (*TestVectorString, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testCallVectorString",
 		"x":     x,
 	})
@@ -5935,12 +6039,12 @@ func (client *Client) TestCallVectorString(x []string) (*TestVectorString, error
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var testVectorString TestVectorString
-	err = mapstructure.Decode(result, &testVectorString)
+	err = json.Unmarshal(result.Raw, &testVectorString)
 	return &testVectorString, err
 
 }
@@ -5948,7 +6052,7 @@ func (client *Client) TestCallVectorString(x []string) (*TestVectorString, error
 // TestCallVectorStringObject Returns the received vector of objects containing a string; for testing only
 // @param x Vector of objects to return
 func (client *Client) TestCallVectorStringObject(x []TestString) (*TestVectorStringObject, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testCallVectorStringObject",
 		"x":     x,
 	})
@@ -5957,12 +6061,12 @@ func (client *Client) TestCallVectorStringObject(x []TestString) (*TestVectorStr
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var testVectorStringObject TestVectorStringObject
-	err = mapstructure.Decode(result, &testVectorStringObject)
+	err = json.Unmarshal(result.Raw, &testVectorStringObject)
 	return &testVectorStringObject, err
 
 }
@@ -5970,7 +6074,7 @@ func (client *Client) TestCallVectorStringObject(x []TestString) (*TestVectorStr
 // TestSquareInt Returns the squared received number; for testing only
 // @param x Number to square
 func (client *Client) TestSquareInt(x int32) (*TestInt, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testSquareInt",
 		"x":     x,
 	})
@@ -5979,19 +6083,19 @@ func (client *Client) TestSquareInt(x int32) (*TestInt, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var testInt TestInt
-	err = mapstructure.Decode(result, &testInt)
+	err = json.Unmarshal(result.Raw, &testInt)
 	return &testInt, err
 
 }
 
 // TestNetwork Sends a simple network request to the Telegram servers; for testing only
 func (client *Client) TestNetwork() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testNetwork",
 	})
 
@@ -5999,19 +6103,19 @@ func (client *Client) TestNetwork() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // TestGetDifference Forces an updates.getDifference call to the Telegram servers; for testing only
 func (client *Client) TestGetDifference() (*Ok, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testGetDifference",
 	})
 
@@ -6019,19 +6123,19 @@ func (client *Client) TestGetDifference() (*Ok, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
 	var ok Ok
-	err = mapstructure.Decode(result, &ok)
+	err = json.Unmarshal(result.Raw, &ok)
 	return &ok, err
 
 }
 
 // TestUseUpdate Does nothing and ensures that the Update object is used; for testing only
-func (client *Client) TestUseUpdate() (*Update, error) {
-	result, err := client.SendAndCatch(UpdateMsg{
+func (client *Client) TestUseUpdate() (Update, error) {
+	result, err := client.SendAndCatch(UpdateData{
 		"@type": "testUseUpdate",
 	})
 
@@ -6039,12 +6143,283 @@ func (client *Client) TestUseUpdate() (*Update, error) {
 		return nil, err
 	}
 
-	if result["@type"].(string) == "error" {
-		return nil, fmt.Errorf("error! code: %d msg: %s", result["code"], result["message"])
+	if result.Data["@type"].(string) == "error" {
+		return nil, fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])
 	}
 
-	var update Update
-	err = mapstructure.Decode(result, &update)
-	return &update, err
+	switch UpdateEnum(result.Data["@type"].(string)) {
 
+	case UpdateAuthorizationStateType:
+		var update UpdateAuthorizationState
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewMessageType:
+		var update UpdateNewMessage
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateMessageSendAcknowledgedType:
+		var update UpdateMessageSendAcknowledged
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateMessageSendSucceededType:
+		var update UpdateMessageSendSucceeded
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateMessageSendFailedType:
+		var update UpdateMessageSendFailed
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateMessageContentType:
+		var update UpdateMessageContent
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateMessageEditedType:
+		var update UpdateMessageEdited
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateMessageViewsType:
+		var update UpdateMessageViews
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateMessageContentOpenedType:
+		var update UpdateMessageContentOpened
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateMessageMentionReadType:
+		var update UpdateMessageMentionRead
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewChatType:
+		var update UpdateNewChat
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatTitleType:
+		var update UpdateChatTitle
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatPhotoType:
+		var update UpdateChatPhoto
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatLastMessageType:
+		var update UpdateChatLastMessage
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatOrderType:
+		var update UpdateChatOrder
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatIsPinnedType:
+		var update UpdateChatIsPinned
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatReadInboxType:
+		var update UpdateChatReadInbox
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatReadOutboxType:
+		var update UpdateChatReadOutbox
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatUnreadMentionCountType:
+		var update UpdateChatUnreadMentionCount
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNotificationSettingsType:
+		var update UpdateNotificationSettings
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatReplyMarkupType:
+		var update UpdateChatReplyMarkup
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateChatDraftMessageType:
+		var update UpdateChatDraftMessage
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateDeleteMessagesType:
+		var update UpdateDeleteMessages
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateUserChatActionType:
+		var update UpdateUserChatAction
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateUserStatusType:
+		var update UpdateUserStatus
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateUserType:
+		var update UpdateUser
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateBasicGroupType:
+		var update UpdateBasicGroup
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateSupergroupType:
+		var update UpdateSupergroup
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateSecretChatType:
+		var update UpdateSecretChat
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateUserFullInfoType:
+		var update UpdateUserFullInfo
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateBasicGroupFullInfoType:
+		var update UpdateBasicGroupFullInfo
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateSupergroupFullInfoType:
+		var update UpdateSupergroupFullInfo
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateServiceNotificationType:
+		var update UpdateServiceNotification
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateFileType:
+		var update UpdateFile
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateFileGenerationStartType:
+		var update UpdateFileGenerationStart
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateFileGenerationStopType:
+		var update UpdateFileGenerationStop
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateCallType:
+		var update UpdateCall
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateUserPrivacySettingRulesType:
+		var update UpdateUserPrivacySettingRules
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateUnreadMessageCountType:
+		var update UpdateUnreadMessageCount
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateOptionType:
+		var update UpdateOption
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateInstalledStickerSetsType:
+		var update UpdateInstalledStickerSets
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateTrendingStickerSetsType:
+		var update UpdateTrendingStickerSets
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateRecentStickersType:
+		var update UpdateRecentStickers
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateFavoriteStickersType:
+		var update UpdateFavoriteStickers
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateSavedAnimationsType:
+		var update UpdateSavedAnimations
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateConnectionStateType:
+		var update UpdateConnectionState
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewInlineQueryType:
+		var update UpdateNewInlineQuery
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewChosenInlineResultType:
+		var update UpdateNewChosenInlineResult
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewCallbackQueryType:
+		var update UpdateNewCallbackQuery
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewInlineCallbackQueryType:
+		var update UpdateNewInlineCallbackQuery
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewShippingQueryType:
+		var update UpdateNewShippingQuery
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewPreCheckoutQueryType:
+		var update UpdateNewPreCheckoutQuery
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewCustomEventType:
+		var update UpdateNewCustomEvent
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	case UpdateNewCustomQueryType:
+		var update UpdateNewCustomQuery
+		err = json.Unmarshal(result.Raw, &update)
+		return &update, err
+
+	default:
+		return nil, fmt.Errorf("Invalid type")
+	}
 }
