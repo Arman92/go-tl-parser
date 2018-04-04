@@ -3,7 +3,7 @@
 all: release
 
 clean:
-	rm -f migrate
+	rm -rf ./build
 
 build:
 	rm -rf ./build
