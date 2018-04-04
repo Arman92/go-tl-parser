@@ -3,6 +3,7 @@ package tdlib
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 type tdCommon struct {
@@ -16,17 +17,17 @@ type JSONInt64 int64
 // MarshalJSON marshals to json
 func (jsonInt *JSONInt64) MarshalJSON() ([]byte, error) {
 	intStr := strconv.FormatInt(int64(*jsonInt), 10)
-	return nil, []byte(intStr)
+	return []byte(intStr), nil
 }
 
 // UnmarshalJSON unmarshals from json
 func (jsonInt *JSONInt64) UnmarshalJSON(b []byte) error {
 	intStr := string(b)
-	jsonBigInt, err = strconv.ParseInt(intStr, 10, 64)
+	jsonBigInt, err := strconv.ParseInt(intStr, 10, 64)
 	if err != nil {
 		return err
 	}
-	jsonInt = jsonBigInt
+	*jsonInt = JSONInt64(jsonBigInt)
 	return nil
 }
 
@@ -658,7 +659,12 @@ const (
 type TMeURLTypeEnum string
 
 // TMeURLType enums
-const ()
+const (
+	TMeURLTypeUserType       TMeURLTypeEnum = "tMeURLTypeUser"
+	TMeURLTypeSupergroupType TMeURLTypeEnum = "tMeURLTypeSupergroup"
+	TMeURLTypeChatInviteType TMeURLTypeEnum = "tMeURLTypeChatInvite"
+	TMeURLTypeStickerSetType TMeURLTypeEnum = "tMeURLTypeStickerSet"
+)
 
 // TextParseModeEnum Alias for abstract TextParseMode 'Sub-Classes', used as constant-enum here
 type TextParseModeEnum string
@@ -13998,6 +14004,25 @@ func unmarshalTMeURLType(rawMsg *json.RawMessage) (TMeURLType, error) {
 	}
 
 	switch TMeURLTypeEnum(objMap["@type"].(string)) {
+	case TMeURLTypeUserType:
+		var tMeURLTypeUser TMeURLTypeUser
+		err := json.Unmarshal(*rawMsg, &tMeURLTypeUser)
+		return &tMeURLTypeUser, err
+
+	case TMeURLTypeSupergroupType:
+		var tMeURLTypeSupergroup TMeURLTypeSupergroup
+		err := json.Unmarshal(*rawMsg, &tMeURLTypeSupergroup)
+		return &tMeURLTypeSupergroup, err
+
+	case TMeURLTypeChatInviteType:
+		var tMeURLTypeChatInvite TMeURLTypeChatInvite
+		err := json.Unmarshal(*rawMsg, &tMeURLTypeChatInvite)
+		return &tMeURLTypeChatInvite, err
+
+	case TMeURLTypeStickerSetType:
+		var tMeURLTypeStickerSet TMeURLTypeStickerSet
+		err := json.Unmarshal(*rawMsg, &tMeURLTypeStickerSet)
+		return &tMeURLTypeStickerSet, err
 
 	default:
 		return nil, fmt.Errorf("Error unmarshaling, unknown type:" + objMap["@type"].(string))

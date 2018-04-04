@@ -227,7 +227,7 @@ func main() {
 			var enumInfo EnumInfo
 			var i int
 			for i, enumInfo = range enumInfoes {
-				if enumInfo.EnumType == classInfoe.RootName+"Enum" {
+				if enumInfo.EnumType == replaceKeyWords(classInfoe.RootName)+"Enum" {
 					ok = true
 					break
 				}
@@ -257,6 +257,7 @@ func main() {
 	import (
 		"encoding/json"
 		"fmt"
+		"strconv"
 	)
 	
 	`
@@ -276,25 +277,25 @@ func main() {
 		"}\n\n"
 
 	gnrtdStructs += `
-		// JSONInt64 alias for int64, in order to deal with json big number problem
-		type JSONInt64 int64
-
-		// MarshalJSON marshals to json
-		func (jsonInt *JSONInt64) MarshalJSON() ([]byte, error) {
-			intStr := strconv.FormatInt(int64(*jsonInt), 10)
-			return nil, []byte(intStr)
+	// JSONInt64 alias for int64, in order to deal with json big number problem
+	type JSONInt64 int64
+	
+	// MarshalJSON marshals to json
+	func (jsonInt *JSONInt64) MarshalJSON() ([]byte, error) {
+		intStr := strconv.FormatInt(int64(*jsonInt), 10)
+		return []byte(intStr), nil
+	}
+	
+	// UnmarshalJSON unmarshals from json
+	func (jsonInt *JSONInt64) UnmarshalJSON(b []byte) error {
+		intStr := string(b)
+		jsonBigInt, err := strconv.ParseInt(intStr, 10, 64)
+		if err != nil {
+			return err
 		}
-
-		// UnmarshalJSON unmarshals from json
-		func (jsonInt *JSONInt64) UnmarshalJSON(b []byte) error {
-			intStr := string(b)
-			jsonBigInt, err = strconv.ParseInt(intStr, 10, 64)
-			if err != nil {
-				return err
-			}
-			jsonInt = jsonBigInt
-			return nil
-		}
+		*jsonInt = JSONInt64(jsonBigInt)
+		return nil
+	}
 `
 
 	gnrtdStructs += `
