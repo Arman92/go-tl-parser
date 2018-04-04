@@ -289,6 +289,7 @@ func main() {
 	// UnmarshalJSON unmarshals from json
 	func (jsonInt *JSONInt64) UnmarshalJSON(b []byte) error {
 		intStr := string(b)
+		intStr = strings.Replace(intStr, "\"", "", 2)
 		jsonBigInt, err := strconv.ParseInt(intStr, 10, 64)
 		if err != nil {
 			return err
