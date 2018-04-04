@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
@@ -34,10 +35,25 @@ const (
 // ClassInfo holds info of a Class in .tl file
 type ClassInfo struct {
 	Name        string          `json:"name"`
-	Properties  []ClassProperty `json:"properties"`
+	Properties  ClassProperties `json:"properties"`
 	Description string          `json:"description"`
 	RootName    string          `json:"rootName"`
 	IsFunction  bool            `json:"isFunction"`
+}
+
+// ClassProperties ...
+type ClassProperties []ClassProperty
+
+func (cm ClassProperties) Len() int {
+	return len(cm)
+}
+
+func (cm ClassProperties) Less(i, j int) bool {
+	return cm[i].Name < cm[j].Name
+}
+
+func (cm ClassProperties) Swap(i, j int) {
+	cm[i], cm[j] = cm[j], cm[i]
 }
 
 // ClassProperty holds info about properties of a class (or function)
@@ -64,7 +80,7 @@ var paramDescs map[string]string
 var params map[string]string
 var classInfoes []ClassInfo
 var interfaceInfoes []InterfaceInfo
-var enumInfoes map[string]EnumInfo
+var enumInfoes []EnumInfo
 
 func main() {
 
@@ -93,7 +109,7 @@ func main() {
 
 	classInfoes = make([]ClassInfo, 0, 10)
 	interfaceInfoes = make([]InterfaceInfo, 0, 1)
-	enumInfoes = make(map[string]EnumInfo)
+	enumInfoes = make([]EnumInfo, 0, 1)
 
 	paramDescs = make(map[string]string)
 	params = make(map[string]string)
@@ -126,7 +142,7 @@ func main() {
 				Description: entityDesc,
 			}
 			interfaceInfoes = append(interfaceInfoes, interfaceInfo)
-			enumInfoes[interfaceName+"Enum"] = EnumInfo{EnumType: replaceKeyWords(interfaceName) + "Enum"}
+			enumInfoes = append(enumInfoes, EnumInfo{EnumType: replaceKeyWords(interfaceName) + "Enum"})
 
 		} else if strings.HasPrefix(line, "//@description ") { // Entity description
 			line = line[len("//@description "):]
@@ -196,7 +212,10 @@ func main() {
 
 			var classProps []ClassProperty
 			classProps = make([]ClassProperty, 0, 0)
-			for paramName, paramType := range params {
+
+			sortedParamsKeys := SortedKeys(params)
+			for _, paramName := range sortedParamsKeys {
+				paramType := params[paramName]
 				classProp := ClassProperty{
 					Name:        paramName,
 					Type:        paramType,
@@ -204,6 +223,7 @@ func main() {
 				}
 				classProps = append(classProps, classProp)
 			}
+
 			classInfoe := ClassInfo{
 				Name:        entityName,
 				Description: entityDesc,
@@ -216,11 +236,19 @@ func main() {
 			entityDesc = ""
 			paramDescs = make(map[string]string)
 			params = make(map[string]string)
-			enumInfo, ok := enumInfoes[classInfoe.RootName+"Enum"]
+			ok := false
+			var enumInfo EnumInfo
+			var i int
+			for i, enumInfo = range enumInfoes {
+				if enumInfo.EnumType == classInfoe.RootName+"Enum" {
+					ok = true
+					break
+				}
+			}
 			if ok && !classInfoe.IsFunction {
 				enumInfo.Items = append(enumInfo.Items,
 					replaceKeyWords(strings.ToUpper(classInfoe.Name[0:1])+classInfoe.Name[1:]))
-				enumInfoes[classInfoe.RootName+"Enum"] = enumInfo
+				enumInfoes[i] = enumInfo
 			}
 		}
 	}
@@ -261,6 +289,28 @@ func main() {
 		"}\n\n"
 
 	gnrtdStructs += `
+		// JSONInt64 alias for int64, in order to deal with json big number problem
+		type JSONInt64 int64
+
+		// MarshalJSON marshals to json
+		func (jsonInt *JSONInt64) MarshalJSON() ([]byte, error) {
+			intStr := strconv.FormatInt(int64(*jsonInt), 10)
+			return nil, []byte(intStr)
+		}
+
+		// UnmarshalJSON unmarshals from json
+		func (jsonInt *JSONInt64) UnmarshalJSON(b []byte) error {
+			intStr := string(b)
+			jsonBigInt, err = strconv.ParseInt(intStr, 10, 64)
+			if err != nil {
+				return err
+			}
+			jsonInt = jsonBigInt
+			return nil
+		}
+`
+
+	gnrtdStructs += `
 		// TdMessage is the interface for all messages send and received to/from tdlib
 		type TdMessage interface{
 			MessageType() string
@@ -268,10 +318,11 @@ func main() {
 `
 
 	for _, enumInfoe := range enumInfoes {
+
 		gnrtdStructs += fmt.Sprintf(`
-			// %s Alias for abstract %s 'Sub-Classes', used as constant-enum here
-			type %s string
-			`,
+				// %s Alias for abstract %s 'Sub-Classes', used as constant-enum here
+				type %s string
+				`,
 			enumInfoe.EnumType,
 			enumInfoe.EnumType[:len(enumInfoe.EnumType)-len("Enum")],
 			enumInfoe.EnumType)
@@ -283,10 +334,10 @@ func main() {
 
 		}
 		gnrtdStructs += fmt.Sprintf(`
-			// %s enums
-			const (
-				%s
-			)`, enumInfoe.EnumType[:len(enumInfoe.EnumType)-len("Enum")], consts)
+				// %s enums
+				const (
+					%s
+				)`, enumInfoe.EnumType[:len(enumInfoe.EnumType)-len("Enum")], consts)
 	}
 
 	for _, interfaceInfo := range interfaceInfoes {
@@ -348,6 +399,7 @@ func main() {
 			assignStr := fmt.Sprintf("%s.tdCommon = tempObj.tdCommon\n", structNameCamel)
 			assignInterfacePropsStr := ""
 
+			sort.Sort(classInfoe.Properties)
 			for i, param := range classInfoe.Properties {
 				propName := govalidator.UnderscoreToCamelCase(param.Name)
 				propName = replaceKeyWords(propName)
@@ -591,7 +643,7 @@ func convertDataType(input string) string {
 	}
 	if strings.Contains(input, "string") || strings.Contains(input, "int32") ||
 		strings.Contains(input, "int64") {
-		propType = input // do nothing
+		propType = strings.Replace(input, "int64", "JSONInt64", 1)
 	} else if strings.Contains(input, "Bool") {
 		propType = strings.Replace(input, "Bool", "bool", 1)
 	} else if strings.Contains(input, "double") {
