@@ -394,8 +394,13 @@ func main() {
 				propName := govalidator.UnderscoreToCamelCase(prop.Name)
 				propName = replaceKeyWords(propName)
 
-				dataType, _ := convertDataType(prop.Type)
-				propsStrItem := fmt.Sprintf("%s %s `json:\"%s\"` // %s", propName, dataType, prop.Name, prop.Description)
+				dataType, isPrimitive := convertDataType(prop.Type)
+				propsStrItem := ""
+				if isPrimitive || checkIsInterface(dataType) {
+					propsStrItem += fmt.Sprintf("%s %s `json:\"%s\"` // %s", propName, dataType, prop.Name, prop.Description)
+				} else {
+					propsStrItem += fmt.Sprintf("%s *%s `json:\"%s\"` // %s", propName, dataType, prop.Name, prop.Description)
+				}
 				if i < len(classInfoe.Properties)-1 {
 					propsStrItem += "\n"
 				}
@@ -446,7 +451,7 @@ func main() {
 				if isPrimitive || checkIsInterface(dataType) {
 					assingsStr += fmt.Sprintf("%s : %s,\n", propName, paramName)
 				} else {
-					assingsStr += fmt.Sprintf("%s : *%s,\n", propName, paramName)
+					assingsStr += fmt.Sprintf("%s : %s,\n", propName, paramName)
 				}
 			}
 
@@ -728,7 +733,7 @@ func convertToArgumentName(input string) string {
 
 func checkIsInterface(input string) bool {
 	for _, interfaceInfo := range interfaceInfoes {
-		if interfaceInfo.Name == input {
+		if interfaceInfo.Name == input || replaceKeyWords(interfaceInfo.Name) == input {
 			return true
 		}
 	}
