@@ -258,6 +258,7 @@ func main() {
 		"encoding/json"
 		"fmt"
 		"strconv"
+		"strings"
 	)
 	
 	`
@@ -393,7 +394,8 @@ func main() {
 				propName := govalidator.UnderscoreToCamelCase(prop.Name)
 				propName = replaceKeyWords(propName)
 
-				propsStrItem := fmt.Sprintf("%s %s `json:\"%s\"` // %s", propName, convertDataType(prop.Type), prop.Name, prop.Description)
+				dataType, _ := convertDataType(prop.Type)
+				propsStrItem := fmt.Sprintf("%s %s `json:\"%s\"` // %s", propName, dataType, prop.Name, prop.Description)
 				if i < len(classInfoe.Properties)-1 {
 					propsStrItem += "\n"
 				}
@@ -408,7 +410,7 @@ func main() {
 						field%s, _  := 	unmarshal%s(objMap["%s"])
 						%s.%s = field%s
 						`,
-						propName, convertDataType(prop.Type), prop.Name,
+						propName, dataType, prop.Name,
 						structNameCamel, propName, propName)
 				}
 			}
@@ -419,6 +421,50 @@ func main() {
 
 			gnrtdStructs += fmt.Sprintf("// MessageType return the string telegram-type of %s \nfunc (%s *%s) MessageType() string {\n return \"%s\" }\n\n",
 				structName, structNameCamel, structName, classInfoe.Name)
+
+			paramsStr := ""
+			paramsDesc := ""
+			assingsStr := ""
+			for i, param := range classInfoe.Properties {
+				propName := govalidator.UnderscoreToCamelCase(param.Name)
+				propName = replaceKeyWords(propName)
+				dataType, isPrimitive := convertDataType(param.Type)
+				paramName := convertToArgumentName(param.Name)
+
+				if isPrimitive || checkIsInterface(dataType) {
+					paramsStr += paramName + " " + dataType
+
+				} else { // if is not a primitive, use pointers
+					paramsStr += paramName + " *" + dataType
+				}
+
+				if i < len(classInfoe.Properties)-1 {
+					paramsStr += ", "
+				}
+				paramsDesc += "\n// @param " + paramName + " " + param.Description
+
+				if isPrimitive || checkIsInterface(dataType) {
+					assingsStr += fmt.Sprintf("%s : %s,\n", propName, paramName)
+				} else {
+					assingsStr += fmt.Sprintf("%s : *%s,\n", propName, paramName)
+				}
+			}
+
+			// Create New... constructors
+			gnrtdStructs += fmt.Sprintf(`
+				// New%s creates a new %s
+				// %s
+				func New%s(%s) *%s {
+					%sTemp := %s {
+						tdCommon: tdCommon {Type: "%s"},
+						%s
+					}
+
+					return &%sTemp
+				}
+				`, structName, structName, paramsDesc,
+				structName, paramsStr, structName, structNameCamel,
+				structName, classInfoe.Name, assingsStr, structNameCamel)
 
 			if hasInterfaceProps {
 				gnrtdStructs += fmt.Sprintf(`
@@ -481,8 +527,14 @@ func main() {
 			paramsDesc := ""
 			for i, param := range classInfoe.Properties {
 				paramName := convertToArgumentName(param.Name)
-				paramsStr += paramName + " "
-				paramsStr += convertDataType(param.Type)
+				dataType, isPrimitive := convertDataType(param.Type)
+				if isPrimitive || checkIsInterface(dataType) {
+					paramsStr += paramName + " " + dataType
+
+				} else {
+					paramsStr += paramName + " *" + dataType
+				}
+
 				if i < len(classInfoe.Properties)-1 {
 					paramsStr += ", "
 				}
@@ -621,26 +673,34 @@ func replaceKeyWords(input string) string {
 	return input
 }
 
-func convertDataType(input string) string {
+func convertDataType(input string) (string, bool) {
 	propType := ""
+	isPrimitiveType := true
 
 	if strings.HasPrefix(input, "vector") {
 		input = "[]" + input[len("vector<"):len(input)-1]
+		isPrimitiveType = true
 	}
 	if strings.HasPrefix(input, "[]vector") {
 		input = "[][]" + input[len("[]vector<"):len(input)-1]
+
 	}
 	if strings.Contains(input, "string") || strings.Contains(input, "int32") ||
 		strings.Contains(input, "int64") {
 		propType = strings.Replace(input, "int64", "JSONInt64", 1)
+
 	} else if strings.Contains(input, "Bool") {
 		propType = strings.Replace(input, "Bool", "bool", 1)
+
 	} else if strings.Contains(input, "double") {
 		propType = strings.Replace(input, "double", "float64", 1)
+
 	} else if strings.Contains(input, "int53") {
 		propType = strings.Replace(input, "int53", "int64", 1)
+
 	} else if strings.Contains(input, "bytes") {
 		propType = strings.Replace(input, "bytes", "[]byte", 1)
+
 	} else {
 		if strings.HasPrefix(input, "[][]") {
 			propType = "[][]" + strings.ToUpper(input[len("[][]"):len("[][]")+1]) + input[len("[][]")+1:]
@@ -648,12 +708,13 @@ func convertDataType(input string) string {
 			propType = "[]" + strings.ToUpper(input[len("[]"):len("[]")+1]) + input[len("[]")+1:]
 		} else {
 			propType = strings.ToUpper(input[:1]) + input[1:]
+			isPrimitiveType = false
 		}
 	}
 
 	propType = replaceKeyWords(propType)
 
-	return propType
+	return propType, isPrimitiveType
 }
 
 func convertToArgumentName(input string) string {
