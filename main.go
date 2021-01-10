@@ -533,6 +533,9 @@ func main() {
 			for i, param := range classInfoe.Properties {
 				paramName := convertToArgumentName(param.Name)
 				dataType, isPrimitive := convertDataType(param.Type)
+				if paramName == "json" {
+        				paramName = paramName + dataType
+				}
 				if isPrimitive || checkIsInterface(dataType) {
 					paramsStr += paramName + " " + dataType
 
@@ -554,7 +557,10 @@ func main() {
 			paramsStr = ""
 			for i, param := range classInfoe.Properties {
 				paramName := convertToArgumentName(param.Name)
-
+				if paramName == "json" {
+					dataType, _ := convertDataType(param.Type)
+        				paramName = paramName + dataType
+				}
 				paramsStr += fmt.Sprintf("\"%s\":   %s,", param.Name, paramName)
 				if i < len(classInfoe.Properties)-1 {
 					paramsStr += "\n"
