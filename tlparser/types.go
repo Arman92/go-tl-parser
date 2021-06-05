@@ -2,21 +2,30 @@ package tlparser
 
 type TlSchema struct {
 	Enums      []*EnumInfo
-	Classes    []*ClassInfo
 	Interfaces []*InterfaceInfo
+	Classes    []*ClassInfo
+	Functions  []*FunctionInfo
 }
 
 // ClassInfo holds info of a Class in .tl file
 type ClassInfo struct {
-	Name        string          `json:"name"`
-	Properties  []ClassProperty `json:"properties"`
-	Description string          `json:"description"`
-	RootName    string          `json:"rootName"`
-	IsFunction  bool            `json:"isFunction"`
+	Name        string     `json:"name"`
+	Properties  []Property `json:"properties"`
+	Description string     `json:"description"`
+	RootName    string     `json:"rootName"`
 }
 
-// ClassProperty holds info about properties of a class (or function)
-type ClassProperty struct {
+// FunctionInfo holds info of a function in .tl file
+type FunctionInfo struct {
+	Name          string     `json:"name"`
+	Properties    []Property `json:"properties"`
+	Description   string     `json:"description"`
+	ReturnType    string     `json:"return_type"`
+	IsSynchronous bool       `json:"is_synchronous"`
+}
+
+// Property holds info about properties of a class (or function)
+type Property struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
 	Description string `json:"description"`
@@ -31,5 +40,5 @@ type InterfaceInfo struct {
 // EnumInfo ...
 type EnumInfo struct {
 	EnumType string   `json:"enumType"`
-	Items    []string `json:"description"`
+	Items    []string `json:"items"`
 }
