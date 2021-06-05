@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -18,7 +19,7 @@ const (
 	generatedPackageDefault = "tdlib"      // the package in which go types and methods will be placed into
 	structsFileNameDefault  = "types.go"   // file name for structs
 	methodsFileNameDefault  = "methods.go" // file name for methods
-	generateDirDefault      = "./tdlib"
+	outDirDefault           = "./tdlib"
 	modeDefault             = GenerateModeJSON
 )
 
@@ -31,34 +32,6 @@ const (
 	GenerateModeGolang
 )
 
-// ClassInfo holds info of a Class in .tl file
-type ClassInfo struct {
-	Name        string          `json:"name"`
-	Properties  []ClassProperty `json:"properties"`
-	Description string          `json:"description"`
-	RootName    string          `json:"rootName"`
-	IsFunction  bool            `json:"isFunction"`
-}
-
-// ClassProperty holds info about properties of a class (or function)
-type ClassProperty struct {
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Description string `json:"description"`
-}
-
-// InterfaceInfo equals to abstract base classes in .tl file
-type InterfaceInfo struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-// EnumInfo ...
-type EnumInfo struct {
-	EnumType string   `json:"enumType"`
-	Items    []string `json:"description"`
-}
-
 var entityDesc string
 var paramDescs map[string]string
 var params map[string]string
@@ -67,30 +40,34 @@ var classInfoes []ClassInfo
 var interfaceInfoes []InterfaceInfo
 var enumInfoes []EnumInfo
 
+type cmdConfig struct {
+	version          string
+	generatedPackage string
+	structsFileName  string
+	methodsFileName  string
+	outputDir        string
+	generateMode     GenerateMode
+}
+
 func main() {
 
-	var inputFile string
-	var generatedPackage string
-	var structsFileName string
-	var methodsFileName string
-	var generateDir string
-	var generateMode GenerateMode
+	var config cmdConfig
 
-	flag.StringVar(&inputFile, "file", "./schema.tl", ".tl schema file")
-	flag.StringVar(&generateDir, "dir", generateDirDefault, "Generate directory")
-	flag.StringVar(&generatedPackage, "package", generatedPackageDefault, "Package in which generated files will be a part of")
-	flag.StringVar(&structsFileName, "structs-file", structsFileNameDefault, "file name for structs")
-	flag.StringVar(&methodsFileName, "methods-file", methodsFileNameDefault, "file name for methods")
-	flag.IntVar((*int)(&generateMode), "mode", int(modeDefault), "Generate mod, indicates whether to create json file, or golang files")
+	flag.StringVar(&config.version, "version", "1.7.0", "TDLib version")
+	flag.StringVar(&config.outputDir, "dir", outDirDefault, "Generate directory")
+	flag.StringVar(&config.generatedPackage, "package", generatedPackageDefault, "Package in which generated files will be a part of")
+	flag.StringVar(&config.structsFileName, "structs-file", structsFileNameDefault, "file name for structs")
+	flag.StringVar(&config.methodsFileName, "methods-file", methodsFileNameDefault, "file name for methods")
+	flag.IntVar((*int)(&config.generateMode), "mode", int(modeDefault), "Generate mod, indicates whether to create json file, or golang files")
 
 	flag.Parse()
 
-	f, err := os.OpenFile(inputFile, os.O_RDONLY, os.ModePerm)
+	resp, err := http.Get("https://raw.githubusercontent.com/tdlib/td/" + config.version + "/td/generate/scheme/td_api.tl")
 	if err != nil {
-		log.Fatalf("open file error: %v", err)
+		log.Fatalf("failed to get tl schema from github: %s", err)
 		return
 	}
-	defer f.Close()
+	defer resp.Body.Close()
 
 	classInfoes = make([]ClassInfo, 0, 10)
 	interfaceInfoes = make([]InterfaceInfo, 0, 1)
