@@ -1,31 +1,39 @@
 package generator
 
 import (
-	"bytes"
-	"fmt"
+	"log"
+	"os"
 
 	"github.com/Arman92/go-tl-parser/tlparser"
 )
 
-func GenerateCode(schema *tlparser.TlSchema, packageName, outputDir string) []byte {
-	buf := bytes.NewBufferString("")
+const (
+	commonFileName = "common.go"
+)
 
-	buf.WriteString(fmt.Sprintf("%s\n\npackage %s\n\n", defaultHeader, packageName))
-	buf.WriteString(`
-	
-	import (
-		"encoding/json"
-		"fmt"
-		"strconv"
-		"strings"
-	)
-	
+func GenerateCode(schema *tlparser.TlSchema, packageName, outputDir string) {
 
-	type tdCommon struct {
-		Type string ` + `json:"@type"` + `
-		Extra string ` + `json:"@extra"` + `
+	os.RemoveAll(outputDir)
+	os.MkdirAll(outputDir, os.ModePerm)
+
+	err := generateCommonFiles(packageName, outputDir)
+	if err != nil {
+		log.Fatal("Failed to generate/write common file:", err)
 	}
-	`)
 
-	return buf.Bytes()
+	err = GenerateInterfaceAndEnums(schema, packageName, outputDir)
+	if err != nil {
+		log.Fatal("Failed to generate/write interface/enum files:", err)
+	}
+
+	err = GenerateClasses(schema, packageName, outputDir)
+	if err != nil {
+		log.Fatal("Failed to generate/write classes files:", err)
+	}
+
+	err = GenerateFunctions(schema, packageName, outputDir)
+	if err != nil {
+		log.Fatal("Failed to generate/write function files:", err)
+	}
+
 }
