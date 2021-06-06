@@ -2,7 +2,6 @@ package tlparser
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"strings"
 )
@@ -31,13 +30,12 @@ func ParseInputSchema(reader io.Reader) (*TlSchema, error) {
 				schema.Classes = append(schema.Classes, typeInfo)
 				// Append to enum Items if this is sub-class of an abstract class.
 				for _, enumInfo := range schema.Enums {
-					if strings.TrimRight(enumInfo.EnumType, "Enum") == typeInfo.RootName {
+					if strings.TrimSuffix(enumInfo.EnumType, "Enum") == typeInfo.RootName {
 						enumInfo.Items = append(enumInfo.Items, replaceKeyWords(strings.ToUpper(typeInfo.Name[0:1])+typeInfo.Name[1:]))
 
 						break
 					}
 				}
-				fmt.Print(typeInfo)
 			}
 		case strings.HasPrefix(line, "//@class "):
 			interfaceInfo := parseTlAbstractClass(line)
@@ -153,9 +151,9 @@ func parseProperty(str string) (string, string) {
 }
 
 func getProperty(properties []Property, name string) *Property {
-	for _, property := range properties {
+	for i, property := range properties {
 		if property.Name == name {
-			return &property
+			return &properties[i]
 		}
 	}
 
