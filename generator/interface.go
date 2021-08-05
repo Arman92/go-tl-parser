@@ -19,8 +19,6 @@ func GenerateInterfaceAndEnums(schema *tlparser.TlSchema, packageName, outputDir
 		import (
 			"encoding/json"
 			"fmt"
-			"strconv"
-			"strings"
 		)
 	
 		`)
@@ -48,9 +46,9 @@ func GenerateInterfaceAndEnums(schema *tlparser.TlSchema, packageName, outputDir
 				constStr := ""
 				for _, item := range enum.Items {
 					// Generate enum const items
-					constStr += fmt.Sprintf(`%sType %s = "%s"%s`, item, enum.EnumType, firstLower(item), "\n")
+					constStr += fmt.Sprintf(`%sType %s = "%s"%s`, item.GolangType, enum.EnumType, item.OriginalType, "\n")
 
-					typeName := item
+					typeName := item.GolangType
 					typeNameCamel := firstLower(typeName)
 					typesCases += fmt.Sprintf(`case %s:
 						var %s %s
@@ -58,7 +56,7 @@ func GenerateInterfaceAndEnums(schema *tlparser.TlSchema, packageName, outputDir
 						return &%s, err
 						
 						`,
-						item+"Type", typeNameCamel, typeName,
+						item.GolangType+"Type", typeNameCamel, typeName,
 						typeNameCamel, typeNameCamel)
 
 				}

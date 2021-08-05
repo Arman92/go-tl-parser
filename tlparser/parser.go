@@ -31,7 +31,7 @@ func ParseInputSchema(reader io.Reader) (*TlSchema, error) {
 				// Append to enum Items if this is sub-class of an abstract class.
 				for _, enumInfo := range schema.Enums {
 					if strings.TrimSuffix(enumInfo.EnumType, "Enum") == typeInfo.RootName {
-						enumInfo.Items = append(enumInfo.Items, replaceKeyWords(strings.ToUpper(typeInfo.Name[0:1])+typeInfo.Name[1:]))
+						enumInfo.Items = append(enumInfo.Items, EnumInfoItem{OriginalType: typeInfo.Name, GolangType: replaceKeyWords(strings.ToUpper(typeInfo.Name[0:1]) + typeInfo.Name[1:])})
 
 						break
 					}

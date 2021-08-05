@@ -13,8 +13,6 @@ func generateCommonFiles(packageName, outputDir string) error {
 	buf.WriteString(`
 	
 	import (
-		"encoding/json"
-		"fmt"
 		"strconv"
 		"strings"
 	)

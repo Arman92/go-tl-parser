@@ -37,8 +37,13 @@ type InterfaceInfo struct {
 	Description string `json:"description"`
 }
 
+type EnumInfoItem struct {
+	OriginalType string `json:"original_type"`
+	GolangType   string `json:"golang_type"`
+}
+
 // EnumInfo ...
 type EnumInfo struct {
-	EnumType string   `json:"enumType"`
-	Items    []string `json:"items"`
+	EnumType string         `json:"enumType"`
+	Items    []EnumInfoItem `json:"items"`
 }
