@@ -95,7 +95,7 @@ func GenerateFunctions(schema *tlparser.TlSchema, packageName, outputDir string)
 							var %s %s
 							err = json.Unmarshal(result.Raw, &%s)
 							return &%s, err
-							`, item.GolangType+"Type", returnTypeCamel, item, returnTypeCamel,
+							`, item.GolangType+"Type", returnTypeCamel, item.GolangType, returnTypeCamel,
 							returnTypeCamel)
 					}
 					break
