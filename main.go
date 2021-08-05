@@ -19,7 +19,7 @@ func main() {
 	var config config
 
 	flag.StringVar(&config.version, "version", "v1.7.0", "TDLib version")
-	flag.StringVar(&config.outputDir, "outputDir", "./tdlib", "output directory")
+	flag.StringVar(&config.outputDir, "outputDir", "../tdlib", "output directory")
 	flag.StringVar(&config.packageName, "package", "tdlib", "package name")
 
 	flag.Parse()
