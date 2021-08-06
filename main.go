@@ -10,16 +10,20 @@ import (
 )
 
 type config struct {
-	version     string
-	packageName string
-	outputDir   string
+	version          string
+	packageName      string
+	typesOutputDir   string
+	methodsOutputDir string
+	basePackageUri   string
 }
 
 func main() {
 	var config config
 
 	flag.StringVar(&config.version, "version", "v1.7.0", "TDLib version")
-	flag.StringVar(&config.outputDir, "outputDir", "../tdlib", "output directory")
+	flag.StringVar(&config.typesOutputDir, "typesOutputDir", "../go-tdlib/tdlib/", "output directory")
+	flag.StringVar(&config.methodsOutputDir, "methodsOutputDir", "../go-tdlib/client/", "output directory")
+	flag.StringVar(&config.basePackageUri, "basePackageUri", "github.com/Arman92/go-tdlib", "base package uri")
 	flag.StringVar(&config.packageName, "package", "tdlib", "package name")
 
 	flag.Parse()
@@ -37,6 +41,6 @@ func main() {
 		return
 	}
 
-	generator.GenerateCode(schema, config.packageName, config.outputDir)
+	generator.GenerateCode(schema, config.basePackageUri, config.packageName, config.typesOutputDir, config.methodsOutputDir)
 
 }

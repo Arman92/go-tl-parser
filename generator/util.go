@@ -96,19 +96,14 @@ func convertDataType(input string) (string, bool) {
 	case strings.Contains(input, "string") || strings.Contains(input, "int32") ||
 		strings.Contains(input, "int64"):
 		propType = strings.Replace(input, "int64", "JSONInt64", 1)
-		break
 	case strings.Contains(input, "Bool"):
 		propType = strings.Replace(input, "Bool", "bool", 1)
-		break
 	case strings.Contains(input, "double"):
 		propType = strings.Replace(input, "double", "float64", 1)
-		break
 	case strings.Contains(input, "int53"):
 		propType = strings.Replace(input, "int53", "int64", 1)
-		break
 	case strings.Contains(input, "bytes"):
 		propType = strings.Replace(input, "bytes", "[]byte", 1)
-		break
 	default:
 		if strings.HasPrefix(input, "[][]") {
 			propType = "[][]" + strings.ToUpper(input[len("[][]"):len("[][]")+1]) + input[len("[][]")+1:]
@@ -123,6 +118,14 @@ func convertDataType(input string) (string, bool) {
 	propType = replaceKeyWords(propType)
 
 	return propType, isPrimitiveType
+}
+
+func isPackageType(dataType string) bool {
+	dataType = strings.TrimPrefix(dataType, "[][]")
+	dataType = strings.TrimPrefix(dataType, "[]")
+
+	return dataType != "string" && dataType != "int32" &&
+		dataType != "int64" && dataType != "bool" && dataType != "float64" && dataType != "byte"
 }
 
 func checkIsInterface(input string, interfaces []*tlparser.InterfaceInfo) bool {

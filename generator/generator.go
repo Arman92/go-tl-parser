@@ -11,29 +11,29 @@ const (
 	commonFileName = "common.go"
 )
 
-func GenerateCode(schema *tlparser.TlSchema, packageName, outputDir string) {
+func GenerateCode(schema *tlparser.TlSchema, basePackageUri, packageName, typesOutputDir, methodsOutputDir string) {
 
-	os.RemoveAll(outputDir)
-	os.MkdirAll(outputDir, os.ModePerm)
+	os.RemoveAll(typesOutputDir)
+	os.MkdirAll(typesOutputDir, os.ModePerm)
 
-	err := generateCommonFiles(packageName, outputDir)
+	err := generateCommonFiles(packageName, typesOutputDir)
 	if err != nil {
 		log.Fatal("Failed to generate/write common file:", err)
 	}
 
-	err = GenerateInterfaceAndEnums(schema, packageName, outputDir)
+	err = GenerateInterfaceAndEnums(schema, packageName, typesOutputDir)
 	if err != nil {
 		log.Fatal("Failed to generate/write interface/enum files:", err)
 	}
 
-	err = GenerateClasses(schema, packageName, outputDir)
+	err = GenerateClasses(schema, packageName, typesOutputDir)
 	if err != nil {
 		log.Fatal("Failed to generate/write classes files:", err)
 	}
 
-	err = GenerateFunctions(schema, packageName, outputDir)
+	err = GenerateMethods(schema, basePackageUri, packageName, "client", methodsOutputDir)
 	if err != nil {
-		log.Fatal("Failed to generate/write function files:", err)
+		log.Fatal("Failed to generate/write method files:", err)
 	}
 
 }
