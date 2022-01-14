@@ -107,7 +107,7 @@ func GenerateMethods(schema *tlparser.TlSchema, basePackageUri, typePackageName,
 			}
 		}
 
-		illStr := `fmt.Errorf("error! code: %d msg: %s", result.Data["code"], result.Data["message"])`
+		illStr := typePackageName + `.RequestError{Code: int(result.Data["code"].(float64)), Message: result.Data["message"].(string)}`
 		if strings.Contains(paramsStr, returnTypeCamel) {
 			returnTypeCamel = returnTypeCamel + "Dummy"
 		}
